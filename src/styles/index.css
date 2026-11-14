@@ -11,13 +11,24 @@ html {
 
 html[lang='my'],
 .locale-my {
+  font-family: 'Space Grotesk', 'Noto Sans Myanmar', 'Padauk', 'Myanmar Text', sans-serif;
   overflow-wrap: break-word;
+  word-break: normal;
 }
 html[lang='my'] p,
 html[lang='my'] dt,
 html[lang='my'] dd,
 html[lang='my'] li {
-  line-height: 1.75;
+  line-height: 1.68;
+}
+html[lang='my'] button,
+html[lang='my'] input,
+html[lang='my'] select,
+html[lang='my'] textarea {
+  font-family: 'Space Grotesk', 'Noto Sans Myanmar', 'Padauk', 'Myanmar Text', sans-serif;
+}
+html[lang='my'] .font-mono {
+  font-family: 'IBM Plex Mono', 'Noto Sans Myanmar', 'Padauk', 'Myanmar Text', monospace;
 }
 /* Theme switch: one crossfade of the whole page (AppHeader, View Transitions), gradients included. Instant under reduced motion. */
 html::view-transition-old(root),

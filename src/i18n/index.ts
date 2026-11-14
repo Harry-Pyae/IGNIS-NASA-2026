@@ -394,9 +394,34 @@ export type Locale = 'en';
 
 const STRINGS: Record<Locale, Record<TranslationKey, string>> = { en: EN };
 
+type LocaleResolver = (key: TranslationKey) => string | undefined;
+let activeLocaleResolver: LocaleResolver | null = null;
+let activeGlossaryResolver: (() => readonly { term: string; plain: string }[]) | null = null;
+let currentLocale: string = 'en';
+
+export function registerLocaleResolver(
+  resolver: LocaleResolver,
+  glossaryResolver?: () => readonly { term: string; plain: string }[],
+) {
+  activeLocaleResolver = resolver;
+  if (glossaryResolver) activeGlossaryResolver = glossaryResolver;
+}
+
+export function setActiveLocale(loc: string) {
+  currentLocale = loc;
+}
+
+export function getActiveLocale(): string {
+  return currentLocale;
+}
+
 /** English is the only shipped locale until R3 supplies the complete reviewed Burmese set. */
 export function t(key: TranslationKey, locale: Locale = 'en'): string {
-  return STRINGS[locale][key];
+  if (currentLocale !== 'en' && activeLocaleResolver) {
+    const translated = activeLocaleResolver(key);
+    if (translated) return translated;
+  }
+  return STRINGS[locale]?.[key] ?? EN[key] ?? (key as string);
 }
 
 export function format(key: TranslationKey, values: Record<string, string | number>): string {
@@ -404,7 +429,10 @@ export function format(key: TranslationKey, values: Record<string, string | numb
 }
 
 export function glossary(locale: Locale = 'en') {
-  return GLOSSARY[locale];
+  if (currentLocale !== 'en' && activeGlossaryResolver) {
+    return activeGlossaryResolver();
+  }
+  return GLOSSARY[locale] ?? COPY.glossary;
 }
 
 const GLOSSARY: Record<Locale, readonly { term: string; plain: string }[]> = { en: COPY.glossary };
