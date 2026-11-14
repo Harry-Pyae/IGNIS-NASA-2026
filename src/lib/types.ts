@@ -485,11 +485,18 @@ export const ExtractResponseSchema = z.object({
 
 export const CurateWriteRequestSchema = z.discriminatedUnion('action', [
   /** Create (no id) or update (id) a DRAFT. Saving a published card un-publishes it until re-verified. */
-  z.object({ action: z.literal('save_draft'), id: z.uuid().optional(), record: CurateRecordSchema }),
+  z.object({
+    action: z.literal('save_draft'),
+    id: z.uuid().optional(),
+    /** Round 8 · A2: the `updated_at` the curator last read. Required with `id` (compare-and-set). */
+    expected_updated_at: z.string().min(1).optional(),
+    record: CurateRecordSchema,
+  }),
   /** Verify & publish: the named human reviewer takes responsibility. */
   z.object({
     action: z.literal('publish'),
     id: z.uuid().optional(),
+    expected_updated_at: z.string().min(1).optional(),
     record: CurateRecordSchema,
     verified_by: z.string().trim().min(1),
   }),
@@ -503,6 +510,7 @@ export const ApiErrorCodeSchema = z.enum([
   'invalid_request',
   'ineligible_evidence',
   'duplicate_experiment',
+  'edit_conflict',
   'unauthorized',
   'not_found',
   'rate_limited',
