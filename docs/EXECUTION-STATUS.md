@@ -54,7 +54,8 @@ core works with English, text cards and the evidence-only narration fallback.
 |---|---|---|---|
 | Retrieval, cards, map, Brief, export | Source links as recorded, map populations + outcome shapes, axes from the shared GRID, interpretation limits (`prompts-v5`), catalog-unavailable retry | 0 verified, 3 drafts | Empty states verified live; real-card acceptance = step c |
 | Guided mission | Gate: named reviewer, preset with a material, ≥3 distinct verified solid IDs, all in the preset's current top 5 | `MISSION_CASE = null` | Gate tests; real mission = step e |
-| Duplicate protection | `409 duplicate_experiment` live; migration 0004 not yet applied | — | 16/16 disposable DB tests; apply = step 0 |
+| Duplicate protection | `409 duplicate_experiment` live; migration 0004 applied 2026-11-14 | — | 16/16 disposable DB tests |
+| Dataset provenance | 0005 applied 2026-11-14; `/curate` fields + export; card line pending Coder B | Fields empty until R1 records them | CI `db` round trip |
 | Card stills | Renderer, "Campaign context" label | No approved ledger rows | Step g |
 | Environment / research context | Signed-only renderers | Unsigned → hidden | R1 review |
 | Burmese | Draft import guard | Unreviewed → English only | CI guard |
