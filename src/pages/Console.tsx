@@ -229,11 +229,14 @@ export function Console() {
     && catalog.revision !== catalogSummary.stats.revision;
   const sourceMaterials = useMemo(() => experiments.map(({ domain, fuel_material, material_class }) => ({ domain, fuel_material, material_class })), [experiments]);
   const activePreset = SCENARIO_PRESETS.find((preset) => preset.id === presetId);
-  const material = materialChoice
+  // Memoized: `draft` must keep its identity across renders, or `confirmed === draft` (the "View ranked
+  // experiments" state, B2) is never true and the action re-confirms instead of revisiting the results.
+  const material = useMemo(() => materialChoice
     ? pickMaterial(scenario.fuel_material_raw, materialChoice, sourceMaterials)
     : activePreset?.material && scenario.fuel_material_raw === activePreset.material.fuel_material
       ? presetScenario(activePreset, sourceMaterials).material
-      : resolveMaterial(scenario.fuel_material_raw, sourceMaterials);
+      : resolveMaterial(scenario.fuel_material_raw, sourceMaterials),
+  [activePreset, materialChoice, scenario.fuel_material_raw, sourceMaterials]);
   const draft = useMemo<ResolvedScenario>(() => ({
     domain: scenario.domain,
     material,
