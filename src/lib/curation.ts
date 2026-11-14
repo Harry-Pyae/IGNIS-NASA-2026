@@ -100,13 +100,23 @@ export function valuesToRecord(v: FormValues): { record: CurateRecord } | { erro
 }
 
 /** The card the form is currently bound to (null = a new, unsaved card). */
-export type Editing = { id: string; status: 'draft' | 'published' } | null;
+/** The card being edited and the version (`updated_at`) it was read at — sent back as `expected_updated_at`. */
+export type Editing = { id: string; status: 'draft' | 'published'; updated_at: string } | null;
 
 /** /api/curate-write body. The ONLY place a card id enters a write: from the form's current binding. */
 export function writeBody(record: CurateRecord, editing: Editing, publish: boolean, verifiedBy: string) {
+  const base = { id: editing?.id, expected_updated_at: editing?.updated_at, record };
   return publish
-    ? { action: 'publish' as const, id: editing?.id, record, verified_by: verifiedBy.trim() }
-    : { action: 'save_draft' as const, id: editing?.id, record };
+    ? { action: 'publish' as const, ...base, verified_by: verifiedBy.trim() }
+    : { action: 'save_draft' as const, ...base };
+}
+
+/** A2 conflict view: the form fields whose value differs between my unsaved edit and the server's current version. */
+export function changedFields(mine: FormValues, current: Experiment): { field: string; mine: string; current: string }[] {
+  const theirs = recordToValues(current);
+  return Object.keys(FIELD_KINDS)
+    .filter((field) => (mine[field] ?? '').trim() !== (theirs[field] ?? '').trim())
+    .map((field) => ({ field, mine: mine[field] ?? '', current: theirs[field] ?? '' }));
 }
 
 /**
@@ -127,3 +137,39 @@ export function createFormSessions() {
     },
   };
 }
+
+/**
+ * Round 8 (B6, curate side — Coder A): a per-tab draft of the curate form, so a refresh or a route-away doesn't lose
+ * work. ONLY record form fields travel: never the curator secret, the "Verified by" signature, extraction quotes or
+ * any generated claim. A restored edit keeps its version, so a card changed meanwhile surfaces as an A2 conflict.
+ */
+export const CURATE_DRAFT_KEY = 'ignis-curate-draft-v1';
+export type CurateDraft = { v: 1; values: FormValues; editing: Editing; saved_at: string };
+
+const formOnly = (values: FormValues): FormValues =>
+  Object.fromEntries(Object.keys(FIELD_KINDS).filter((k) => typeof values[k] === 'string' && values[k] !== '').map((k) => [k, values[k]!]));
+
+/** null when there is nothing worth keeping (a blank new card). */
+export function serializeDraft(values: FormValues, editing: Editing, now = new Date()): string | null {
+  const fields = formOnly(values);
+  const meaningful = Object.keys(fields).some((k) => !(k in EMPTY_FORM && fields[k] === EMPTY_FORM[k]));
+  if (!meaningful && !editing) return null;
+  const draft: CurateDraft = { v: 1, values: fields, editing, saved_at: now.toISOString() };
+  return JSON.stringify(draft);
+}
+
+/** Validated read: anything malformed, from another version, or tampered is ignored (never half-restored). */
+export function parseDraft(raw: string | null): CurateDraft | null {
+  if (!raw) return null;
+  try {
+    const d = JSON.parse(raw) as Partial<CurateDraft>;
+    if (d?.v !== 1 || typeof d.saved_at !== 'string' || !d.values || typeof d.values !== 'object') return null;
+    const e = d.editing;
+    const editingOk = e === null || (typeof e === 'object' && typeof e.id === 'string' && typeof e.updated_at === 'string' && (e.status === 'draft' || e.status === 'published'));
+    if (!editingOk) return null;
+    return { v: 1, values: formOnly(d.values as FormValues), editing: e ?? null, saved_at: d.saved_at };
+  } catch {
+    return null;
+  }
+}
+

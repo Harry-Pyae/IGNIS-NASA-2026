@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -9,20 +9,17 @@
       content="IGNIS retrieves the closest verified NASA microgravity combustion experiments for a spacecraft fire scenario, explains what they observed, and marks where the current catalog has no matching evidence."
     />
     <meta name="author" content="Team AstroFlare" />
-    <meta name="theme-color" content="#FFF9F2" />
+    <meta name="theme-color" content="#0C0F16" />
     <link rel="canonical" href="https://ignis-nasa-2026.vercel.app/" />
-    <meta name="color-scheme" content="light dark" />
     <script>
       try {
-        const t = localStorage.getItem('ignis-theme') || 'light';
-        if (t === 'light') {
-          document.documentElement.classList.add('light');
-          document.documentElement.setAttribute('data-theme', 'light');
-        } else {
-          document.documentElement.classList.remove('light');
-          document.documentElement.setAttribute('data-theme', 'dark');
+        if (localStorage.getItem('ignis-theme') === 'light') {
+          document.documentElement.dataset.theme = 'light';
+          document.querySelector('meta[name="theme-color"]').content = '#FFEAD4';
         }
-      } catch {}
+      } catch {
+        // The document defaults to Dark when storage is unavailable.
+      }
     </script>
 
     <!-- Icons (generated from /art/logo-flame.webp) -->

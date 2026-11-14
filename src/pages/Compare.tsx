@@ -1,3 +1,5 @@
+import { t } from '../i18n';
+import { useEffect, useState } from 'react';
 import { CardComparison } from '../components/CardComparison';
 import { Button, Page, PageHeader, Panel, Select } from '../components/ui';
 import { useVerifiedCatalog } from '../lib/catalog';
@@ -6,49 +8,55 @@ import { compareSelection } from '../features/compare/compareSelection';
 export function Compare() {
   const { catalog, reload } = useVerifiedCatalog();
   const all = catalog.state === 'ready' ? catalog.experiments : [];
-  const { cards, missing } = compareSelection(window.location.search, all);
-  // One ID (from a detail page): keep it first and let the visitor pick the second from the verified catalog.
-  const others = all.filter((card) => card.verified_by && card.domain === 'solid_flammability' && card.id !== cards[0]?.id);
-  const choices = cards.length === 1 && others.length ? [cards[0]!, ...others] : cards;
+  const [search, setSearch] = useState(() => window.location.search);
+  useEffect(() => {
+    const sync = () => setSearch(window.location.search);
+    window.addEventListener('popstate', sync);
+    return () => window.removeEventListener('popstate', sync);
+  }, []);
+  const ids = (new URLSearchParams(search).get('ids') ?? '').split(',').map(id => id.trim());
+  const pair = [ids[0] ?? '', ids[1] ?? ''] as const;
+  const eligible = all.filter(card => card.verified_by && card.domain === 'solid_flammability');
+  const { cards, missing } = compareSelection(new URLSearchParams({ ids: pair.join(',') }).toString(), eligible);
+  function select(side: number, id: string) {
+    const next = [...pair];
+    next[side] = id;
+    const url = new URL(window.location.href);
+    if (next.some(Boolean)) url.searchParams.set('ids', next.join(','));
+    else url.searchParams.delete('ids');
+    if (url.search === search) return;
+    window.history.pushState(null, '', url);
+    setSearch(url.search);
+  }
   const settled = catalog.state === 'ready' || catalog.state === 'empty';
 
   return <Page>
-    <PageHeader eyebrow="Compare / verified catalog" title="Compare experiments" />
+    <PageHeader help="helpCompare" eyebrow={t('compareEyebrow')} title={t('compareTitle')} />
     <Panel>
-      {catalog.state === 'loading' && <p role="status">Loading verified experiments…</p>}
+      {catalog.state === 'loading' && <p role="status">{t('compareLoading')}</p>}
       {catalog.state === 'unavailable' && <div className="flex flex-wrap items-center gap-2">
-        <p role="status">The verified catalog is unavailable.</p>
-        <Button size="sm" onClick={reload}>Retry</Button>
+        <p role="status">{t('compareUnavailable')}</p>
+        <Button size="sm" onClick={reload}>{t('retry')}</Button>
       </div>}
       {settled && <>
-        <form className="mb-5 grid gap-3 sm:grid-cols-2" action="/compare" onSubmit={(event) => {
-          event.preventDefault();
-          const data = new FormData(event.currentTarget);
-          const ids = [data.get('first'), data.get('second')].filter(Boolean).join(',');
-          window.location.assign('/compare?ids=' + encodeURIComponent(ids));
-        }}>
-          {['first', 'second'].map((name, index) => <Select
-            key={window.location.search + name}
-            name={name}
-            label={index === 0 ? 'First experiment' : 'Second experiment'}
-            placeholder="Choose an experiment"
-            defaultValue={cards[index]?.id ?? ''}
-            options={(catalog.state === 'ready' ? catalog.experiments : [])
-              .filter((card) => card.verified_by && card.domain === 'solid_flammability')
-              .map((card) => ({ value: card.id, label: card.campaign + ' · ' + card.test_id }))}
-          />)}
-          <Button type="submit">Compare selected experiments</Button>
-        </form>
+        <div className="mb-4 grid gap-3 sm:grid-cols-2">
+          {pair.map((id, side) => {
+            const options = eligible.filter(card => card.id !== pair[1 - side] || card.id === id)
+              .map(card => ({ value: card.id, label: `${card.campaign} · ${card.test_id}` }));
+            if (id && !options.some(option => option.value === id)) options.unshift({ value: id, label: `${t('compareUnavailableOption')} · ${id}` });
+            return <Select key={side} label={`${t('compareExperiment')} ${side + 1}`} placeholder={t('compareChoose')}
+              value={id} options={options} onChange={event => select(side, event.target.value)} />;
+          })}
+        </div>
         {missing.length > 0 && <div role="status">
-          <p>These IDs are unavailable for comparison in the current IGNIS catalog.</p>
+          <p>{t('compareMissing')}</p>
           <ul className="list-inside list-disc break-words">
             {missing.map((id) => <li key={id}>{id}</li>)}
           </ul>
         </div>}
-        {choices.length < 2 && <p>Select two distinct verified solid-material experiments to compare.</p>}
-        {choices.length >= 2 && <CardComparison cards={choices} standalone />}
+        {cards.length < 2 && <p>{t('compareDistinct')}</p>}
+        {cards.length >= 2 && <CardComparison cards={cards} standalone />}
       </>}
     </Panel>
-    <a className="mt-5 inline-block text-amber underline" href="/library">Browse evidence library</a>
   </Page>;
 }

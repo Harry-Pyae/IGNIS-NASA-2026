@@ -8,7 +8,7 @@
 import { createHash } from 'node:crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { serviceClient } from './db.js';
-import { apiError, clientIp } from './http.js';
+import { apiError, clientIp, requireCurator } from './http.js';
 
 /** Upper bound the limiter may add to a request before it gives up and lets it through. */
 const TIMEOUT_MS = 800;
@@ -40,4 +40,13 @@ export async function rateLimit(
     console.error(JSON.stringify({ event: 'rate_limit_fail_open', bucket, reason: 'timeout_or_network' }));
     return null;
   }
+}
+
+/**
+ * Curator-secret routes (curate-write, curate-cards, extract): one shared, stricter per-IP budget checked BEFORE
+ * the secret, so guessing is throttled as well as use. Same fail-open semantics as every other bucket.
+ */
+export const CURATOR_LIMIT_PER_MIN = 30;
+export async function curatorGate(req: Request): Promise<Response | null> {
+  return (await rateLimit(req, 'curator', CURATOR_LIMIT_PER_MIN)) ?? requireCurator(req);
 }

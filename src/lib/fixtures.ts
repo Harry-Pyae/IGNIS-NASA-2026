@@ -6,7 +6,7 @@
  * the engine's own tests own the exact scoring numbers. OWNER: Coder A.
  */
 import { COPY } from './copy.js';
-import type { Briefing, CoverageResult, Experiment, MatchResult, ParsedScenario, ResolvedScenario } from './types.js';
+import type { Briefing, ClaimCheckRequest, ClaimCheckResponse, CoverageResult, Experiment, MatchResult, ParsedScenario, ResolvedScenario } from './types.js';
 
 const base = {
   created_at: '2026-11-07T00:00:00Z',
@@ -289,3 +289,45 @@ export const AIRFLOW_PARSE_FIXTURES: readonly { text: string; scenario: ParsedSc
     },
   },
 ];
+
+/**
+ * Beat 2 · the 60-second case ("Check against source"): POST /api/check-claim request → response pairs for BASS GMT96-T7
+ * (SEED_CARDS[0]). tests/check-claim.test.ts re-derives every response with the real checkClaim(), so they can't drift.
+ * In production, send CASE_CARD_ID (the published GMT96-T7 card); its locator is the same paper (NTRS 20150008962, p.3).
+ */
+export const CASE_CARD_ID = 'ec0cf0b6-c415-4495-966f-0a0a3e7667d1';
+const gmt96t7 = SEED_CARDS[0]!;
+const caseBase = {
+  experiment_id: gmt96t7.id,
+  test_id: gmt96t7.test_id,
+  field: 'flow_cm_s',
+  quote: gmt96t7.key_observation_quote,
+  locator: {
+    source_title: gmt96t7.source_title,
+    source_url: gmt96t7.source_url,
+    ntrs_id: gmt96t7.ntrs_id,
+    page: 3,
+    figure: 'Figure 2',
+    table: gmt96t7.source_table,
+  },
+  validator_version: 'claims-v2',
+} as const;
+export const CLAIM_CHECK_FIXTURES: Record<'accepted' | 'tampered', { request: ClaimCheckRequest; response: ClaimCheckResponse }> = {
+  /** The true value: accepted with the verbatim quote and locator. */
+  accepted: {
+    request: { experiment_id: gmt96t7.id, field: 'flow_cm_s', value: 10 },
+    response: { ...caseBase, verdict: 'accepted', value: 10, unit: 'cm/s', text: 'BASS GMT96-T7: Airflow 10 cm/s.' },
+  },
+  /** The 12-vs-10 tamper: withheld, naming the field and what the card says. */
+  tampered: {
+    request: { experiment_id: gmt96t7.id, field: 'flow_cm_s', value: 12 },
+    response: {
+      ...caseBase,
+      verdict: 'withheld',
+      problem: 'ref_mismatch',
+      claimed: { value: 12, unit: 'cm/s' },
+      source: { value: 10, unit: 'cm/s' },
+      message: 'This claim is WITHHELD — the cited card says 10 cm/s (p.3).',
+    },
+  },
+};

@@ -32,7 +32,7 @@ export function Select({ label, options, placeholder, hideLabel, className, id, 
             </option>
           ))}
         </select>
-        <Icon name="chevron-down" size={16} className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-faint" />
+        <Icon name="chevron-down" size={16} className="select-chevron pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-faint" />
       </div>
     </div>
   );

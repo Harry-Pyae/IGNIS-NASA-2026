@@ -16,13 +16,14 @@ const date = (iso: string | null) =>
 export function ProvenancePill({ summary, retry }: { summary: CatalogSummary; retry?: () => void }) {
   const { locale } = useLocale();
   const failed = summary.state === 'unavailable' && summary.reason === 'error';
+  const disconnected = summary.state === 'unavailable' && summary.reason === 'not_configured';
   return (
     <span
-      className="console-label inline-flex min-w-0 items-center gap-2 rounded-full border border-border bg-panel/80 px-3 py-1.5 tracking-[0.08em] text-dim"
+      className="catalog-provenance console-label inline-flex min-w-0 items-center gap-2 rounded-full border border-border bg-panel/80 px-3 py-1.5 tracking-[0.08em] text-dim"
       aria-live="polite"
     >
-      <Icon name={failed ? 'withheld' : 'provenance'} size={14} className={failed ? 'text-warn' : 'text-amber'} />
-      <span key={catalogLine(summary, true, locale)} className="swap-in truncate sm:hidden">
+      <Icon name={failed ? 'withheld' : disconnected ? 'link-off' : 'provenance'} size={16} className={failed ? 'shrink-0 text-warn' : 'shrink-0 text-amber'} />
+      <span key={catalogLine(summary, true, locale)} className="swap-in min-w-0 leading-tight [overflow-wrap:anywhere] sm:hidden">
         {catalogLine(summary, true, locale)}
       </span>
       <span key={catalogLine(summary, false, locale)} className="swap-in hidden truncate sm:inline">
@@ -65,7 +66,7 @@ export function CatalogBlock({ summary, retry }: { summary: CatalogSummary; retr
           <h2 id="catalog-title" className="display text-lit mt-3 text-[clamp(26px,3vw,34px)] leading-[1.1]">
             {isMy ? 'အတည်ပြုထားသော NASA စမ်းသပ်ချက်များသာ။' : 'Verified NASA experiments, nothing else.'}
           </h2>
-          <p className="mt-2 max-w-xl text-[15px] text-dim">
+          <p className="mt-2 max-w-3xl text-[15px] text-dim">
             {isMy
               ? 'အမည်ဖော်ပြထားသော စိစစ်သူက အချက်တိုင်းကို NASA မူရင်းရင်းမြစ်နှင့် တိုက်စစ်ပြီးမှသာ ကတ်တစ်ခုကို လူထုထံ ထုတ်ပြန်သည်။'
               : 'A card becomes public only after a named curator checks every field against its NASA source.'}
@@ -75,7 +76,7 @@ export function CatalogBlock({ summary, retry }: { summary: CatalogSummary; retr
           // A status line, not a pill: it wraps cleanly at 390px and reads as state, not a button.
           <p
             key={stats!.in_review}
-            className="swap-in flex max-w-full items-start gap-2.5 rounded-xl border border-warn/30 bg-warn/[0.07] px-3.5 py-2.5 text-[13px] leading-snug text-warn sm:max-w-xs"
+            className="swap-in flex max-w-full items-start gap-2.5 rounded-xl border border-warn/30 bg-warn/[0.07] px-3.5 py-2.5 text-[14px] leading-snug text-warn sm:max-w-xs"
           >
             <span aria-hidden className="mt-[5px] size-2 shrink-0 rounded-full bg-warn shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-warn)_18%,transparent)]" />
             <span>

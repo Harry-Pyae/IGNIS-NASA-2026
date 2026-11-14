@@ -7,10 +7,11 @@
 import { CurateWriteRequestSchema, ExperimentSchema } from '../src/lib/types.js';
 import { verifierNameProblem } from '../src/lib/verifier.js';
 import { serviceClient } from '../src/server/db.js';
-import { apiError, json, readJson, requireCurator, route } from '../src/server/http.js';
+import { apiError, json, readJson, route } from '../src/server/http.js';
+import { curatorGate } from '../src/server/rateLimit.js';
 
 export const POST = route(async (req) => {
-  const denied = requireCurator(req);
+  const denied = await curatorGate(req);
   if (denied) return denied;
   const { data, response } = await readJson(req, CurateWriteRequestSchema);
   if (response) return response;
@@ -28,14 +29,34 @@ export const POST = route(async (req) => {
     verified_by = data.verified_by.trim();
   }
 
+  // Round 8 · A2: an update must name the version it was based on, so a stale tab can't overwrite a newer edit.
+  if (data.id && !data.expected_updated_at)
+    return apiError(400, 'invalid_request', 'Reopen the card before saving: the request does not say which version it edits', [{ path: 'expected_updated_at', message: 'required with id' }]);
+
   const db = serviceClient();
   if (!db) return apiError(503, 'not_configured', 'Supabase service role is not configured on the server');
   const row = { ...record, verified_by, verified_at: verified_by ? new Date().toISOString() : null };
-  const query = data.id ? db.from('experiments').update(row).eq('id', data.id) : db.from('experiments').insert(row);
+  // Compare-and-set in ONE statement: it matches only if nobody saved the card since the curator read it.
+  const query = data.id
+    ? db.from('experiments').update(row).eq('id', data.id).eq('updated_at', data.expected_updated_at!)
+    : db.from('experiments').insert(row);
   const { data: saved, error } = await query.select('*').maybeSingle();
   if (error?.code === '23505')
     return apiError(409, 'duplicate_experiment', 'This campaign and test ID already exist. Reopen the existing card and reconcile its sources; do not publish the same run twice.');
   if (error) return apiError(502, 'db_error', `Save failed: ${error.message}`);
+  if (!saved && data.id) {
+    // Nothing matched: either the card is gone, or it changed since it was read. Never overwrite; hand back the current version.
+    const { data: current, error: readError } = await db.from('experiments').select('*').eq('id', data.id).maybeSingle();
+    if (readError) return apiError(502, 'db_error', `Save failed: ${readError.message}`);
+    if (!current) return apiError(404, 'not_found', 'No card with that id');
+    return json({
+      error: {
+        code: 'edit_conflict',
+        message: 'This card was saved by someone else after you opened it. Nothing was overwritten: compare, then choose a version.',
+        current: ExperimentSchema.parse(current),
+      },
+    }, 409);
+  }
   if (!saved) return apiError(404, 'not_found', 'No card with that id');
   return json({ experiment: ExperimentSchema.parse(saved) }, data.id ? 200 : 201);
 });

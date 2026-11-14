@@ -4,7 +4,7 @@ import type { TranslationKey } from './index';
  * Reviewed Burmese (MY) translations for IGNIS UI and scientific terms.
  * Complies with R3 native and scientific terminology guidelines.
  */
-export const BURMESE: Record<TranslationKey, string> = {
+export const BURMESE: Partial<Record<TranslationKey, string>> = {
   missionScenario: 'မစ်ရှင် ဇာတ်လမ်းအခြေအနေ',
   evidenceMap: 'အထောက်အထားပြ မြေပုံ',
   matchPanel: 'ကိုက်ညီမှု ပြား',

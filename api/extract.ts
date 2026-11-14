@@ -1,12 +1,13 @@
 /** POST /api/extract — LLM Job C (§7.6). Curator-only. Returns a DRAFT; never writes. */
 import { sanitizeDraft } from '../src/lib/extract.js';
 import { ExtractDraftSchema, ExtractRequestSchema } from '../src/lib/types.js';
-import { json, llmUnavailable, readJson, requireCurator, route } from '../src/server/http.js';
+import { json, llmUnavailable, readJson, route } from '../src/server/http.js';
+import { curatorGate } from '../src/server/rateLimit.js';
 import { completeJson, LlmUnavailableError } from '../src/server/llm.js';
 import { EXTRACT_SYSTEM } from '../src/server/prompts.js';
 
 export const POST = route(async (req) => {
-  const denied = requireCurator(req);
+  const denied = await curatorGate(req);
   if (denied) return denied;
   const { data, response } = await readJson(req, ExtractRequestSchema);
   if (response) return response;

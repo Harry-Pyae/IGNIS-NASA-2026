@@ -43,6 +43,14 @@ describe('console code-split loader', () => {
     expect(state.intersect).toBeNull(); // observer disconnected: it can't mount twice
   });
 
+  it('a malformed fragment (/#%) leaves the homepage intact instead of throwing', () => {
+    for (const hash of ['#%', '#%E0%A4%A', '#s3%']) {
+      const calls = { mount: 0 };
+      expect(() => watchConsole(slot, { prefetch: () => {}, mount: () => calls.mount++ }, fakeEnv(hash).env)).not.toThrow();
+      expect(calls.mount).toBe(0); // not a console anchor: the landing renders as usual
+    }
+  });
+
   it('deep links: a console hash or scrollToId request mounts immediately and leaves the anchor to scroll to', () => {
     const mounted: string[] = [];
     watchConsole(slot, { prefetch: () => {}, mount: () => mounted.push('hash') }, fakeEnv('#s3').env);

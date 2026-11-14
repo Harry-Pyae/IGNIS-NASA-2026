@@ -17,13 +17,21 @@ export interface MissionCase {
   experiment_ids: string[];
   /** Full name of the person who reviewed the case and its captions (null until then). */
   reviewed_by: string | null;
+  /**
+   * Round 8 · A6: the version (`updated_at`) of each selected card AS REVIEWED. A later correction to any of them
+   * changes its version and closes the mission until it is re-reviewed; unrelated catalog changes don't.
+   */
+  reviewed_versions: Record<string, string>;
 }
 
 /**
  * No case yet: R1/R3 choose it from the verified catalog in the event window, never scripted ahead of it.
  * To enable, replace null with the signed handoff from docs/catalog-coverage.md:
- *   { preset_id: '<SCENARIO_PRESETS id with a material>', experiment_ids: ['<uuid>', '<uuid>', '<uuid>'], reviewed_by: '<reviewer full name>' }
- * The gate opens only if every ID is verified, solid, distinct (≥3) and among that preset's current top-5 matches.
+ *   { preset_id: '<SCENARIO_PRESETS id with a material>', experiment_ids: ['<uuid>', '<uuid>', '<uuid>'],
+ *     reviewed_by: '<reviewer full name>', reviewed_versions: { '<uuid>': '<that card's updated_at>', ... } }
+ * (copy each card's updated_at from /api/export at the moment of review).
+ * The gate opens only if every ID is verified, solid, distinct (≥3), among that preset's current top-5 matches,
+ * and still at the version that was reviewed.
  */
 export const MISSION_CASE: MissionCase | null = null;
 
@@ -31,7 +39,7 @@ export type MissionEntry = { state: 'available'; case: MissionCase } | { state: 
 
 export function missionEntry(catalog: readonly Experiment[], c: MissionCase | null = MISSION_CASE): MissionEntry {
   const solid = catalog.filter((e) => e.verified_by != null && e.domain === 'solid_flammability');
-  const verified = new Set(solid.map((e) => e.id));
+  const versions = new Map(solid.map((e) => [e.id, e.updated_at]));
   const preset = SCENARIO_PRESETS.find((p) => p.id === c?.preset_id);
   // The mission walks the preset's own deterministic top matches, so the reviewed IDs must be among them
   // (a resolved preset; a later publication that displaces a reviewed card closes the mission until re-review).
@@ -39,6 +47,6 @@ export function missionEntry(catalog: readonly Experiment[], c: MissionCase | nu
   const ready =
     c != null && !verifierNameProblem(c.reviewed_by) && preset != null &&
     c.experiment_ids.length >= 3 && new Set(c.experiment_ids).size === c.experiment_ids.length &&
-    c.experiment_ids.every((id) => verified.has(id) && shown.has(id));
+    c.experiment_ids.every((id) => versions.has(id) && shown.has(id) && versions.get(id) === c.reviewed_versions?.[id]);
   return ready ? { state: 'available', case: c } : { state: 'unavailable', message: COPY.missionAvailability };
 }

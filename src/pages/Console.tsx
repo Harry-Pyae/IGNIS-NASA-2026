@@ -4,25 +4,30 @@
  * so the engine, Zod schemas and console UI stay off the first paint. Owner: Coder B (console sections).
  */
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type FormEvent } from 'react';
+import { z } from 'zod';
 import { flushSync } from 'react-dom';
-import { Badge, Button, Chip, CHIP_STATUS, CitationChip, Panel, PresetChip, SectionHeader, Slider, textLink } from '../components/ui';
+import { Badge, Button, Chip, CHIP_STATUS, CitationChip, Icon, Panel, PresetChip, SectionHeader, Slider, textLink } from '../components/ui';
 import { cx } from '../lib/cx';
 import { useCatalogRevisionWatch, useCatalogSummary, useVerifiedCatalog } from '../lib/catalog';
 import { COPY } from '../lib/copy';
 import { pickMaterial, presetScenario, resolveMaterial, SCENARIO_PRESETS } from '../engine/aliases';
 import { applyEnvironment, isElevatedO2, visibleEnvironmentPresets, type EnvironmentPreset } from '../engine/environments';
-import { briefingKey, currentBriefing, evidenceViews, investigationSummary, mapCoordinates, onMapAxes } from '../engine/views';
+import { briefingKey, currentBriefing, evidenceViews, investigationSummary, mapCoordinates, onMapAxes, presetAvailability, retrievalState } from '../engine/views';
 import { datasetCitation, evidenceLocator, evidenceSource } from '../lib/evidenceSource';
-import { FIELD_UNITS, PARAM_LABELS, ParseScenarioResponseSchema, SynthesizeResponseSchema, type Briefing, type ContinuousParam, type Experiment, type MatchResult, type ParsedScenario, type ResolvedScenario } from '../lib/types';
+import { FIELD_UNITS, PARAM_LABELS, ParsedScenarioSchema, ParseScenarioResponseSchema, SynthesizeResponseSchema, type Briefing, type ContinuousParam, type Experiment, type MatchResult, type ParsedScenario, type ResolvedScenario } from '../lib/types';
 import { gapGrid, gapRadar, GRID, type GapRadar as GapRadarData } from '../engine/gaps';
 import { whyMatched } from '../engine/match';
+import { MatchInspection, NoMatchInspection } from '../features/evidence/MatchInspection';
+import { EvidenceHandoff } from '../features/evidence/EvidenceHandoff';
 import { t } from '../i18n';
+import { RecoveryBoundary } from '../features/recovery/RecoveryBoundary';
 import { InfoHint } from '../features/hint/InfoHint';
 import { CardComparison } from '../components/CardComparison';
 import { CopyShareLink, ShareBanner } from '../features/share/ScenarioShare';
 import { useScenarioShare } from '../features/share/useScenarioShare';
 import { missionEntry } from '../engine/mission';
 import { contextSection } from '../lib/context-content';
+import { CONSOLE_DRAFT_KEY } from '../lib/consoleDraft';
 import { GUIDED_MISSION_REQUEST, takePendingMission } from './consoleLoader';
 
 function experimentLabel(experiment: Experiment): string {
@@ -55,6 +60,32 @@ const subscribeWide = (onChange: () => void) => {
 const useWide = () => useSyncExternalStore(subscribeWide, () => window.matchMedia(WIDE).matches, () => false);
 const reducedMotion = () => !window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
 
+function highlightResults(heading: HTMLElement) {
+  if (reducedMotion()) return;
+  heading.animate(
+    [{ backgroundColor: 'color-mix(in srgb, var(--color-action) 22%, transparent)' }, { backgroundColor: 'transparent' }],
+    { duration: 240, easing: 'ease-out' },
+  );
+}
+
+// Coder B's draft (Round 8). The key is shared with Home, which lands a returning visitor with a draft on the console.
+const draftKey = CONSOLE_DRAFT_KEY;
+const storedDraftSchema = z.object({
+  version: z.literal(1),
+  description: z.string(),
+  presetId: z.string().nullable(),
+  materialChoice: z.string().nullable(),
+  scenario: ParsedScenarioSchema,
+});
+function readDraft() {
+  try {
+    const parsed = storedDraftSchema.safeParse(JSON.parse(sessionStorage.getItem(draftKey) ?? 'null'));
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
+}
+
 export function Console() {
   const { catalog, reload } = useVerifiedCatalog();
   const { summary: catalogSummary } = useCatalogSummary();
@@ -65,9 +96,13 @@ export function Console() {
   const missionCase = mission.state === 'available' ? mission.case : null;
   const hasCatalogSnapshot = catalog.state === 'ready' || catalog.state === 'empty';
   const revision = hasCatalogSnapshot ? catalog.revision : 'pending';
+  const availability = hasCatalogSnapshot ? presetAvailability(experiments) : [];
   const dataStatus = hasCatalogSnapshot ? 'connected' : catalog.state === 'unavailable' ? 'unavailable' : 'loading';
-  const [presetId, setPresetId] = useState<string | null>(SCENARIO_PRESETS[0]?.id ?? null);
-  const [scenario, setScenario] = useState<ParsedScenario>(() => ({
+  const [savedDraft] = useState(readDraft);
+  const [shareVisit] = useState(() => new URLSearchParams(window.location.search).has('share'));
+  const initialDraft = shareVisit ? null : savedDraft;
+  const [presetId, setPresetId] = useState<string | null>(() => initialDraft ? initialDraft.presetId : SCENARIO_PRESETS[0]?.id ?? null);
+  const [scenario, setScenario] = useState<ParsedScenario>(() => initialDraft?.scenario ?? ({
     domain: 'solid_flammability',
     fuel_material_raw: SCENARIO_PRESETS[0]?.material?.fuel_material ?? null,
     fuel_form: SCENARIO_PRESETS[0]?.fuel_form ?? null,
@@ -76,17 +111,48 @@ export function Console() {
     flow_cm_s: SCENARIO_PRESETS[0]?.flow_cm_s ?? null,
     pressure_kpa: SCENARIO_PRESETS[0]?.pressure_kpa ?? null,
   }));
-  const [materialChoice, setMaterialChoice] = useState<string | null>(null);
+  const [materialChoice, setMaterialChoice] = useState<string | null>(initialDraft?.materialChoice ?? null);
   const [confirmed, setConfirmed] = useState<ResolvedScenario | null>(null);
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState(initialDraft?.description ?? '');
+  const [restoredDraft, setRestoredDraft] = useState(initialDraft !== null);
+  const skipDraftWrite = useRef(false);
+  useEffect(() => {
+    if (shareVisit || skipDraftWrite.current) {
+      skipDraftWrite.current = false;
+      return;
+    }
+    if (!description && !materialChoice && presetId === SCENARIO_PRESETS[0]?.id &&
+      scenario.fuel_material_raw === (SCENARIO_PRESETS[0]?.material?.fuel_material ?? null) &&
+      scenario.fuel_form === (SCENARIO_PRESETS[0]?.fuel_form ?? null) &&
+      scenario.o2_pct === (SCENARIO_PRESETS[0]?.o2_pct ?? null) &&
+      scenario.flow_cm_s === (SCENARIO_PRESETS[0]?.flow_cm_s ?? null) &&
+      scenario.thickness_mm === (SCENARIO_PRESETS[0]?.thickness_mm ?? null) &&
+      scenario.pressure_kpa === (SCENARIO_PRESETS[0]?.pressure_kpa ?? null)) {
+      try { sessionStorage.removeItem(draftKey); } catch { /* Storage may be blocked. */ }
+      return;
+    }
+    try {
+      sessionStorage.setItem(draftKey, JSON.stringify({ version: 1, description, presetId, materialChoice, scenario }));
+    } catch { /* The live form remains editable. */ }
+  }, [description, materialChoice, presetId, scenario, shareVisit]);
   const [parsing, setParsing] = useState(false);
+  // Round 8 · A5: a parse applies only if nothing changed since it was sent (edit, preset, slider, environment,
+  // material choice, share restore or a newer parse). Superseded requests are aborted and their result, error and
+  // pending state are all ignored.
+  const parseRequest = useRef<{ generation: number; abort: AbortController | null }>({ generation: 0, abort: null });
+  const invalidateParse = useCallback(() => {
+    parseRequest.current.abort?.abort();
+    parseRequest.current = { generation: parseRequest.current.generation + 1, abort: null };
+    setParsing(false);
+  }, []);
   const [message, setMessage] = useState('');
   const [guidedStep, setGuidedStep] = useState<number | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(() => new URLSearchParams(window.location.search).get('specimen'));
   const [inputsChanged, setInputsChanged] = useState(false);
   const [appliedEnvironmentId, setAppliedEnvironmentId] = useState<string | null>(null);
   const scenarioEditor = useRef<HTMLDetailsElement>(null);
   const share = useScenarioShare(catalog, ({ material, ...conditions }) => {
+    invalidateParse();
     const name = material.status === 'resolved' ? material.fuel_material : null;
     setScenario({ ...conditions, fuel_material_raw: name });
     setMaterialChoice(name);
@@ -109,6 +175,7 @@ export function Console() {
     if (!heading) return;
     heading.tabIndex = -1;
     heading.focus({ preventScroll: true });
+    highlightResults(heading);
     const target = document.getElementById('evidence-map') ?? heading.closest('section');
     target?.scrollIntoView({ behavior: reducedMotion() ? 'instant' : 'smooth', block: 'start' });
   }, []);
@@ -122,6 +189,7 @@ export function Console() {
     heading.tabIndex = -1;
     heading.focus({ preventScroll: true });
     const header = document.querySelector<HTMLElement>('.app-header')?.offsetHeight ?? 0;
+    highlightResults(heading);
     const plot = document.querySelector('#evidence-map svg') ?? map;
     const plotTop = plot.getBoundingClientRect().top + window.scrollY - header - 12;
     const matchesTop = matches.getBoundingClientRect().top + window.scrollY;
@@ -161,11 +229,14 @@ export function Console() {
     && catalog.revision !== catalogSummary.stats.revision;
   const sourceMaterials = useMemo(() => experiments.map(({ domain, fuel_material, material_class }) => ({ domain, fuel_material, material_class })), [experiments]);
   const activePreset = SCENARIO_PRESETS.find((preset) => preset.id === presetId);
-  const material = materialChoice
+  // Memoized: `draft` must keep its identity across renders, or `confirmed === draft` (the "View ranked
+  // experiments" state, B2) is never true and the action re-confirms instead of revisiting the results.
+  const material = useMemo(() => materialChoice
     ? pickMaterial(scenario.fuel_material_raw, materialChoice, sourceMaterials)
     : activePreset?.material && scenario.fuel_material_raw === activePreset.material.fuel_material
       ? presetScenario(activePreset, sourceMaterials).material
-      : resolveMaterial(scenario.fuel_material_raw, sourceMaterials);
+      : resolveMaterial(scenario.fuel_material_raw, sourceMaterials),
+  [activePreset, materialChoice, scenario.fuel_material_raw, sourceMaterials]);
   const draft = useMemo<ResolvedScenario>(() => ({
     domain: scenario.domain,
     material,
@@ -242,6 +313,7 @@ export function Console() {
     ? briefingStatus?.key === briefingRequest.key ? briefingStatus.state : 'waiting'
     : 'idle';
   const closestMatch = confirmed ? views?.top_k[0] ?? null : null;
+  const closestSource = closestMatch ? evidenceSource(closestMatch.experiment) : null;
   const outsideParams = views?.coverage?.params.filter((param) => param.state === 'outside_catalog_range') ?? [];
   const research = contextSection();
 
@@ -256,7 +328,27 @@ export function Console() {
     editor.querySelector('summary')?.focus();
   };
 
+  const retrievalLabel = material.status !== 'resolved' ? COPY.plain.retrieval.choose
+    : confirmed === draft && views ? COPY.plain.retrieval.view : COPY.plain.retrieval.find;
+  function retrieve() {
+    if (material.status !== 'resolved') {
+      focusScenarioEditor();
+      (scenarioEditor.current?.querySelector<HTMLElement>('[data-material-picker]')
+        ?? document.getElementById('scenario-material'))?.focus();
+      return;
+    }
+    if (confirmed === draft) {
+      if (dataStatus === 'unavailable') reload();
+      if (wide) showMatches(); else showMap();
+      return;
+    }
+    focusAfterConfirm.current = true;
+    setConfirmed(draft);
+    setMessage('');
+  }
+
   function editScenario(update: Partial<ParsedScenario>, materialEdited = false) {
+    invalidateParse();
     if (confirmed) setInputsChanged(true);
     setScenario((current) => ({ ...current, ...update }));
     if ('o2_pct' in update || 'pressure_kpa' in update) setAppliedEnvironmentId(null);
@@ -269,6 +361,7 @@ export function Console() {
   }
 
   function moveSlider(update: Partial<Pick<ParsedScenario, 'o2_pct' | 'flow_cm_s'>>) {
+    invalidateParse();
     const apply = () => {
       setScenario((current) => ({ ...current, ...update }));
       if ('o2_pct' in update) setAppliedEnvironmentId(null);
@@ -288,6 +381,7 @@ export function Console() {
   const activeEnvironment = ENVIRONMENTS.find((env) => env.id === appliedEnvironmentId && env.o2_pct === scenario.o2_pct && env.pressure_kpa === scenario.pressure_kpa) ?? null;
 
   function chooseEnvironment(env: EnvironmentPreset) {
+    invalidateParse();
     setAppliedEnvironmentId(env.id);
     setScenario((current) => applyEnvironment(current, env));
     setConfirmed((current) => current ? applyEnvironment(current, env) : null);
@@ -296,6 +390,7 @@ export function Console() {
   }
 
   const choosePreset = useCallback((id: string) => {
+    invalidateParse();
     const preset = SCENARIO_PRESETS.find((item) => item.id === id);
     if (!preset) return;
     const value = presetScenario(preset, sourceMaterials);
@@ -314,13 +409,13 @@ export function Console() {
       flow_cm_s: preset.flow_cm_s,
       pressure_kpa: value.pressure_kpa,
     });
-  }, [sourceMaterials]);
+  }, [invalidateParse, sourceMaterials]);
 
   const startMission = useCallback((presetId: string | null) => {
     if (!presetId || !missionCase || presetId !== missionCase.preset_id) return;
     choosePreset(presetId);
     setGuidedStep(0);
-  }, [choosePreset, missionCase]);
+  }, [choosePreset, missionCase, setGuidedStep]);
 
   useEffect(() => {
     const onMissionRequest = () => startMission(takePendingMission());
@@ -339,6 +434,11 @@ export function Console() {
 
   async function parseDescription(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    invalidateParse(); // a newer parse supersedes the previous one
+    const abort = new AbortController();
+    const generation = parseRequest.current.generation;
+    parseRequest.current.abort = abort;
+    const current = () => parseRequest.current.generation === generation;
     setParsing(true);
     setMessage('');
     setConfirmed(null);
@@ -347,8 +447,10 @@ export function Console() {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ text: description }),
+        signal: abort.signal,
       });
       const body: unknown = await response.json();
+      if (!current()) return;
       if (!response.ok) throw new Error('Scenario parsing is unavailable right now. You can still edit the fields below.');
       const result = ParseScenarioResponseSchema.safeParse(body);
       if (!result.success) throw new Error('The parser returned an invalid scenario. You can still edit the fields below.');
@@ -358,9 +460,13 @@ export function Console() {
       setMaterialChoice(null);
       setMessage(`Parsed with ${result.data.provider}. Review and edit these values before confirming.`);
     } catch (error) {
+      if (!current()) return; // superseded or aborted: its error belongs to an older form
       setMessage(error instanceof Error ? error.message : 'Could not parse that scenario. You can edit the fields below.');
     } finally {
-      setParsing(false);
+      if (current()) {
+        setParsing(false);
+        parseRequest.current.abort = null;
+      }
     }
   }
 
@@ -390,24 +496,92 @@ export function Console() {
         action={confirmed ? COPY.plain.viewEvidenceAction : COPY.plain.jumpToMap}
         onAction={showMap}
       />}
-      <div className="flex flex-col gap-6 xl:grid xl:grid-cols-[400px_minmax(0,1fr)] xl:items-start">
-      <Panel as="section" aria-labelledby="s1" className="reveal xl:sticky xl:top-[calc(var(--header-h,0px)+1rem)] xl:flex xl:max-h-[calc(100dvh-var(--header-h,0px)-2rem)] xl:flex-col">
-        <SectionHeader id="s1" step={t('describeStep')} title={t('missionScenario')} />
+      <div className="console-panels flex flex-col gap-6 xl:grid xl:grid-cols-[400px_minmax(0,1fr)] xl:items-start">
+      <RecoveryBoundary label={t('missionScenario')}><Panel as="section" aria-labelledby="s1" className="reveal self-start xl:sticky xl:top-[calc(var(--header-h,0px)+1rem)] xl:max-h-[calc(100dvh-var(--header-h,0px)-2rem)] xl:overflow-y-auto xl:overflow-x-hidden xl:scroll-py-4">
+        {restoredDraft && <div className="mb-3 flex flex-wrap items-center gap-2 text-sm" role="status">
+          <span>{COPY.plain.draft.restored}</span>
+          <Button size="sm" onClick={() => {
+            skipDraftWrite.current = true;
+            setRestoredDraft(false);
+            setDescription('');
+            const preset = SCENARIO_PRESETS[0];
+            if (preset) choosePreset(preset.id);
+            try { sessionStorage.removeItem(draftKey); } catch { /* Storage may be blocked. */ }
+          }}>{COPY.plain.draft.discard}</Button>
+        </div>}
+        {shareVisit && savedDraft && <Button size="sm" className="mb-3" onClick={() => {
+          const url = new URL(window.location.href);
+          url.searchParams.delete('share');
+          window.location.assign(url);
+        }}>{COPY.plain.draft.return}</Button>}
+        <SectionHeader help="helpScenario" id="s1" step={t('describeStep')} title={t('missionScenario')} />
         <MissionCaption step={guidedStep === 0 ? 0 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[0].caption)} />
-        <div className="grid gap-8 lg:grid-cols-2 xl:-mr-2 xl:min-h-0 xl:grid-cols-1 xl:gap-5 xl:overflow-y-auto xl:pr-2">
+        <div className="mb-5 grid gap-5">
+            <Slider label="O₂" describedBy="scenario-hint-o2" hint={<InputHint field="o2" label="O₂" />} unit="%" min={14} max={30} value={scenario.o2_pct} onChange={(value) => moveSlider({ o2_pct: value })} onClear={() => moveSlider({ o2_pct: null })} allowUnspecified unspecifiedValue={21} unspecifiedLabel={t('notSpecified')} setValueLabel={t('setOxygen')} clearValueLabel={t('clearOxygen')} />
+            <Slider label="Airflow" describedBy="scenario-hint-airflow" hint={<InputHint field="airflow" label="Airflow" />} unit="cm/s" min={0} max={30} value={scenario.flow_cm_s} onChange={(value) => moveSlider({ flow_cm_s: value })} onClear={() => moveSlider({ flow_cm_s: null })} allowUnspecified unspecifiedLabel={t('notSpecified')} setValueLabel={t('setAirflow')} clearValueLabel={t('clearAirflow')} />
+            <p className="text-[14px] text-dim">{COPY.sliderCaption}</p>
+        </div>
+        <div className="mb-4 flex flex-col gap-2 border-b border-border pb-3">
+            <p className="text-sm text-dim break-words">
+              {scenario.fuel_material_raw?.replaceAll('_', ' ') ?? t('selectMaterial')}
+              {' · '}{COPY.summary.o2(scenario.o2_pct)} · {COPY.summary.flow(scenario.flow_cm_s)}
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button id="confirm-scenario" variant="primary" onClick={retrieve}>{retrievalLabel}</Button>
+              {(() => {
+                // A3: a count only after a settled read; loading and failure say so instead of "0".
+                const retrieval = retrievalState(dataStatus, confirmed, views);
+                if (retrieval.state === 'idle') return null;
+                if (retrieval.state === 'settled') return <span role="status" className="text-sm text-success">{t('confirmed')} · {retrieval.matches} {t('confirmedMatches')}</span>;
+                return <span role="status" className="text-sm text-dim">{t('confirmed')} · {t(retrieval.state === 'loading' ? 'waitingCatalog' : 'matchCatalogUnavailable')}</span>;
+              })()}
+            </div>
+            {closestMatch && <div className="rounded-xl border border-border bg-bg/45 p-3">
+              <p className="text-xs text-dim">{t('closestMatch')}</p>
+              <a className={`${textLink} text-base font-semibold`} href={`/library/${closestMatch.experiment.id}`}>{experimentLabel(closestMatch.experiment)}</a>
+              {closestSource && <a className={`${textLink} ml-3 text-sm`} href={closestSource.url} target="_blank" rel="noreferrer">{t('source')}</a>}
+            </div>}
+            {message && <p role="status" className="text-sm text-dim">{message}</p>}
+        </div>
+        <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-1">
           <div className="flex min-w-0 flex-col gap-4">
             <div>
               <p className="console-label mb-3 text-dim">{t('scenarioPresetsStart')}</p>
-              <div className="flex flex-wrap gap-2" role="group" aria-label={t('scenarioPresets')}>
-                {SCENARIO_PRESETS.map((preset) => (
-                  <PresetChip key={preset.id} active={preset.id === presetId} onClick={() => choosePreset(preset.id)}>{preset.label}</PresetChip>
-                ))}
+              <div className="grid grid-cols-2 gap-2" role="group" aria-label={t('scenarioPresets')}>
+                {SCENARIO_PRESETS.map(preset => {
+                  const evidence = availability.find(item => item.preset_id === preset.id);
+                  const documented = evidence?.state === 'ready' && evidence.eligible > 0 ? evidence : null;
+                  const statusId = `preset-status-${preset.id}`;
+                  return <div key={preset.id} className="min-w-0 space-y-1 rounded-xl border border-border/70 bg-bg/35 p-2">
+                    <PresetChip active={preset.id === presetId} onClick={() => choosePreset(preset.id)}
+                      aria-describedby={statusId}>{preset.label}</PresetChip>
+                    <p id={statusId} className="px-1 text-xs leading-snug text-dim">
+                      {documented ? (presetId === preset.id ? COPY.plain.presets.counts(documented.eligible, documented.exact, documented.class_only) : COPY.plain.presets.runCount(documented.eligible))
+                        : evidence?.state === 'needs_material' ? COPY.plain.presets.needsMaterial
+                        : evidence?.state === 'ready' ? COPY.plain.presets.noRuns
+                        : t(dataStatus === 'loading' ? 'waitingCatalog' : 'matchCatalogUnavailable')}
+                    </p>
+                    {documented && presetId === preset.id && <p className="px-1 text-xs leading-snug text-dim">{COPY.plain.presets.map(documented.visible, documented.off_axis, documented.missing_coordinates)}</p>}
+                  </div>;
+                })}
                 <PresetChip active={presetId === null} onClick={() => {
                   setPresetId(null);
                   editScenario({ fuel_material_raw: null, fuel_form: null, thickness_mm: null, o2_pct: null, flow_cm_s: null, pressure_kpa: null }, true);
                 }}>{t('custom')}</PresetChip>
               </div>
+              {availability.some(item => item.state === 'needs_material' || item.eligible === 0) &&
+                <a href="/library" className={`mt-2 inline-block text-xs ${textLink}`}>{COPY.plain.presets.library}</a>}
+
             </div>
+            {availability.some(item => item.state === 'ready' && item.eligible > 0) && (
+              <Button size="sm" className="self-start" onClick={() => {
+                const documented = availability.find(item => item.preset_id === presetId && item.state === 'ready' && item.eligible > 0)
+                  ?? availability.find(item => item.state === 'ready' && item.eligible > 0);
+                if (!documented) return;
+                choosePreset(documented.preset_id);
+                document.getElementById('confirm-scenario')?.focus();
+              }}>{COPY.plain.presets.explore}</Button>
+            )}
             <details ref={scenarioEditor} className="rounded-xl border border-border bg-bg/35 p-3">
               <summary className="cursor-pointer console-label text-dim">{t('editScenario')} · {scenario.fuel_material_raw ?? t('selectMaterial')}</summary>
               <div className="mt-4 flex flex-col gap-4">
@@ -438,7 +612,7 @@ export function Console() {
                   <div className="flex flex-col gap-2 rounded-xl border border-warn/30 bg-warn/[0.05] p-3 text-sm text-dim">
                     <p>{material.reason === 'ambiguous' ? t('chooseAmbiguousMaterial') : t('chooseCatalogMaterial')}</p>
                     {material.candidates.length > 0 ? (
-                      <select value="" onChange={(event) => { setMaterialChoice(event.target.value); setConfirmed(null); }} className="h-10 rounded-xl border border-border bg-bg px-3 text-sm text-text">
+                      <select data-material-picker value="" onChange={(event) => { invalidateParse(); setMaterialChoice(event.target.value); setConfirmed(null); }} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text">
                         <option value="" disabled>{t('selectMaterial')}</option>
                         {material.candidates.map((candidate) => <option key={candidate} value={candidate}>{candidate.replace(/_/g, ' ')}</option>)}
                       </select>
@@ -475,28 +649,24 @@ export function Console() {
                     <PresetChip key={env.id} active={activeEnvironment?.id === env.id} onClick={() => chooseEnvironment(env)}>{env.label}</PresetChip>
                   ))}
                 </div>
-                <p className="text-[13px] text-dim">{COPY.environmentCaption}</p>
+                <p className="text-[14px] text-dim">{COPY.environmentCaption}</p>
                 {activeEnvironment && (
-                  <p className="text-[13px] text-text">
+                  <p className="text-[14px] text-text">
                     {COPY.environmentExplanation} {activeEnvironment.context}{' '}
                     {activeEnvironment.verification.source_url && <a href={activeEnvironment.verification.source_url} target="_blank" rel="noreferrer" className={textLink}>{t('source')}</a>}
                   </p>
                 )}
-                {activeEnvironment && <p role="status" className="text-[13px] text-dim">{COPY.environmentApplied}</p>}
-                {activeEnvironment && <p className="text-[13px] text-dim">{COPY.environmentLimit}</p>}
-                {activeEnvironment && isElevatedO2(activeEnvironment) && <p className="text-[13px] text-warn">{COPY.elevatedO2(activeEnvironment.o2_pct)}</p>}
+                {activeEnvironment && <p role="status" className="text-[14px] text-dim">{COPY.environmentApplied}</p>}
+                {activeEnvironment && <p className="text-[14px] text-dim">{COPY.environmentLimit}</p>}
+                {activeEnvironment && isElevatedO2(activeEnvironment) && <p className="text-[14px] text-warn">{COPY.elevatedO2(activeEnvironment.o2_pct)}</p>}
               </div>
             )}
-            <Slider label="O₂" describedBy="scenario-hint-o2" hint={<InputHint field="o2" label="O₂" />} unit="%" min={14} max={30} value={scenario.o2_pct} onChange={(value) => moveSlider({ o2_pct: value })} onClear={() => moveSlider({ o2_pct: null })} allowUnspecified unspecifiedValue={21} unspecifiedLabel={t('notSpecified')} setValueLabel={t('setOxygen')} clearValueLabel={t('clearOxygen')} />
-            <Slider label="Airflow" describedBy="scenario-hint-airflow" hint={<InputHint field="airflow" label="Airflow" />} unit="cm/s" min={0} max={30} value={scenario.flow_cm_s} onChange={(value) => moveSlider({ flow_cm_s: value })} onClear={() => moveSlider({ flow_cm_s: null })} allowUnspecified unspecifiedLabel={t('notSpecified')} setValueLabel={t('setAirflow')} clearValueLabel={t('clearAirflow')} />
-            <p className="text-[13px] text-dim">{COPY.sliderCaption}</p>
-            {evidenceUpdated && !mapInView && confirmed && <p role="status" className="flex flex-wrap items-center gap-x-2 self-start rounded-full border border-raised bg-bg/60 px-3 py-1 text-[13px] text-text">
+            {evidenceUpdated && !mapInView && confirmed && <p role="status" className="flex flex-wrap items-center gap-x-2 self-start rounded-full border border-raised bg-bg/60 px-3 py-1 text-[14px] text-text">
               {COPY.plain.evidenceUpdated} · <Button variant="tertiary" onClick={showMap}>{COPY.plain.viewEvidence}</Button>
             </p>}
             <div className="rounded-xl border border-border bg-bg/45 p-3" aria-live="polite">
               {confirmed && closestMatch ? (
                 <>
-                  <p className="console-label mb-2 text-dim">{t('closestMatch')}: {experimentLabel(closestMatch.experiment)}</p>
                   <p className="mb-2 text-sm text-text">{whyMatched(closestMatch).summary}</p>
                   <div className="flex flex-wrap gap-2">
                     {whyMatched(closestMatch).lines.map((line) => {
@@ -506,7 +676,7 @@ export function Console() {
                   </div>
                 </>
               ) : confirmed ? (
-                <p className="text-sm text-dim">{dataStatus === 'unavailable' ? t('noMatchCatalog') : t('noEligibleMatchesForScenario')}</p>
+                <p className="text-sm text-dim">{t(dataStatus === 'loading' ? 'waitingCatalog' : dataStatus === 'unavailable' ? 'noMatchCatalog' : 'noEligibleMatchesForScenario')}</p>
               ) : (
                 <p className="text-sm text-dim">{t('confirmForClosestMatch')}</p>
               )}
@@ -518,32 +688,14 @@ export function Console() {
             </div>
           </div>
         </div>
-        <div className="mt-5 flex flex-col gap-2 xl:border-t xl:border-border xl:pt-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <Button id="confirm-scenario" variant="primary" disabled={material.status !== 'resolved'} aria-describedby={material.status !== 'resolved' ? 'confirm-blocked' : undefined} onClick={() => {
-                if (confirmed === draft) {
-                  if (wide) showMatches(); else showMap();
-                  return;
-                }
-                focusAfterConfirm.current = true;
-                setConfirmed(draft);
-                setMessage(catalog.state === 'unavailable' ? t('confirmedCatalogUnavailable') : t('confirmedCatalog'));
-              }}>
-                {t('confirmScenario')}
-              </Button>
-              {material.status !== 'resolved' && <p id="confirm-blocked" className="text-sm text-dim">{COPY.materialUnresolved}</p>}
-              {confirmed && <span role="status" className="text-sm text-success">{t('confirmed')} · {views?.top_k.length ?? 0} {t('confirmedMatches')}</span>}
-            </div>
-            {message && <p role="status" className="text-sm text-dim">{message}</p>}
-        </div>
-      </Panel>
+      </Panel></RecoveryBoundary>
 
       <div className="flex min-w-0 flex-col gap-6">
 
       {inputsChanged && !confirmed && <p role="status" className="rounded-lg border border-warn/35 p-3 text-sm text-warn">{COPY.staleScenario}</p>}
-      <Panel as="section" aria-labelledby="s2" className="reveal scroll-mt-[calc(var(--header-h,0px)+1rem)]">
+      <RecoveryBoundary label={t('evidenceMap')}><Panel as="section" aria-labelledby="s2" className="reveal scroll-mt-[calc(var(--header-h,0px)+1rem)]">
         <SectionHeader
-          id="s2"
+          help="helpMap" id="s2"
           step={t('retrieveStep')}
           title={t('evidenceMap')}
         />
@@ -557,26 +709,33 @@ export function Console() {
         {catalogRefreshing && <p role="status" className="mb-4 text-sm text-dim">{COPY.plain.catalogRefreshing}</p>}
         {dataStatus === 'unavailable' && <Button size="sm" className="mb-4" onClick={reload}>{t('retry')}</Button>}
         <EvidenceMap key={revision} experiments={views?.eligible ?? experiments} scenario={confirmed} matches={views?.top_k ?? []} status={dataStatus} selectedId={selectedId} onSelect={setSelectedId} />
-      </Panel>
+      </Panel></RecoveryBoundary>
 
       <div className="grid gap-6">
         {confirmed ? <>
-        <Panel as="section" aria-labelledby="s3" className="reveal">
-        <SectionHeader id="s3" step={t('matchesStep')} title={t('matchPanel')} />
+        <RecoveryBoundary label={t('matchPanel')}><Panel as="section" aria-labelledby="s3" className="reveal">
+        <SectionHeader help="helpMatches" id="s3" step={t('matchesStep')} title={t('matchPanel')} />
         <ShareBanner share={share} />
         {confirmed && views && <CopyShareLink
           scenario={confirmed}
           revision={views.revision}
           rankedIds={views.top_k.map(({ experiment }) => experiment.id)}
+          versions={Object.fromEntries(views.top_k.map(({ experiment }) => [experiment.id, experiment.updated_at]))}
         />}
           <MissionCaption step={guidedStep === 2 ? 2 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[2].caption)} />
-          <MatchPanel matches={views?.top_k ?? []} status={dataStatus} confirmed={confirmed !== null} selectedId={selectedId} onSelect={setSelectedId} />
+          <MatchPanel matches={views?.top_k ?? []} status={dataStatus} confirmed={confirmed !== null} scenario={confirmed} selectedId={selectedId} onSelect={setSelectedId} />
+          {confirmed && views && dataStatus === 'connected' && views.top_k.length === 0 &&
+            <NoMatchInspection scenario={confirmed} cards={experiments} />}
           {confirmed && views && <CardComparison cards={views.top_k.map(m => m.experiment)}/>}
-        </Panel>
-        <Panel as="section" aria-labelledby="s4" className="mission-brief motion-still">
-          <SectionHeader id="s4" step={t('briefStep')} title={t('missionBrief')} />
+        </Panel></RecoveryBoundary>
+        <RecoveryBoundary label={t('missionBrief')}><Panel as="section" aria-labelledby="s4" className="mission-brief motion-still">
+          <SectionHeader help="helpBrief" id="s4" step={t('briefStep')} title={t('missionBrief')} />
           <MissionCaption step={guidedStep === 3 ? 3 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[3].caption)} />
-          {confirmed && <p className="brief-print-only">IGNIS · {confirmed.material.status === 'resolved' ? confirmed.material.fuel_material : COPY.materialUnresolved} · {COPY.summary.o2(confirmed.o2_pct)} · {COPY.summary.flow(confirmed.flow_cm_s)} · Catalog revision: {revision}</p>}
+          {confirmed && views && dataStatus === 'connected' && <>
+            <Button className="mb-3 print:hidden" onClick={() => window.print()}>{t('handoffPrint')}</Button>
+            <EvidenceHandoff scenario={confirmed} revision={views.revision} matches={views.top_k}
+              briefing={activeBriefing} status={activeBriefStatus} />
+          </>}
           <MissionBrief
             briefing={activeBriefing}
             status={activeBriefStatus}
@@ -584,38 +743,32 @@ export function Console() {
             matches={views?.top_k ?? []}
             onCitation={(id) => { setSelectedId(id); focusExperiment(id); }}
           />
-        </Panel>
+        </Panel></RecoveryBoundary>
         </> : <>
-        <Panel as="section" aria-labelledby="s3" className="!py-4">
+        <RecoveryBoundary label={t('matchPanel')}><Panel as="section" aria-labelledby="s3" className="!py-4">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-            <SectionHeader id="s3" step={t('matchesStep')} title={t('matchPanel')} className="!mb-0 !border-0 !pb-0" />
+            <SectionHeader help="helpMatches" id="s3" step={t('matchesStep')} title={t('matchPanel')} className="!mb-0 !border-0 !pb-0" />
             <p className="min-w-0 flex-1 text-sm text-dim">{COPY.plain.collapsed.matches}</p>
-            {missionCase
-              ? <Button variant="primary" onClick={() => startMission(missionCase.preset_id)}>{COPY.landingCta.mission}</Button>
-              : <Button onClick={() => {
-                const confirm = document.getElementById('confirm-scenario');
-                confirm?.scrollIntoView({ behavior: reducedMotion() ? 'instant' : 'smooth', block: 'center' });
-                confirm?.focus({ preventScroll: true });
-              }}>{COPY.plain.collapsed.matchesAction}</Button>}
+            <Button onClick={retrieve}>{retrievalLabel}</Button>
           </div>
           <ShareBanner share={share} />
           <MissionCaption step={guidedStep === 2 ? 2 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[2].caption)} />
-        </Panel>
-        <Panel as="section" aria-labelledby="s4" className="mission-brief motion-still !py-4">
+        </Panel></RecoveryBoundary>
+        <RecoveryBoundary label={t('missionBrief')}><Panel as="section" aria-labelledby="s4" className="mission-brief motion-still !py-4">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-            <SectionHeader id="s4" step={t('briefStep')} title={t('missionBrief')} className="!mb-0 !border-0 !pb-0" />
+            <SectionHeader help="helpBrief" id="s4" step={t('briefStep')} title={t('missionBrief')} className="!mb-0 !border-0 !pb-0" />
             <p className="min-w-0 flex-1 text-sm text-dim">{COPY.plain.collapsed.brief}</p>
           </div>
           <MissionCaption step={guidedStep === 3 ? 3 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[3].caption)} />
-        </Panel>
+        </Panel></RecoveryBoundary>
         </>}
       </div>
 
-      <Panel as="section" aria-labelledby="s5" className="motion-still">
-        <SectionHeader id="s5" step={t('gapStep')} title={t('evidenceGapRadar')} />
+      <RecoveryBoundary label={t('evidenceGapRadar')}><Panel as="section" aria-labelledby="s5" className="motion-still">
+        <SectionHeader help="helpGaps" id="s5" step={t('gapStep')} title={t('evidenceGapRadar')} />
         <MissionCaption step={guidedStep === 4 ? 4 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[4].caption)} />
         <GapRadarPanel data={radar} status={dataStatus} scenarioActive={confirmed !== null} />
-      </Panel>
+      </Panel></RecoveryBoundary>
       </div>
       </div>
       {research && <ResearchContext section={research} />}
@@ -642,7 +795,7 @@ function MissionCaption({ step, onStep, text }: { step: number | null; onStep: (
                 aria-label={`${t('goToMissionStep')} ${index + 1}: ${t(item.title)}`}
                 aria-current={index === step ? 'step' : undefined}
                 onClick={() => onStep(index)}
-                className="grid size-10 place-items-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber"
+                className="bubble-control pressable grid size-10 place-items-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber"
               ><span aria-hidden className={`size-3 rounded-full border ${index === step ? 'border-amber bg-amber' : 'border-faint bg-transparent'}`} /></button>
             ))}
           </div>
@@ -677,21 +830,32 @@ function MapLegend({ outcomeColor }: { outcomeColor: (outcome: Experiment['outco
     { key: 'outside' as const, label: t('outsideCatalogRange'), swatch: <i aria-hidden className="h-3 w-4 rounded-sm border border-dashed border-faint/60 bg-faint/10" />, caption: COPY.plain.map.outside },
   ];
   const caption = items.find((item) => item.key === active)?.caption ?? COPY.mapScope;
+  // Two groups, so what can be pressed never sits beside what can't: explained items are bordered buttons;
+  // items without approved copy are a plain key below.
+  const explained = items.filter((item) => item.caption);
+  const keyOnly = items.filter((item) => !item.caption);
   return (
-    <div className="mt-4">
-      <p className="console-label mb-1 text-faint">{COPY.plain.map.prompt}</p>
-      <div className="-ml-2.5 flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-dim" role="group" aria-label="Evidence map legend">
-        {items.map((item) => item.caption ? (
-          <button key={item.key} type="button" aria-pressed={active === item.key} aria-controls="map-legend-caption"
-            onClick={() => setActive((current) => current === item.key ? null : item.key)}
-            className="inline-flex min-h-9 items-center gap-2 rounded-full border border-transparent px-2.5 transition-[border-color,background-color,color] duration-150 can-hover:hover:border-border can-hover:hover:text-text aria-pressed:border-amber/50 aria-pressed:bg-amber/[0.06] aria-pressed:text-text">
-            {item.swatch}{item.label}
-          </button>
-        ) : (
-          <span key={item.key} className="inline-flex min-h-9 items-center gap-2 px-2.5">{item.swatch}{item.label}</span>
-        ))}
+    <div className="mt-4" role="group" aria-label={t('legendRegion')}>
+      <p className="console-label mb-2 text-faint">{COPY.plain.map.prompt}</p>
+      <div className="grid gap-x-3 gap-y-2 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-baseline">
+        <p id="legend-explained" className="text-sm text-dim">{t('legendExplained')}</p>
+        <div className="flex flex-wrap gap-2" role="group" aria-labelledby="legend-explained">
+          {explained.map((item) => (
+            <button key={item.key} type="button" aria-pressed={active === item.key} aria-controls="map-legend-caption"
+              onClick={() => setActive((current) => current === item.key ? null : item.key)}
+              className="bubble-control pressable inline-flex min-h-9 items-center gap-2 rounded-full border border-border px-3 text-sm text-text can-hover:hover:border-raised aria-pressed:border-amber/60 aria-pressed:bg-amber/[0.08]">
+              {item.swatch}{item.label}
+            </button>
+          ))}
+        </div>
+        {keyOnly.length > 0 && <>
+          <p id="legend-key-only" className="text-sm text-dim">{t('legendKeyOnly')}</p>
+          <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-dim" aria-labelledby="legend-key-only">
+            {keyOnly.map((item) => <li key={item.key} className="inline-flex min-h-9 items-center gap-2">{item.swatch}{item.label}</li>)}
+          </ul>
+        </>}
       </div>
-      <p id="map-legend-caption" aria-live="polite" className={cx('mt-2 min-h-[4.5rem] border-l-2 pl-3 text-sm leading-relaxed', active ? 'border-amber/60 text-text' : 'border-border text-dim')}>{caption}</p>
+      <p id="map-legend-caption" aria-live="polite" className={cx('mt-3 min-h-[3.5rem] border-l-2 pl-3 text-sm leading-relaxed', active ? 'border-amber/60 text-text' : 'border-border text-dim')}>{caption}</p>
     </div>
   );
 }
@@ -705,7 +869,7 @@ function ConditionBar({ summary: { scenario, confirmed, counts }, action, onActi
   const name = material.status === 'resolved' ? material.fuel_material.replace(/_/g, ' ') : material.raw ?? t('notSpecified');
   return (
     <div role="region" aria-label={COPY.summary.scenario} className="fixed inset-x-0 top-[var(--header-h,0px)] z-30 border-b border-border bg-bg/95 backdrop-blur-sm xl:hidden">
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2 text-[13px] sm:px-6">
+      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2 text-[14px] sm:px-6">
         <p className="min-w-0 flex-1 truncate text-text">
           {name} · {COPY.summary.o2(scenario.o2_pct)} · {COPY.summary.flow(scenario.flow_cm_s)}
           {confirmed && counts && <span className="text-dim"> · {COPY.summary.topMatches(counts.top_k ?? 0)}</span>}
@@ -734,7 +898,7 @@ export function InvestigationSummary({
   const form = scenario.fuel_form?.replace(/_/g, ' ') ?? t('notSpecified');
   const conditions = [summary.o2(scenario.o2_pct), summary.flow(scenario.flow_cm_s)].join(' · ');
   const evidence = counts
-    ? [summary.eligible(counts.eligible), summary.plotted(counts.plotted), summary.notPlotted(counts.not_plotted)]
+    ? [summary.eligible(counts.eligible), summary.plotted(counts.plotted), ...(counts.off_axis ? [summary.offAxis(counts.off_axis)] : []), summary.notPlotted(counts.not_plotted)]
     : [t(status === 'unavailable' ? 'evidenceUnavailable' : 'loading')];
 
   return (
@@ -749,7 +913,7 @@ export function InvestigationSummary({
         <p className="console-label text-dim">{summary.conditions}</p>
         <p className="mt-1 break-words text-sm text-text">{conditions}</p>
       </div>
-      <div className="min-w-0 sm:col-span-2">
+      <div className="col-span-2 min-w-0">
         <p className="console-label text-dim">{summary.evidence}</p>
         <p className="mt-1 break-words text-sm text-text">{evidence.join(' · ')}</p>
         {counts && (confirmed
@@ -829,7 +993,15 @@ export function EvidenceMap({
     (scenario.o2_pct != null && (scenario.o2_pct < envelope.o2_min || scenario.o2_pct > envelope.o2_max)) ||
     (scenario.flow_cm_s != null && (scenario.flow_cm_s < envelope.flow_min || scenario.flow_cm_s > envelope.flow_max))
   );
-  const width = 760;
+  // Drawn at the box's own pixel width (≤ 760), so labels stay 11px and the map never scrolls sideways on a phone.
+  const [width, setWidth] = useState(760);
+  const resize = useRef<ResizeObserver | null>(null);
+  const mapBox = useCallback((box: HTMLDivElement | null) => {
+    resize.current?.disconnect();
+    if (!box) return;
+    resize.current = new ResizeObserver(() => setWidth(Math.round(Math.min(760, Math.max(260, box.clientWidth - parseFloat(getComputedStyle(box).paddingLeft) * 2)))));
+    resize.current.observe(box);
+  }, []);
   const height = 330;
   const left = 54;
   const right = 18;
@@ -859,13 +1031,13 @@ export function EvidenceMap({
         <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-6 text-center text-sm text-dim">{t('mapNoPoints')}</p>
       ) : (
         <>
-          <div className="overflow-x-auto rounded-xl border border-border bg-bg/45 p-2 sm:p-4">
-            <svg viewBox={`0 0 ${width} ${height}`} role="group" aria-label={t('mapAccessibility')} className="block h-auto max-h-[70vh] min-w-[520px] w-full">
+          <div ref={mapBox} className="evidence-plot rounded-xl border border-border bg-bg/45 p-2 sm:p-4">
+            <svg viewBox={`0 0 ${width} ${height}`} role="group" aria-label={t('mapAccessibility')} className="block h-auto max-h-[70vh] w-full">
               <title>{t('mapVerifiedTitle')}</title>
               <defs>
                 <pattern id="ignis-untested-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
                   <rect width="6" height="6" fill="var(--color-bg)" fillOpacity=".45" />
-                  <line x1="0" y1="0" x2="0" y2="6" stroke="var(--color-faint)" strokeOpacity=".38" strokeWidth="1.3" />
+                  <line x1="0" y1="0" x2="0" y2="6" stroke="var(--plot-hatch)" strokeOpacity="var(--plot-hatch-opacity)" strokeWidth="1.3" />
                 </pattern>
                 <clipPath id="ignis-plot-clip"><rect x={left} y={top} width={plotWidth} height={plotHeight} /></clipPath>
               </defs>
@@ -907,20 +1079,20 @@ export function EvidenceMap({
               )}
               {ticks(GRID.flow.min, GRID.flow.max, 5).map((flow) => (
                 <g key={`x-${flow}`}>
-                  <line x1={x(flow)} x2={x(flow)} y1={top} y2={top + plotHeight} stroke="var(--color-border)" strokeDasharray="3 5" />
-                  <text x={x(flow)} y={height - 20} textAnchor="middle" fill="var(--color-dim)" fontSize="11">{flow}</text>
+                  <line x1={x(flow)} x2={x(flow)} y1={top} y2={top + plotHeight} stroke="var(--plot-grid)" strokeDasharray="3 5" />
+                  <text x={x(flow)} y={height - 20} textAnchor="middle" fill="var(--color-dim)" fontSize="12">{flow}</text>
                 </g>
               ))}
               {ticks(GRID.o2.min, GRID.o2.max, 4).map((o2) => (
                 <g key={`y-${o2}`}>
-                  <line x1={left} x2={left + plotWidth} y1={y(o2)} y2={y(o2)} stroke="var(--color-border)" strokeDasharray="3 5" />
-                  <text x={left - 10} y={y(o2) + 4} textAnchor="end" fill="var(--color-dim)" fontSize="11">{o2}</text>
+                  <line x1={left} x2={left + plotWidth} y1={y(o2)} y2={y(o2)} stroke="var(--plot-grid)" strokeDasharray="3 5" />
+                  <text x={left - 10} y={y(o2) + 4} textAnchor="end" fill="var(--color-dim)" fontSize="12">{o2}</text>
                 </g>
               ))}
               <line x1={left} x2={left + plotWidth} y1={top + plotHeight} y2={top + plotHeight} stroke="var(--color-faint)" />
               <line x1={left} x2={left} y1={top} y2={top + plotHeight} stroke="var(--color-faint)" />
-              <text x={left + plotWidth / 2} y={height - 3} textAnchor="middle" fill="var(--color-dim)" fontSize="12">{t('airflowAxis')}</text>
-              <text transform={`translate(15 ${top + plotHeight / 2}) rotate(-90)`} textAnchor="middle" fill="var(--color-dim)" fontSize="12">{t('oxygenAxis')}</text>
+              <text x={left + plotWidth / 2} y={height - 3} textAnchor="middle" fill="var(--color-dim)" fontSize="13">{t('airflowAxis')}</text>
+              <text transform={`translate(15 ${top + plotHeight / 2}) rotate(-90)`} textAnchor="middle" fill="var(--color-dim)" fontSize="13">{t('oxygenAxis')}</text>
               <g clipPath="url(#ignis-plot-clip)">
               {scenario?.o2_pct != null && scenario.flow_cm_s != null && matches.slice(0, 3).map(({ experiment }) => (
                 experiment.o2_pct != null && experiment.flow_cm_s != null && (
@@ -957,8 +1129,16 @@ export function EvidenceMap({
             </svg>
           </div>
           <MapLegend outcomeColor={outcomeColor} />
-          <p className="mt-3 text-[13px] text-dim">{plotted.length} {t('plotted')} · {matches.length} {t('rankedMatches')}</p>
-          {outsideAxesCount > 0 && <p role="status" className="mt-2 text-[13px] text-dim">{outsideAxesCount} {t(outsideAxesCount === 1 ? 'outsideAxesRecord' : 'outsideAxesRecords')}</p>}
+          {plotted.length > 0 && <details className="mt-3 text-sm">
+            <summary className="cursor-pointer">{t('specimenSelectByName')}</summary>
+            <ul className="mt-2 flex flex-wrap gap-2">
+              {plotted.map(card => <li key={card.id}>
+                <Button size="sm" aria-pressed={selectedId === card.id} onClick={() => onSelect(card.id)}>{experimentLabel(card)}</Button>
+              </li>)}
+            </ul>
+          </details>}
+          <p className="mt-3 text-[14px] text-dim">{plotted.length} {t('plotted')} · {matches.length} {t('rankedMatches')}</p>
+          {outsideAxesCount > 0 && <p role="status" className="mt-2 text-[14px] text-dim">{outsideAxesCount} {t(outsideAxesCount === 1 ? 'outsideAxesRecord' : 'outsideAxesRecords')}</p>}
           {outsideEnvelope && <p role="status" className="mt-3 rounded-lg border border-warn/35 bg-warn/[0.05] px-3 py-2 text-sm text-warn">{COPY.outsideRange}</p>}
           {selected && (
             <div className="mt-4 rounded-xl border border-border bg-bg/55 p-4">
@@ -973,6 +1153,7 @@ export function EvidenceMap({
               {selected.key_observation_quote && <blockquote className="mt-3 break-words border-l-2 border-raised pl-3 text-sm leading-relaxed text-dim [overflow-wrap:anywhere]">“{selected.key_observation_quote}”</blockquote>}
               <p className="mt-2 break-words text-sm text-dim [overflow-wrap:anywhere]">{selected.source_title}</p>
               {evidenceLocator(selected) && <p className="mt-1 break-words text-xs text-dim [overflow-wrap:anywhere]">{evidenceLocator(selected)}</p>}
+              <a className={`mt-3 block text-sm ${textLink}`} href={`/library/${encodeURIComponent(selected.id)}?specimen=1`}>{t('specimenInspect')}</a>
               {/* Selection stays on the map; opening the match card is the visitor's choice (no jump on every click). */}
               {matches.some((match) => match.experiment.id === selected.id) && (
                 <button type="button" onClick={() => focusExperiment(selected.id)} className={`mt-3 text-sm ${textLink}`}>{t('openMatchCard')}</button>
@@ -981,12 +1162,12 @@ export function EvidenceMap({
           )}
         </>
       )}
-      {status === 'connected' && missingAxisCount > 0 && <p className="mt-3 text-[13px] text-dim">{missingAxisCount} {t(missingAxisCount === 1 ? 'eligibleRecord' : 'eligibleRecords')} {t(missingAxisCount === 1 ? 'missingAxisRecord' : 'missingAxisRecords')}</p>}
+      {status === 'connected' && missingAxisCount > 0 && <p className="mt-3 text-[14px] text-dim">{missingAxisCount} {t(missingAxisCount === 1 ? 'eligibleRecord' : 'eligibleRecords')} {t(missingAxisCount === 1 ? 'missingAxisRecord' : 'missingAxisRecords')}</p>}
     </div>
   );
 }
 
-export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }: { matches: MatchResult[]; status: 'connected' | 'loading' | 'unavailable'; confirmed: boolean; selectedId: string | null; onSelect: (id: string) => void }) {
+export function MatchPanel({ matches, status, confirmed, scenario, selectedId, onSelect }: { matches: MatchResult[]; status: 'connected' | 'loading' | 'unavailable'; confirmed: boolean; scenario?: ResolvedScenario | null; selectedId: string | null; onSelect: (id: string) => void }) {
   if (status === 'loading') return <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-6 text-center text-sm text-dim">{t('waitingCatalog')}</p>;
   if (status === 'unavailable') return <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-6 text-center text-sm text-dim">{t('matchCatalogUnavailable')}</p>;
   if (!confirmed) return <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-6 text-center text-sm text-dim">{t('confirmForMatches')}</p>;
@@ -996,12 +1177,12 @@ export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }:
     <div>
     <p className="mb-3 text-sm leading-relaxed text-dim">{COPY.matchOrder} <a href="/methods" className={textLink}>How matching works and what it does not tell you</a></p>
     <div className="mb-4 rounded-xl border border-border bg-bg/35 px-4 py-3">
-      <ul aria-label={COPY.plain.chipKeyLabel} className="flex flex-wrap gap-x-5 gap-y-1.5 text-[13px] text-dim">
+      <ul aria-label={COPY.plain.chipKeyLabel} className="flex flex-wrap gap-x-5 gap-y-1.5 text-[14px] text-dim">
         {(Object.keys(COPY.plain.chipKey) as (keyof typeof COPY.plain.chipKey)[]).map((status) => (
           <li key={status}><span aria-hidden className="mr-1.5 font-mono text-text">{CHIP_STATUS[status].symbol}</span>{COPY.plain.chipKey[status]}</li>
         ))}
       </ul>
-      <p className="mt-2 border-t border-border/60 pt-2 text-[13px] text-dim">{COPY.plain.compared}</p>
+      <p className="mt-2 flex items-start gap-2 border-t border-border/60 pt-2 text-[14px] text-dim"><Icon name="info" size={15} className="mt-0.5 shrink-0" /><span>{COPY.plain.compared}</span></p>
     </div>
     <div className="match-cards grid auto-rows-fr gap-3 lg:grid-cols-3 xl:grid-cols-2">
       {matches.map((match, index) => {
@@ -1055,6 +1236,7 @@ export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }:
                 return <Chip key={line.key} status={line.status} label={label} statusText={statusParts.join(': ')} />;
               })}
             </div>
+            {scenario && <MatchInspection scenario={scenario} match={match} />}
             {experiment.key_observation_quote && (
               <details className="mt-3 border-t border-border/70 pt-3 text-sm">
                 <summary className="cursor-pointer text-dim can-hover:hover:text-text">{t('sourceExcerpt')}</summary>
@@ -1064,7 +1246,7 @@ export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }:
             )}
             <p className="mt-3 mb-2 break-words text-sm text-dim [overflow-wrap:anywhere]">{experiment.source_title}</p>
             {dataset && <p className="mb-2 text-sm text-dim [overflow-wrap:anywhere]">{dataset}</p>}
-            <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border/70 pt-3 text-[13px]">
+            <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border/70 pt-3 text-[14px]">
               {provenance && <span className="min-w-0 break-words text-dim [overflow-wrap:anywhere]">{provenance}</span>}
               {source && <a href={source.url} target="_blank" rel="noreferrer" className={`min-h-10 ${textLink}`}>{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}
             </div>
@@ -1142,7 +1324,7 @@ function MissionBrief({
           </Panel>
         );
       })}
-      <p className="text-[12px] leading-relaxed text-dim">{COPY.claimsGuarantee}</p>
+      <p className="text-xs leading-relaxed text-dim">{COPY.claimsGuarantee}</p>
       <ol className="brief-print-only" aria-label="Brief sources">{briefing.evidence.map(({evidence_id, experiment_id}) => {
         const card = matches.find(m => m.experiment.id === experiment_id)?.experiment;
         if (!card) return null;
@@ -1214,7 +1396,7 @@ function GapRadarPanel({
               </li>
             ))}
           </ol>
-          <p id="region-footnote" className="mt-3 text-[13px] leading-relaxed text-dim"><sup aria-hidden className="mr-1">1</sup>{COPY.plain.regionCells}</p>
+          <p id="region-footnote" className="mt-3 text-[14px] leading-relaxed text-dim"><sup aria-hidden className="mr-1">1</sup>{COPY.plain.regionCells}</p>
         </div>
       ) : (
         <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-5 text-sm text-dim">{t('noUntestedWithinRange')}</p>

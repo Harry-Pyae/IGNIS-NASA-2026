@@ -30,9 +30,9 @@ describe('scenario share links', () => {
     const link = decodeShare(encodeShare(scenario(), 'r1', [prior.id]));
     if (!link) throw new Error('Expected a valid share link');
     expect(shareCatalogStatus(link, { state: 'ready', revision: 'r2', invalid: 0, experiments: [draft, current] }))
-      .toEqual({ state: 'updated', added: [current.id], dropped: [prior.id] });
+      .toEqual({ state: 'updated', added: [current.id], dropped: [prior.id], changed: null, exact: false }); // older link: no versions
     expect(shareCatalogStatus(link, { state: 'empty', revision: 'r2', invalid: 0 }))
-      .toEqual({ state: 'updated', added: [], dropped: [prior.id] });
+      .toEqual({ state: 'updated', added: [], dropped: [prior.id], changed: null, exact: false });
     expect(shareCatalogStatus(link, { state: 'ready', revision: 'r1', invalid: 0, experiments: [prior] }))
       .toEqual({ state: 'current' });
   });
@@ -46,3 +46,21 @@ it('compares distinct verified solid cards in URL order and reports the unavaila
   expect(compareSelection(`?ids=${b.id},${a.id},${b.id},${draft.id},${smoke.id},typo`, [a, b, draft, smoke]))
     .toEqual({ cards: [b, a], missing: [draft.id, smoke.id, 'typo'] });
 });
+
+describe('Round 8 · A8: a reopened link says what changed', () => {
+  it('same result / added or dropped / a cited card was updated / exact reconstruction unavailable', () => {
+    const a = card({ updated_at: '2026-11-14T04:17:19Z' });
+    const b = card({ updated_at: '2026-11-14T04:17:26Z' });
+    const link = decodeShare(encodeShare(scenario(), 'r1', [a.id, b.id], { [a.id]: a.updated_at, [b.id]: b.updated_at, 'not-ranked': 'x' }))!;
+    expect(link.versions).toEqual({ [a.id]: a.updated_at, [b.id]: b.updated_at }); // only ranked cards travel
+    expect(shareCatalogStatus(link, { state: 'ready', revision: 'r1', invalid: 0, experiments: [a, b] })).toEqual({ state: 'current' });
+    // Catalog changed elsewhere, same records, same content → same result, but never claimed as an exact rebuild.
+    expect(shareCatalogStatus(link, { state: 'ready', revision: 'r2', invalid: 0, experiments: [a, b] }))
+      .toEqual({ state: 'updated', added: [], dropped: [], changed: [], exact: false });
+    // A cited card was corrected: same IDs, new content.
+    const bCorrected = { ...b, notes: 'flow corrected', updated_at: '2026-11-15T09:00:00Z' };
+    expect(shareCatalogStatus(link, { state: 'ready', revision: 'r3', invalid: 0, experiments: [a, bCorrected] }))
+      .toMatchObject({ changed: [b.id], exact: false });
+  });
+});
+

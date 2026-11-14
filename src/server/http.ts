@@ -43,9 +43,26 @@ export function clientIp(req: Request): string {
   return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown';
 }
 
-/** Constant-time check of `x-curator-secret`. false when CURATOR_SECRET is unset. */
-export function isCurator(req: Request): boolean {
+/**
+ * The documented local/disposable secret (README, AGENTS.md, scripts/local-db.mjs). It is public, so it is
+ * never accepted on a deployment (Vercel sets VERCEL=1 in every deployed function; local dev and tests don't).
+ */
+export const LOCAL_CURATOR_SECRET = 'local-curator-secret';
+const deployed = () => process.env.VERCEL === '1' || !!process.env.VERCEL_ENV;
+
+/** The usable secret: null when unset, or when a deployment still carries the public local default. */
+function curatorSecret(): string | null {
   const secret = process.env.CURATOR_SECRET;
+  if (!secret || (deployed() && secret === LOCAL_CURATOR_SECRET)) return null;
+  return secret;
+}
+
+/**
+ * Constant-time check of `x-curator-secret`. false when no usable secret is configured, so the debug and
+ * provider-override headers (which reuse this check) are ignored too.
+ */
+export function isCurator(req: Request): boolean {
+  const secret = curatorSecret();
   if (!secret) return false;
   const digest = (s: string) => createHash('sha256').update(s).digest();
   return timingSafeEqual(digest(req.headers.get('x-curator-secret') ?? ''), digest(secret));
@@ -54,6 +71,8 @@ export function isCurator(req: Request): boolean {
 /** Curator gate for protected routes (§10): shared secret in `x-curator-secret`, checked server-side. */
 export function requireCurator(req: Request): Response | null {
   if (!process.env.CURATOR_SECRET) return apiError(503, 'not_configured', 'CURATOR_SECRET is not set on the server');
+  if (!curatorSecret())
+    return apiError(503, 'not_configured', 'CURATOR_SECRET is the documented local default; set a private value on this deployment');
   return isCurator(req) ? null : apiError(401, 'unauthorized', 'Invalid curator secret');
 }
 

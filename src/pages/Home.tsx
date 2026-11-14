@@ -1,3 +1,4 @@
+import { UsageHelp } from '../components/ui/UsageHelp';
 import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
   Button,
@@ -10,6 +11,7 @@ import {
 import { CatalogBlock, ExportButton } from '../components/CatalogStatus';
 import { preloadVerifiedCatalog, useCatalogSummary } from '../lib/catalog';
 import { COPY } from '../lib/copy';
+import { CONSOLE_DRAFT_KEY, readSession } from '../lib/consoleDraft';
 import { t } from '../i18n';
 import { isConsoleAnchor, requestConsole, takePendingAnchor, watchConsole } from './consoleLoader';
 
@@ -34,7 +36,7 @@ const rise = (i: number) => ({ style: { '--i': i } as CSSProperties });
 
 function Hero() {
   return (
-    <section className="relative isolate overflow-hidden xl:flex xl:min-h-[min(86svh,760px)] xl:items-center">
+    <section className="home-hero relative isolate overflow-hidden xl:flex xl:min-h-[min(86svh,760px)] xl:items-center">
       {/*
         Wide screens (xl+): the art is a full-bleed background; a left scrim keeps the copy column on dark ground.
         Below xl the copy column covers the busy screen + console lights, so the art moves into a framed
@@ -44,10 +46,10 @@ function Hero() {
         aria-hidden
         className="hero-scrim absolute inset-0 -z-10 max-xl:hidden"
       />
-      <div aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-b from-transparent to-bg max-xl:hidden" />
+      <div aria-hidden className="hero-bottom-fade absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-b from-transparent to-bg max-xl:hidden" />
 
       <div className="mx-auto w-full max-w-6xl px-4 pt-14 pb-16 sm:px-6 sm:pt-20 xl:py-20">
-        <div className="hero-glass-slab max-w-2xl rounded-3xl p-6 sm:p-8 xl:p-10 transition-all">
+        <div className="route-intro max-w-2xl">
           <p {...rise(0)} className="anim-rise">
             <span className="console-label inline-flex items-center gap-2 text-amber">
               <span aria-hidden className="h-px w-6 bg-amber max-sm:hidden" />
@@ -59,6 +61,7 @@ function Hero() {
             <br />
             <span className="text-lit-dim">Nothing it didn&apos;t.</span>
           </h1>
+          <UsageHelp topic="helpHome" />
           <p {...rise(2)} className="anim-rise mt-7 max-w-lg text-[17px] leading-[1.65] text-dim sm:text-[18px]">
             Describe a spacecraft fire scenario in mission terms. IGNIS retrieves the closest verified NASA
             microgravity combustion experiments, explains what they actually observed — and marks where the current
@@ -100,9 +103,9 @@ function Hero() {
           {/* Inner vignette so the window reads as depth, not a pasted photo (hidden on xl: the scrim does that job). */}
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-0 rounded-[inherit] shadow-[inset_0_0_60px_10px_color-mix(in_srgb,var(--color-bg)_70%,transparent)] xl:hidden"
+            className="hero-image-edge pointer-events-none absolute inset-0 rounded-[inherit] shadow-[inset_0_0_60px_10px_color-mix(in_srgb,var(--color-bg)_70%,transparent)] xl:hidden"
           />
-          <figcaption className="console-label absolute right-4 bottom-3 text-dim xl:bottom-4 xl:right-6">Illustration</figcaption>
+          <figcaption className="hero-caption console-label absolute right-4 bottom-3 text-dim xl:bottom-4 xl:right-6">Illustration</figcaption>
         </figure>
       </div>
     </section>
@@ -124,17 +127,20 @@ const Console = lazy(() => loadConsole().then((m) => ({ default: m.Console })));
 function LazyConsole() {
   const slot = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
-  useEffect(
-    () =>
-      watchConsole(slot.current!, {
-        prefetch: () => {
-          void loadConsole();
-          preloadVerifiedCatalog(); // data ready before mount: the console renders settled, so nothing shifts
-        },
-        mount: () => setMounted(true),
-      }),
-    [],
-  );
+  useEffect(() => {
+    const stop = watchConsole(slot.current!, {
+      prefetch: () => {
+        void loadConsole();
+        preloadVerifiedCatalog(); // data ready before mount: the console renders settled, so nothing shifts
+      },
+      mount: () => setMounted(true),
+    });
+    // Coming back (a nav click or typed URL, not a reload or Back) with a console draft: land on the console, not the
+    // hero. Reload and Back keep the browser's own scroll restoration; a #hash deep link still wins.
+    const arrival = (performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined)?.type;
+    if (arrival === 'navigate' && !window.location.hash && readSession(CONSOLE_DRAFT_KEY)) requestConsole('console');
+    return stop;
+  }, []);
   return (
     <div ref={slot}>
       {mounted ? (
@@ -165,7 +171,7 @@ function ConsolePlaceholder() {
 function ScrollToPending() {
   useEffect(() => {
     const id = takePendingAnchor();
-    if (id) document.getElementById(id)?.scrollIntoView({ block: 'start' });
+    if (id) document.getElementById(id)?.scrollIntoView({ block: 'start', behavior: 'instant' }); // arrival: land, don't glide
   }, []);
   return null;
 }
@@ -211,7 +217,7 @@ const STEPS: { icon: IconName; tag: string; title: string; lines: [string, strin
 function HowItWorks() {
   return (
     <section id="how-it-works" aria-labelledby="how-title" className="scroll-mt-20 px-4 py-20 sm:px-6">
-      <div className="surface reveal relative isolate mx-auto max-w-6xl overflow-hidden rounded-panel border border-border">
+      <div className="surface content-surface reveal relative isolate mx-auto max-w-6xl overflow-hidden rounded-panel border border-border">
         {/* Decorative constellation (kept off the Evidence Map: its dots read as data). Desktop only, masked to the
             top-right corner so no dot sits behind a word; the step cards are near-opaque on top. */}
         <img
@@ -222,7 +228,7 @@ function HowItWorks() {
           aria-hidden
           loading="lazy"
           decoding="async"
-          className="absolute inset-0 -z-10 size-full object-cover object-right opacity-80 max-lg:hidden [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent_35%,black_80%),linear-gradient(to_bottom,black_0%,black_28%,transparent_48%)]"
+          className="content-surface-art absolute inset-0 -z-10 size-full object-cover object-right opacity-80 max-lg:hidden [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent_35%,black_80%),linear-gradient(to_bottom,black_0%,black_28%,transparent_48%)]"
         />
         <div className="p-6 sm:p-10">
           <span className="console-label text-amber">How IGNIS works</span>
@@ -243,7 +249,7 @@ function HowItWorks() {
                   <span className="console-label text-dim">{s.tag}</span>
                   <h3 className="mt-1 text-[17px] font-semibold tracking-[-0.015em]">{s.title}</h3>
                 </div>
-                <p className="text-[14px] leading-[1.6] text-dim">
+                <p className="text-[15px] leading-[1.6] text-dim">
                   {s.lines[0]} <span className="text-text">{s.lines[1]}</span>
                 </p>
               </li>
@@ -309,7 +315,7 @@ function Footer() {
   const { summary } = useCatalogSummary();
   return (
     <footer className="border-t border-border/70 px-4 py-12 sm:px-6">
-      <div className="mx-auto grid max-w-6xl gap-8 text-[13px] text-dim md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <div className="mx-auto grid max-w-6xl gap-8 text-[14px] text-dim md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="flex flex-col gap-3">
           <p className="flex flex-wrap items-center gap-2 text-text">
             <img src="/art/logo-flame-64.webp" width={20} height={20} alt="" aria-hidden loading="lazy" className="size-5 rounded-full" />

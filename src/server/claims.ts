@@ -19,6 +19,8 @@
 import {
   type Briefing,
   type Claim,
+  type ClaimCheckResponse,
+  type ClaimProblem as ClaimProblemName,
   type CoverageGap,
   type CoverageResult,
   type Experiment,
@@ -82,18 +84,7 @@ export function buildContext(experiments: Experiment[], coverage: CoverageResult
   };
 }
 
-export type ClaimProblem =
-  | 'forbidden_wording'
-  | 'missing_evidence'
-  | 'unknown_evidence_id'
-  | 'missing_refs'
-  | 'ref_not_cited'
-  | 'ref_mismatch'
-  | 'unit_mismatch'
-  | 'unsupported_number'
-  | 'unsupported_outcome'
-  | 'missing_gap'
-  | 'unknown_gap';
+export type ClaimProblem = ClaimProblemName;
 
 function refProblem(ref: FactRef, card: Experiment): 'ref_mismatch' | 'unit_mismatch' | null {
   const actual = card[ref.field];
@@ -243,4 +234,56 @@ export async function runClaimPipeline(
   return kept.length === 0
     ? fallback(withheld_count, second.provider)
     : { ...base, status: 'ok', claims: kept.map((c) => finalize(c, ctx)), withheld_count, provider: second.provider };
+}
+
+// ---------------------------------------------------------------------------
+// Beat 2 · "Check against source" (/api/check-claim, the 60-second case)
+// ---------------------------------------------------------------------------
+const fmtValue = (value: number | string, unit: string | null) => (unit ? `${value} ${unit}` : String(value));
+
+/**
+ * ONE typed claim against ONE verified card, through the same claimProblem() and renderObserved() every brief passes.
+ * Deterministic, no LLM. Accepted → the card's own value, rendered text, verbatim quote and locator.
+ * Withheld → the failing check, the field, and what the card actually records.
+ */
+export function checkClaim(card: Experiment, field: FactField, value: number | string): ClaimCheckResponse {
+  const unit = unitOf(field);
+  const ref: FactRef = { evidence_id: 'E1', field, value, unit };
+  const cards = new Map([['E1', card]]);
+  // The claim as a brief would state it; refs are what the validator checks against the cited card.
+  const claim: Claim = { classification: 'OBSERVED', text: `${card.test_id}: ${fmtRef(ref)}.`, evidence_ids: ['E1'], refs: [ref], gap_ids: [] };
+  const problem = claimProblem(claim, { cards, gaps: new Map() });
+  const base = {
+    experiment_id: card.id,
+    test_id: card.test_id,
+    field,
+    quote: card.key_observation_quote,
+    locator: {
+      source_title: card.source_title,
+      source_url: card.source_url,
+      ntrs_id: card.ntrs_id,
+      page: card.source_page,
+      figure: card.source_figure,
+      table: card.source_table,
+    },
+    validator_version: VALIDATOR_VERSION,
+  };
+  const actual = card[field] ?? null;
+  if (!problem) return { ...base, verdict: 'accepted', value: actual!, unit, text: renderObserved([{ ...ref, value: actual! }], { cards }) };
+
+  const where = card.source_page ? ` (p.${card.source_page})` : card.source_figure ? ` (${card.source_figure})` : '';
+  const reason =
+    problem !== 'ref_mismatch' && problem !== 'unit_mismatch'
+      ? `it fails the evidence check (${problem})`
+      : actual == null
+        ? `the cited card records no ${FACT_LABELS[field]}${where}`
+        : `the cited card says ${fmtValue(actual, unit)}${where}`;
+  return {
+    ...base,
+    verdict: 'withheld',
+    problem,
+    claimed: { value, unit },
+    source: { value: actual, unit },
+    message: `This claim is WITHHELD — ${reason}.`,
+  };
 }

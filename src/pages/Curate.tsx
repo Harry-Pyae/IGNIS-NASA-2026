@@ -17,6 +17,11 @@ import {
   recordToValues,
   valuesToRecord,
   writeBody,
+  changedFields,
+  CURATE_DRAFT_KEY,
+  parseDraft,
+  serializeDraft,
+  type CurateDraft,
 } from '../lib/curation';
 import { cx } from '../lib/cx';
 import {
@@ -51,7 +56,8 @@ type Dropped = { field: string; reason: string }[];
 type FieldIssue = { path: string; message: string };
 
 class CurateRequestError extends Error {
-  constructor(message: string, readonly issues: FieldIssue[]) {
+  /** A2: on 409 edit_conflict, the server's current version of the card. */
+  constructor(message: string, readonly issues: FieldIssue[], readonly conflict?: Experiment) {
     super(message);
   }
 }
@@ -68,7 +74,15 @@ export function Curate() {
   const [secret, setSecret] = useState(readSecret);
   const [values, setValues] = useState<FormValues>(EMPTY_FORM);
   const [editing, setEditing] = useState<Editing>(null);
+  const [conflict, setConflict] = useState<Experiment | null>(null);
+  const [listStale, setListStale] = useState(false);
   const [verifiedBy, setVerifiedBy] = useState('');
+  // Round 8: an unsaved edit from earlier in this tab, offered (never auto-applied) until restored or discarded.
+  const [recoverable, setRecoverable] = useState<CurateDraft | null>(() => {
+    try { return parseDraft(sessionStorage.getItem(CURATE_DRAFT_KEY)); } catch { return null; }
+  });
+  /** The form as last loaded or saved: only differences from it are kept as a draft. */
+  const pristine = useRef(JSON.stringify(EMPTY_FORM));
   const [excerpt, setExcerpt] = useState('');
   const [carry, setCarry] = useState<string[]>([]);
   const [quotes, setQuotes] = useState<Record<string, string>>({});
@@ -106,7 +120,7 @@ export function Curate() {
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new CurateRequestError(json?.error?.message ?? `HTTP ${res.status}`, json?.error?.issues ?? []);
+        throw new CurateRequestError(json?.error?.message ?? `HTTP ${res.status}`, json?.error?.issues ?? [], json?.error?.current);
       }
       return json;
     },
@@ -126,17 +140,45 @@ export function Curate() {
     }
   };
 
+  // Keep the unsaved difference for this tab (blocked or full storage just means no recovery, never a broken form).
+  useEffect(() => {
+    try {
+      const draft = JSON.stringify(values) === pristine.current ? null : serializeDraft(values, editing);
+      if (draft) sessionStorage.setItem(CURATE_DRAFT_KEY, draft);
+      else if (!recoverable) sessionStorage.removeItem(CURATE_DRAFT_KEY); // keep an offered draft until Restore/Discard
+    } catch { /* storage unavailable */ }
+  }, [values, editing, recoverable]);
+
   const refresh = useCallback(async () => {
     const { items } = (await call('/api/curate-cards')) as { items: CurateListItem[] };
     setCards(items);
+    setListStale(false);
   }, [call]);
 
+  // Round 9 · finding 9: the unsaved-edit offer (and the card it names) shows only once the server has accepted this
+  // secret; switching to a different secret after that is an access change, so the offered draft is discarded.
+  const [authorizedFor, setAuthorizedFor] = useState<string | null>(null);
+  const lastAuthorized = useRef<string | null>(null);
+  const authorized = cards !== null && authorizedFor === secret;
   useEffect(() => {
     if (secret.length < 4) return;
     let alive = true;
     call('/api/curate-cards')
-      .then(({ items }) => alive && setCards(items as CurateListItem[]))
-      .catch(() => alive && setCards(null));
+      .then(({ items }) => {
+        if (!alive) return;
+        if (lastAuthorized.current !== null && lastAuthorized.current !== secret) {
+          setRecoverable(null);
+          try { sessionStorage.removeItem(CURATE_DRAFT_KEY); } catch { /* storage unavailable */ }
+        }
+        lastAuthorized.current = secret;
+        setAuthorizedFor(secret);
+        setCards(items as CurateListItem[]);
+      })
+      .catch(() => {
+        if (!alive) return;
+        setAuthorizedFor(null);
+        setCards(null);
+      });
     return () => {
       alive = false;
     };
@@ -144,8 +186,10 @@ export function Curate() {
 
   const newCard = () => {
     sessions.switchForm();
+    pristine.current = JSON.stringify(EMPTY_FORM);
     setValues(EMPTY_FORM);
     setEditing(null);
+    setConflict(null);
     setQuotes({});
     setDropped([]);
     setVerifiedBy('');
@@ -159,8 +203,10 @@ export function Curate() {
     return run(async () => {
       const { experiment } = (await call(`/api/curate-cards?id=${id}`)) as { experiment: Experiment };
       if (!live()) return; // the curator moved on to another card meanwhile
+      pristine.current = JSON.stringify(recordToValues(experiment));
       setValues(recordToValues(experiment));
-      setEditing({ id, status: experiment.verified_by ? 'published' : 'draft' });
+      setEditing({ id, status: experiment.verified_by ? 'published' : 'draft', updated_at: experiment.updated_at });
+      setConflict(null);
       setQuotes({});
       setDropped([]);
       setVerifiedBy('');
@@ -203,23 +249,33 @@ export function Curate() {
       const { experiment } = (await call('/api/curate-write', writeBody(result.record, editing, publish, verifiedBy))) as {
         experiment: Experiment;
       };
-      await refresh(); // the list is right whichever card the form shows now
       // Item 4: if the curator pressed New (or reopened another card) meanwhile, this response must
       // NOT re-bind the form to the saved card — the next save would then overwrite it.
-      if (!live()) {
-        setStatus({ tone: 'success', text: `Saved ${experiment.test_id} (${experiment.id}). The form was switched meanwhile, so it stays on the new card.` });
-        return;
+      if (live()) {
+        // A2: bind the saved ID + version FIRST, so a later failure can never lead to a duplicate re-submit.
+        setEditing({ id: experiment.id, status: experiment.verified_by ? 'published' : 'draft', updated_at: experiment.updated_at });
+        setConflict(null);
+        pristine.current = JSON.stringify(values); // saved: nothing left to recover
       }
-      setEditing({ id: experiment.id, status: experiment.verified_by ? 'published' : 'draft' });
       setStatus({
         tone: 'success',
-        text: publish
-          ? `Published ${experiment.test_id}, verified by ${experiment.verified_by}. It is now visible to the public.`
-          : `Saved draft ${experiment.test_id} (${experiment.id}). Drafts are private until a curator verifies them.`,
+        text: !live()
+          ? `Saved ${experiment.test_id} (${experiment.id}). The form was switched meanwhile, so it stays on the new card.`
+          : publish
+            ? `Published ${experiment.test_id}, verified by ${experiment.verified_by}. It is now visible to the public.`
+            : `Saved draft ${experiment.test_id} (${experiment.id}). Drafts are private until a curator verifies them.`,
       });
+      // The save succeeded; a failed list refresh is a separate, retryable problem (never a reason to save again).
+      try {
+        await refresh();
+      } catch {
+        setListStale(true);
+      }
     }, error => {
       if (!live()) return;
-      setSaveError(error instanceof CurateRequestError ? error : new CurateRequestError(String(error), []));
+      const failure = error instanceof CurateRequestError ? error : new CurateRequestError(String(error), []);
+      if (failure.conflict) setConflict(failure.conflict); // keep MY edit in the form; show theirs for comparison
+      setSaveError(failure);
     });
   };
 
@@ -242,7 +298,7 @@ export function Curate() {
 
   return (
     <Page wide className="flex flex-col gap-6">
-      <PageHeader eyebrow="Internal · curators only" title="Curation" intro={<>
+      <PageHeader help="helpCurate" eyebrow="Internal · curators only" title="Curation" intro={<>
           <p className="text-sm">
             Only explicitly stated values. Ambiguous → null + note. Quote verbatim with original units. Changing conditions
             go in condition_changes, never stored as constant.
@@ -260,7 +316,7 @@ export function Curate() {
 
       {status && (
         <Panel tone={status.tone === 'success' ? 'observed' : 'untested'} className="!p-4" role="status">
-          <pre className="font-mono text-[13px] whitespace-pre-wrap text-text">{status.text}</pre>
+          <pre className="font-mono text-[14px] whitespace-pre-wrap text-text">{status.text}</pre>
         </Panel>
       )}
 
@@ -276,26 +332,47 @@ export function Curate() {
             </Button>
           </div>
         </div>
+        {listStale && <p role="status" className="mt-3 flex flex-wrap items-center gap-3 text-sm text-warn">
+          The card list could not refresh. Your last save did go through.
+          <Button size="sm" disabled={busy} onClick={() => run(refresh)}>Retry list</Button>
+        </p>}
         {cards === null ? (
           <p className="mt-3 text-sm text-dim">Enter the curator secret to list cards.</p>
         ) : cards.length === 0 ? (
           <p className="mt-3 text-sm text-dim">No cards yet.</p>
         ) : (
-          <ul className="mt-3 flex max-h-64 flex-col divide-y divide-border overflow-auto rounded-lg border border-border">
-            {cards.map((c) => (
-              <li key={c.id} className={cx('flex flex-wrap items-center gap-3 px-3 py-2 text-sm', editing?.id === c.id && 'bg-amber/8')}>
-                <Badge variant={c.status === 'published' ? 'success' : 'warn'}>{c.status}</Badge>
-                <span className="min-w-0 flex-1 truncate">
-                  <span className="font-medium text-text">{c.test_id}</span>
-                  <span className="text-dim"> · {c.campaign} · {c.source_title}</span>
-                </span>
-                {c.verified_by && <span className="text-dim">by {c.verified_by}</span>}
-                <Button size="sm" variant="ghost" disabled={busy} onClick={() => reopen(c.id)}>
-                  Reopen
-                </Button>
-              </li>
-            ))}
-          </ul>
+          // Drafts first, every card visible (no inner scroll box hiding the rest), each group counted.
+          <div className="mt-3 grid gap-4">
+            {(['draft', 'published'] as const).map((group) => {
+              const list = cards.filter((c) => (c.status === 'published') === (group === 'published'));
+              return (
+                <section key={group} aria-labelledby={`curate-${group}`}>
+                  <h3 id={`curate-${group}`} className="console-label mb-2 text-dim">
+                    {group === 'draft' ? `Drafts to verify · ${list.length}` : `Published · ${list.length}`}
+                  </h3>
+                  {list.length === 0 ? (
+                    <p className="text-sm text-dim">{group === 'draft' ? 'No drafts waiting.' : 'Nothing published yet.'}</p>
+                  ) : (
+                    <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
+                      {list.map((c) => (
+                        <li key={c.id} className={cx('flex flex-wrap items-center gap-3 px-3 py-2 text-sm', editing?.id === c.id && 'bg-amber/8')}>
+                          <Badge variant={c.status === 'published' ? 'success' : 'warn'}>{c.status}</Badge>
+                          <span className="min-w-0 flex-1 truncate">
+                            <span className="font-medium text-text">{c.test_id}</span>
+                            <span className="text-dim"> · {c.campaign} · {c.source_title}</span>
+                          </span>
+                          {c.verified_by && <span className="text-dim">by {c.verified_by}</span>}
+                          <Button size="sm" variant={group === 'draft' ? 'secondary' : 'ghost'} disabled={busy} onClick={() => reopen(c.id)}>
+                            {group === 'draft' ? 'Review' : 'Reopen'}
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
+              );
+            })}
+          </div>
         )}
       </Panel>
 
@@ -308,13 +385,13 @@ export function Curate() {
             onChange={(e) => setExcerpt(e.target.value)}
             rows={14}
             placeholder="Paste a paper excerpt or results table… It stays here while you check the draft."
-            className={`${input} font-mono text-[13px]`}
+            className={`${input} font-mono text-[14px]`}
           />
           <fieldset className="flex flex-col gap-1.5">
             <legend className="console-label mb-1 text-dim">Carry into the new draft (unticked = cleared)</legend>
             <div className="flex flex-wrap gap-x-4 gap-y-1">
               {CARRYABLE_FIELDS.map((f) => (
-                <label key={f} className="flex items-center gap-1.5 font-mono text-[12px] text-dim">
+                <label key={f} className="flex items-center gap-1.5 font-mono text-xs text-dim">
                   <input
                     type="checkbox"
                     checked={carry.includes(f)}
@@ -329,7 +406,7 @@ export function Curate() {
             Extract into a new draft
           </Button>
           {dropped.length > 0 && (
-            <div className="rounded-lg border border-untested-border bg-untested-bg p-3 text-[13px] text-text">
+            <div className="rounded-lg border border-untested-border bg-untested-bg p-3 text-[14px] text-text">
               <p className="console-label text-warn">Discarded by the server</p>
               <ul className="mt-1 list-disc pl-4">
                 {dropped.map((d) => (
@@ -343,13 +420,30 @@ export function Curate() {
           )}
         </Panel>
 
+        {authorized && recoverable && <div role="region" aria-label="Unsaved edit" className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-warn/35 p-3 text-sm">
+          <p className="min-w-0 flex-1">
+            An unsaved edit from earlier in this tab ({recoverable.editing ? `card ${recoverable.values.test_id ?? recoverable.editing.id}` : `new card${recoverable.values.test_id ? ` ${recoverable.values.test_id}` : ''}`}, {recoverable.saved_at.slice(11, 16)} UTC) can be restored. The reviewer name is never kept.
+          </p>
+          <Button size="sm" onClick={() => {
+            sessions.switchForm();
+            setValues({ ...EMPTY_FORM, ...recoverable.values });
+            setEditing(recoverable.editing);
+            setConflict(null);
+            setRecoverable(null);
+            setStatus({ tone: 'warn', text: 'Restored your unsaved edit. Check it, then save; if the card changed meanwhile you will be shown both versions.' });
+          }}>Restore</Button>
+          <Button size="sm" variant="tertiary" onClick={() => {
+            setRecoverable(null);
+            try { sessionStorage.removeItem(CURATE_DRAFT_KEY); } catch { /* storage unavailable */ }
+          }}>Discard</Button>
+        </div>}
         <form ref={form} onSubmit={onSubmit}>
           <Panel className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
               <Badge variant={editing ? (editing.status === 'published' ? 'success' : 'warn') : 'neutral'}>
                 {editing ? `Editing ${editing.status}` : 'New card'}
               </Badge>
-              {editing && <code className="font-mono text-[11px] text-dim">{editing.id}</code>}
+              {editing && <code className="font-mono text-[12px] text-dim">{editing.id}</code>}
             </div>
             {Object.entries(FIELD_KINDS).map(([name, kind]) => {
               const label = `${name}${REQUIRED.has(name) ? ' *' : ''}`;
@@ -391,12 +485,35 @@ export function Curate() {
                     />
                   )}
                   {error.text}
-                  {quotes[name] && <span className="font-mono text-[11px] text-warn">“{quotes[name]}”</span>}
+                  {quotes[name] && <span className="font-mono text-[12px] text-warn">“{quotes[name]}”</span>}
                 </label>
               );
             })}
 
-            {saveError && <div role="alert" tabIndex={-1} data-save-error className="rounded-lg border border-warn/35 p-3 text-sm text-warn sm:col-span-2">
+            {conflict && editing && <div role="region" aria-label="Edit conflict" className="rounded-lg border border-warn/35 p-3 text-sm sm:col-span-2">
+              <p className="font-semibold text-warn">Someone saved this card after you opened it ({conflict.updated_at.slice(0, 19).replace('T', ' ')} UTC). Your edit is still in the form.</p>
+              {changedFields(values, conflict).length > 0 ? <table className="mt-2 w-full table-fixed text-left text-[14px] [overflow-wrap:anywhere]">
+                <thead><tr className="text-dim"><th className="w-1/4 py-1">Field</th><th className="py-1">Your edit</th><th className="py-1">Saved version</th></tr></thead>
+                <tbody>{changedFields(values, conflict).map((row) => <tr key={row.field} className="border-t border-border align-top">
+                  <td className="py-1 font-mono">{row.field}</td><td className="py-1">{row.mine || '—'}</td><td className="py-1">{row.current || '—'}</td>
+                </tr>)}</tbody>
+              </table> : <p className="mt-2 text-dim">Your fields match the saved version; only its timestamp changed.</p>}
+              <div className="mt-3 flex flex-wrap gap-3">
+                <Button size="sm" onClick={() => {
+                  setValues(recordToValues(conflict));
+                  setEditing({ id: conflict.id, status: conflict.verified_by ? 'published' : 'draft', updated_at: conflict.updated_at });
+                  setConflict(null);
+                  setSaveError(null);
+                }}>Load the saved version</Button>
+                <Button size="sm" onClick={() => {
+                  setEditing({ id: conflict.id, status: conflict.verified_by ? 'published' : 'draft', updated_at: conflict.updated_at });
+                  setConflict(null);
+                  setSaveError(null);
+                  setStatus({ tone: 'warn', text: 'Keeping your edit. Save or publish again to replace the saved version.' });
+                }}>Keep my edit, then save again</Button>
+              </div>
+            </div>}
+            {saveError && !conflict && <div role="alert" tabIndex={-1} data-save-error className="rounded-lg border border-warn/35 p-3 text-sm text-warn sm:col-span-2">
               {saveError.message}
               {saveError.issues.length > 0 && <ul className="mt-1 list-disc pl-5">{saveError.issues.map(({ path, message }, index) =>
                 <li key={index}>{path ? `${path}: ` : ''}{message}</li>)}</ul>}
@@ -415,7 +532,7 @@ export function Curate() {
                 Verify &amp; publish
               </Button>
             </div>
-            <p className="text-[13px] text-dim sm:col-span-2">
+            <p className="text-[14px] text-dim sm:col-span-2">
               Publishing means you checked every non-null field against the source yourself. Never publish under
               someone else&apos;s name — save a draft and hand it over instead.
             </p>

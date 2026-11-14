@@ -66,6 +66,13 @@
 }
 
 @theme {
+  /* ---- Type scale: one step up from Tailwind's defaults (12/14px) so small text reads at a glance on a demo
+     screen. Every text-xs / text-sm in the app follows; one-off pixel sizes were raised to match. ---- */
+  --text-xs: 0.8125rem; /* 13px */
+  --text-xs--line-height: 1.45;
+  --text-sm: 0.9375rem; /* 15px */
+  --text-sm--line-height: 1.5;
+
   /* ---- Surfaces ---- */
   --color-bg: #0c0f16;
   --color-panel: #131824;
@@ -75,10 +82,14 @@
   /* ---- Text ---- */
   --color-text: #e8eaf0;
   --color-dim: #9aa3b5;
-  --color-faint: #6e7891;
+  --color-faint: #79839c; /* ≥4.5:1 on bg and panel (was #6e7891: 4.34 / 4.02) */
 
   /* ---- Accents & outcomes ---- */
   --color-amber: #f5a623; /* accent */
+  --color-action: #f5a623;
+  --color-on-action: #0c0f16;
+  --color-focus: #f5a623;
+  --color-control-border: #232b3a;
   --color-flame: #f97316; /* sustained */
   --color-blue: #4c8dff; /* extinguished — dot */
   --color-blue-badge: #2f6bd8; /* extinguished — badge */
@@ -109,7 +120,20 @@
 }
 
 :root {
-  --header-h: 7.5rem; /* Dynamic fallback until ResizeObserver measures actual header height */
+  --header-h: 6.5rem; /* Dynamic fallback until ResizeObserver measures actual header height */
+  --theme-scheme: dark;
+  --surface-opacity: 78%;
+  --raised-opacity: 88%;
+  --header-opacity: 82%;
+  --header-top-opacity: 35%;
+  --shadow-near: rgb(0 0 0 / 0.35);
+  --shadow-far: rgb(0 0 0 / 0.75);
+  --shadow-tinted: rgb(0 0 0 / 0.7);
+  --shadow-inset: rgb(0 0 0 / 0.25);
+  --shadow-header: rgb(0 0 0 / 0.85);
+  --plot-grid: var(--color-border);
+  --plot-hatch: var(--color-faint);
+  --plot-hatch-opacity: .38;
   /* ---- Motion durations (§8.3 motion inventory — exact mockup timings) ---- */
   --dur-radar: 8s; /* radar sweep, linear */
   --dur-pulse: 2.4s; /* scenario-marker pulse rings, two rings staggered -1.2s */
@@ -121,8 +145,76 @@
   /* Live choreography (§8.3, Phase 5) */
   --dur-glide: 300ms; /* scenario marker glide on slider drag */
   --stagger-dot: 20ms; /* map dots stagger in */
-  --dur-press: 160ms; /* button press feedback */
+  --dur-press: 125ms; /* button press feedback */
+  --dur-interface: 200ms;
+  --bubble-top: rgb(176 199 241 / 0.13);
+  --bubble-bottom: rgb(108 131 178 / 0.04);
+  --bubble-rim: rgb(210 225 255 / 0.21);
+  --bubble-shadow: rgb(0 0 0 / 0.34);
   /* The aurora drift (20s) + starfield live in /art/bg-glow.webp — no CSS duplicate layers. */
+}
+
+:root[data-theme='light'] {
+  --bubble-top: rgb(255 156 78 / 0.18);
+  --bubble-bottom: rgb(255 193 103 / 0.08);
+  --bubble-rim: rgb(255 243 211 / 0.85);
+  --bubble-shadow: rgb(148 65 17 / 0.23);
+  --theme-scheme: light;
+  --color-bg: #ffead4;
+  --color-panel: #ffdfbe;
+  --color-border: #e8be9e;
+  --color-glass-tint: #ff7923;
+  --color-glass-amber: #ffae48;
+  --color-console-tangerine: #ff7018;
+  --color-console-amber: #ff9d36;
+  --color-console-edge: #dfab82;
+  --color-glass-edge: rgb(255 240 198 / 0.82);
+  --color-header-glass: #ffd1a7;
+  --color-header-edge: #d99563;
+  --color-header-apricot: #ffc694;
+  --color-header-amber-beige: #d7b58b;
+  --color-hero-base: #28160e;
+  --color-hero-scrim: #48250f;
+  --color-hero-ivory: #fff3d9;
+  --color-hero-cream: #f2dfbf;
+  --color-hero-accent: #ffad5e;
+  --color-hero-action: #ff7824;
+  --color-dense-surface: #ffecd9;
+  --color-disabled-surface: #f1dfd0;
+  --color-raised: #8793a3;
+  --color-control-border: #7c8897;
+  --color-text: #202833;
+  --color-dim: #405063;
+  --color-faint: #526175;
+  --color-amber: #963b12;
+  --color-action: #d95a18;
+  --color-on-action: #170d08;
+  --color-focus: #b74614;
+  --color-flame: #a33b08;
+  --color-blue: #184da8;
+  --color-blue-badge: #2563c7;
+  --color-violet: #6136a8;
+  --color-violet-badge: #7442bf;
+  --color-success: #20633d;
+  --color-warn: #725000;
+  --color-observed-bg: #edf7ef;
+  --color-observed-border: #8bb49a;
+  --color-interp-bg: #edf3fc;
+  --color-interp-border: #98accb;
+  --color-untested-bg: #fff5de;
+  --color-untested-border: #b79b56;
+  --surface-opacity: 45%;
+  --raised-opacity: 97%;
+  --header-opacity: 100%;
+  --header-top-opacity: 100%;
+  --shadow-near: rgb(32 40 51 / 0.07);
+  --shadow-far: rgb(32 40 51 / 0.19);
+  --shadow-tinted: rgb(32 40 51 / 0.16);
+  --shadow-inset: rgb(32 40 51 / 0.05);
+  --shadow-header: rgb(161 75 18 / 0.32);
+  --plot-grid: #acb6c3;
+  --plot-hatch: #526175;
+  --plot-hatch-opacity: .62;
 }
 
 /*

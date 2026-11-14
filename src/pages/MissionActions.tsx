@@ -1,4 +1,4 @@
-import { Button } from '../components/ui';
+import { Button, buttonClass } from '../components/ui';
 import { useVerifiedCatalog } from '../lib/catalog';
 import { MISSION_CASE, missionEntry } from '../engine/mission';
 import { COPY } from '../lib/copy';
@@ -9,9 +9,11 @@ export function MissionActions({ explore }: { explore: () => void }) {
   return <>
     <div className="flex flex-wrap items-center gap-3">
       {MISSION_CASE && <MissionStartControl />}
-      <Button variant={MISSION_CASE ? 'ghost' : 'primary'} size="lg" iconRight="arrow-right" glow={!MISSION_CASE} onClick={explore}>{COPY.landingCta.explore}</Button>
+      {/* Round 9 (C-3): the 60-second case is the first action; the guided mission takes over once a case is reviewed. */}
+      <a className={buttonClass(MISSION_CASE ? 'secondary' : 'primary', 'lg', MISSION_CASE ? undefined : 'anim-glow')} href="/case">{COPY.landingCta.case}</a>
+      <Button variant="ghost" size="lg" iconRight="arrow-right" onClick={explore}>{COPY.landingCta.explore}</Button>
     </div>
-    {!MISSION_CASE && <p className="mt-3 max-w-lg text-[13px] leading-snug text-dim">{COPY.missionAvailability}</p>}
+    {!MISSION_CASE && <p className="mt-3 max-w-lg text-[14px] leading-snug text-dim">{COPY.missionAvailability}</p>}
   </>;
 }
 
@@ -23,5 +25,5 @@ function MissionStartControl() {
   if (entry?.state === 'available') {
     return <Button variant="primary" size="lg" icon="play" glow onClick={() => requestGuidedMission(entry.case.preset_id)}>{COPY.landingCta.mission}</Button>;
   }
-  return <p role="status" className="max-w-lg text-[13px] leading-snug text-dim">{entry?.state === 'unavailable' ? entry.message : catalog.state === 'loading' ? t('catalogConnecting') : t('matchCatalogUnavailable')}</p>;
+  return <p role="status" className="max-w-lg text-[14px] leading-snug text-dim">{entry?.state === 'unavailable' ? entry.message : catalog.state === 'loading' ? t('catalogConnecting') : t('matchCatalogUnavailable')}</p>;
 }

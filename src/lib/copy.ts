@@ -5,7 +5,7 @@
  * NASA research, so absence is always bounded to "the current IGNIS catalog".
  */
 export const COPY = {
-  sliderCaption: 'Sliders change which verified NASA experiments IGNIS retrieves.',
+  sliderCaption: 'Sliders change which verified experiments match.',
   // Environment presets (DECISIONS-ROUND5 #1): framed as showing where evidence ends, never as a fault.
   environmentCaption: "Environment presets change oxygen and pressure only. Use them to see where the verified catalog's evidence ends.",
   elevatedO2: (pct: number) => `Elevated oxygen: ${pct}% O₂ is above the 21% of Earth-normal air.`,
@@ -15,7 +15,7 @@ export const COPY = {
   claimsGuarantee:
     'Observed and supported statements cite retrieved experiments, and the server checks each cited value against its card. Gaps are marked separately.',
   interpretationLimit: 'Interpretation of the cited experiments, not a direct observation. Checked references do not establish causation or equivalence between tests.',
-  mapScope: 'Each occupied cell contains at least one catalog observation in a 1 percentage-point oxygen and 2 cm/s airflow band. Inspect the card for material, form, thickness, pressure and changing conditions; the cell does not establish coverage of every condition within it.',
+  mapScope: 'A filled cell holds at least one catalog run within 1 % O₂ and 2 cm/s airflow. It does not cover every condition in that band: check each card for material, form, thickness, pressure and changing conditions.',
   matchOrder: 'Ordered by similarity of reported conditions, not material safety. A class-only match does not establish equivalent material behavior.',
   changingConditions: 'Conditions changed during this run',
   staleScenario: 'Inputs changed. Confirm this scenario to update its matches and Mission Brief.',
@@ -37,22 +37,23 @@ export const COPY = {
   inReview: (n: number) => `Catalog in verification — ${n} card${n === 1 ? '' : 's'} in review`,
 
   // Round 6 (docs/DECISIONS-ROUND6.md). Two paths through one product: the mission is primary only once it is ready.
-  landingCta: { mission: 'Start the guided mission', explore: 'Explore the evidence' },
+  landingCta: { mission: 'Start the guided mission', case: 'Try the 60-second case', explore: 'Explore the evidence' },
   missionAvailability:
-    'The guided mission opens once a case built from verified NASA cards has been reviewed. Until then, explore the evidence on your own.',
+    'The guided mission opens once its case of verified NASA cards is reviewed. Until then, explore on your own.',
   // Current-investigation summary: these counts mean different things, so each keeps its own label.
   summary: {
     scenario: 'Your scenario',
     conditions: 'Conditions',
     evidence: 'Evidence',
     eligible: (n: number) => `${n} eligible`,
-    plotted: (n: number) => `${n} with plot coordinates`,
+    plotted: (n: number) => `${n} on the map`,
+    offAxis: (n: number) => `${n} outside the map's axes`,
     notPlotted: (n: number) => `${n} missing plot coordinates`,
     topMatches: (n: number) => `${n} top match${n === 1 ? '' : 'es'}`,
     o2: (v: number | null) => (v == null ? 'O₂ not specified' : `O₂ ${v}%`),
     flow: (v: number | null) => (v == null ? 'Flow not specified' : `Flow ${v} cm/s`),
     // Before confirmation the counts are whole-catalog counts; never label them with unconfirmed inputs.
-    notConfirmed: 'Not confirmed yet. These counts cover the whole verified catalog; confirm the scenario to see its own evidence.',
+    notConfirmed: 'Not confirmed: these counts cover the whole verified catalog. Confirm to see your scenario’s evidence.',
   },
   environmentExplanation: 'Sets oxygen and pressure only.',
   environmentLimit: 'These atmosphere inputs do not establish lunar partial-gravity behavior or spacesuit operational safety from orbital microgravity observations.',
@@ -63,7 +64,37 @@ export const COPY = {
   // Round 3 plain-language layer (docs/WHO-DOES-WHAT.md). One sentence + one anchor already in the product, ≤ 25 words.
   // Longer explanations live in `glossary` (/methods). Facts still waiting for R1's source are deliberately absent:
   // the Moon-base oxygen figure, "flames need moving air", the ISS cabin pressure, and the transition/partial outcomes.
+  help: {
+    label: 'How to use this',
+    home: 'Start with a preset, find matching experiments, then open a citation to check the original observation.',
+    scenario: 'Choose a material and form. Leave conditions you do not know unspecified.',
+    map: 'Select a point to inspect its experiment. Check the evidence counts for runs without map coordinates.',
+    matches: 'Exact matches share the requested material. Class matches use a different material in the same class. Open a source to check the observation.',
+    brief: 'Select an evidence ID to open its card. If narration is unavailable or a claim is withheld, follow the available experiment sources.',
+    gaps: 'Read each gap within the current IGNIS catalog. A hatched region has no verified card at those conditions.',
+    methods: 'Follow the pipeline to see how IGNIS checks a proposed statement against cited experiment fields before showing it.',
+    sources: 'Open a paper or dataset by campaign, or export the verified catalog as JSON.',
+    library: 'Search or filter the verified cards. Clear your search and filters to return to the full catalog.',
+    detail: 'Read the original quote, check its source locator, and compare the normalized units in the conditions table.',
+    compare: 'Choose two distinct experiments. Check the changing-condition notes before comparing reported values.',
+    curate: 'Save a private draft, reopen it to review each field against its source, then publish under your name.',
+    kit: 'Use this internal page to check shared components and their states.',
+    notFound: 'Use the home link to return to IGNIS.',
+  },
   plain: {
+    presets: {
+      counts: (eligible: number, exact: number, classOnly: number) =>
+        `${eligible} verified ${eligible === 1 ? 'run' : 'runs'} · ${exact} exact material · ${classOnly} same class`,
+      map: (visible: number, offAxis: number, missing: number) =>
+        `${visible} on map · ${offAxis} outside axes · ${missing} missing coordinates`,
+      runCount: (n: number) => `${n} verified ${n === 1 ? 'run' : 'runs'}`,
+      needsMaterial: 'Choose a material',
+      noRuns: 'No compatible runs in this catalog',
+      explore: 'Explore a documented case',
+      library: 'Browse verified experiments',
+    },
+    draft: { restored: "Unfinished inputs restored.", discard: "Discard draft", return: "Return to your draft" },
+    retrieval: { find: "Find matching experiments", choose: "Choose a material", view: "View ranked experiments" },
     hints: {
       material: 'What the sample is made of and its shape. IGNIS only compares experiments with a compatible material and form.',
       o2: 'The share of oxygen in the air around the sample. Earth-normal air is 21%.',
@@ -95,7 +126,7 @@ export const COPY = {
       untested: 'Hatched: inside the catalog’s range, but no verified card at these conditions yet.',
       outside: 'Dashed: beyond the range the current IGNIS catalog covers.',
       scenario: 'Your confirmed scenario, placed by its oxygen and airflow.',
-      prompt: 'Legend · select an item to see what it means',
+      prompt: 'Legend',
     },
     // Match Panel key: explained once above the cards, not on every card.
     chipKeyLabel: 'What the match symbols mean',
@@ -109,7 +140,7 @@ export const COPY = {
       not_specified: 'you left it empty',
     },
     units: { normalized: 'normalized units', asReported: 'units as reported' },
-    compared: 'How many of your conditions were compared. Empty, unreported or identical-everywhere conditions are not counted.',
+    compared: 'Conditions compared. Empty, unreported or identical-everywhere ones are not counted.',
     firstVisit: {
       mission: 'New here? Run the guided mission. It walks you through one real investigation.',
       explore: 'New here? Pick a preset, confirm it, then follow the numbered steps down the page.',
@@ -132,7 +163,7 @@ export const COPY = {
       scenario: 'For your confirmed scenario: only verified cards that pass its material and form checks',
     },
     // A region's range is the outline of its untested cells; tested cells can sit inside that outline.
-    regionCells: 'None of these cells has a verified experiment in the current IGNIS catalog. The range outlines them and can include tested cells.',
+    regionCells: 'No cell here has a verified experiment in the current IGNIS catalog. The outline can include tested cells.',
     catalogRefreshing: 'The verified catalog changed. Loading the new evidence…',
   },
   /** /methods "Plain words" section. Each entry: the term as it appears in the app, then what it means. */

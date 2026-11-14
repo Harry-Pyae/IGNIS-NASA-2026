@@ -32,16 +32,16 @@ export function Slider({ label, hint, describedBy, value, min, max, step = 1, un
   const fill = ((currentValue - min) / (max - min)) * 100;
   return (
     <div className={cx('flex flex-col gap-2', className)}>
-      <div className="flex items-baseline justify-between gap-3">
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <div className="flex items-center gap-2">
           <label htmlFor={id} aria-describedby={describedBy} className="console-label text-dim">{label}</label>
           {hint}
         </div>
-        <output htmlFor={id} className="font-mono text-sm text-text tabular-nums">
+        <output htmlFor={id} className="whitespace-nowrap font-mono text-sm text-text tabular-nums">
           {value == null && allowUnspecified ? unspecifiedLabel : <>{value}<span className="ml-1 text-dim">{unit}</span></>}
         </output>
         {allowUnspecified && (
-          <button type="button" className={buttonClass('tertiary', 'sm', '!text-xs')} onClick={() => value == null ? onChange(unspecifiedValue) : onClear?.()}>
+          <button type="button" className={buttonClass('tertiary', 'sm', 'ml-auto !text-xs')} onClick={() => value == null ? onChange(unspecifiedValue) : onClear?.()}>
             {value == null ? setValueLabel : clearValueLabel}
           </button>
         )}
@@ -59,7 +59,7 @@ export function Slider({ label, hint, describedBy, value, min, max, step = 1, un
         onChange={(e) => onChange(Number(e.target.value))}
         style={{ '--fill': `${Math.min(100, Math.max(0, fill))}%` } as CSSProperties}
       />
-      <div className="flex justify-between font-mono text-[10px] text-dim tabular-nums">
+      <div className="flex justify-between font-mono text-[12px] text-dim tabular-nums">
         <span>{min}</span>
         <span>{max}</span>
       </div>

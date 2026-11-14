@@ -6,6 +6,13 @@ import type { SVGProps } from 'react';
  * pass `label` to make it a meaningful image.
  */
 const paths = {
+  dashboard: <path d="M4 4h7v7H4zM15 4h5v7h-5zM4 15h7v5H4zM15 15h5v5h-5z" />,
+  book: <path d="M12 6v15M12 6C9 3 5 4 3 5v14c3-1 6-1 9 2 3-3 6-3 9-2V5c-2-1-6-2-9 1Z" />,
+  checklist: <path d="m3 6 2 2 4-4M12 6h9M3 13l2 2 4-4m3 2h9m-18 6h5m4 0h9" />,
+  moon: <path d="M20.8 14A9 9 0 0 1 10 3.2 9 9 0 1 0 20.8 14Z" />,
+  sun: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" /></>,
+  'link-off': <path d="m3 3 18 18M10 8l3-3a4 4 0 0 1 6 6l-2 2m-3 3-3 3a4 4 0 0 1-6-6l2-2" />,
+  info: <><circle cx="12" cy="12" r="9" /><path d="M12 11v5m0-8v.1" /></>,
   flame: (
     <path d="M12 3c.6 2.8 4.5 4.6 4.5 9.2a4.5 4.5 0 0 1-9 0c0-1.9.8-3.2 1.8-4.1.2 1.5.9 2.4 1.9 2.7C10.6 8.6 10.9 5.6 12 3Z" />
   ),

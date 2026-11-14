@@ -5,7 +5,7 @@
  *   a scrollToId() call targets a console anchor (deep links keep working).
  * Plain DOM, no React, so tests can drive it with fakes.
  */
-const CONSOLE_ANCHOR = /^(console|s[1-5]|experiment-.+)$/;
+const CONSOLE_ANCHOR = /^(console|evidence-map|s[1-5]|experiment-.+)$/;
 const MOUNT_MARGIN = '800px 0px';
 const IDLE_FALLBACK_MS = 2000; // Safari has no requestIdleCallback
 export const CONSOLE_REQUEST = 'ignis:console';
@@ -48,7 +48,14 @@ export type ConsoleEnv = Pick<Window, 'addEventListener' | 'removeEventListener'
 
 /** Wire the triggers for one console slot. Returns a cleanup. `mount` is called at most once. */
 export function watchConsole(slot: Element, on: { prefetch(): void; mount(): void }, env: ConsoleEnv = window): () => void {
-  const hashAnchor = () => decodeURIComponent(env.location.hash.slice(1));
+  // A malformed fragment (/#%, /#%E0%A4%A) must leave the homepage intact, not throw a URIError at startup.
+  const hashAnchor = () => {
+    try {
+      return decodeURIComponent(env.location.hash.slice(1));
+    } catch {
+      return '';
+    }
+  };
   let done = false;
   let observer: IntersectionObserver | null = null;
   const onHash = () => {
