@@ -220,3 +220,36 @@
     }
   }
 }
+
+/* ---- Light mode tokens (Warm Liquid Glass Dashboard) ---- */
+html.light,
+[data-theme='light'] {
+  color-scheme: light;
+  --color-bg: #FFF9F2; /* Warm Cream background */
+  --color-panel: rgba(255, 255, 255, 0.78); /* Pure White Liquid Glass */
+  --color-border: rgba(249, 115, 22, 0.16); /* Delicate warm border */
+  --color-raised: rgba(255, 240, 224, 0.9); /* Light Orange glass surface */
+
+  /* Text: High contrast AA (contrast ratio > 14:1 on #FFF9F2) */
+  --color-text: #222222;
+  --color-dim: #555555;
+  --color-faint: #777777;
+
+  /* Accents */
+  --color-amber: #F97316; /* Primary Fire Orange */
+  --color-flame: #EA580C; /* Deep Orange */
+  --color-blue: #2563EB;
+  --color-blue-badge: #1D4ED8;
+  --color-violet: #7C3AED;
+  --color-violet-badge: #6D28D9;
+  --color-success: #15803D;
+  --color-warn: #D97706;
+
+  /* Mission Brief blocks */
+  --color-observed-bg: rgba(240, 253, 244, 0.88);
+  --color-observed-border: rgba(34, 197, 94, 0.35);
+  --color-interp-bg: rgba(239, 246, 255, 0.88);
+  --color-interp-border: rgba(59, 130, 246, 0.35);
+  --color-untested-bg: rgba(255, 251, 235, 0.88);
+  --color-untested-border: rgba(245, 158, 11, 0.35);
+}

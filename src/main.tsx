@@ -12,12 +12,14 @@ const Methods = lazy(() => import('./pages/Methods').then(m => ({default:m.Metho
 const Sources = lazy(() => import('./pages/Sources').then(m => ({default:m.Sources})));
 const Library = lazy(() => import('./pages/Library').then((m) => ({ default: m.Library })));
 const Compare = lazy(() => import('./pages/Compare').then((m) => ({ default: m.Compare })));
+const Dashboard = lazy(() => import('./pages/Dashboard').then((m) => ({ default: m.Dashboard })));
 
 // ponytail: pathname switch, no router — add react-router if Coder B needs nested routes.
 // A '/name/*' key matches '/name/<one segment>' (e.g. '/library/*' for detail pages); the page reads the id from the path.
 // Each page is lazy so the landing bundle stays small.
 const ROUTES: Record<string, () => React.JSX.Element> = {
   '/': Home,
+  '/dashboard': () => <Dashboard />,
   '/methods': () => <Methods />,
   '/sources': () => <Sources />,
   '/library': () => <Library />,
@@ -28,7 +30,7 @@ const ROUTES: Record<string, () => React.JSX.Element> = {
 };
 const path = window.location.pathname.replace(/\/$/, '') || '/';
 const Page = ROUTES[path] ?? ROUTES[path.replace(/^(\/[^/]+)\/[^/]+$/, '$1/*')] ?? NotFound;
-const title = path === '/methods' ? 'Methods' : path === '/sources' ? 'Source bibliography' : path === '/compare' ? 'Compare experiments' : path.startsWith('/library') ? 'Evidence library' : Page === NotFound ? 'Page not found' : null;
+const title = path === '/dashboard' ? 'Mission Intelligence Dashboard' : path === '/methods' ? 'Methods' : path === '/sources' ? 'Source bibliography' : path === '/compare' ? 'Compare experiments' : path.startsWith('/library') ? 'Evidence library' : Page === NotFound ? 'Page not found' : null;
 if (title) document.title = title + ' · IGNIS';
 if (path === '/library') document.title = 'Evidence Library · IGNIS';
 if (path.startsWith('/library/')) document.title = 'Experiment detail · IGNIS';

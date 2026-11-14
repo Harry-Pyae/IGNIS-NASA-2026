@@ -9,9 +9,21 @@
       content="IGNIS retrieves the closest verified NASA microgravity combustion experiments for a spacecraft fire scenario, explains what they observed, and marks where the current catalog has no matching evidence."
     />
     <meta name="author" content="Team AstroFlare" />
-    <meta name="theme-color" content="#0C0F16" />
+    <meta name="theme-color" content="#FFF9F2" />
     <link rel="canonical" href="https://ignis-nasa-2026.vercel.app/" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      try {
+        const t = localStorage.getItem('ignis-theme') || 'light';
+        if (t === 'light') {
+          document.documentElement.classList.add('light');
+          document.documentElement.setAttribute('data-theme', 'light');
+        } else {
+          document.documentElement.classList.remove('light');
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      } catch {}
+    </script>
 
     <!-- Icons (generated from /art/logo-flame.webp) -->
     <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
