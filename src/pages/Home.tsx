@@ -4,6 +4,7 @@ import {
   FlameSphereArt,
   Icon,
   Panel,
+  textLink,
   type IconName,
 } from '../components/ui';
 import { CatalogBlock, ExportButton } from '../components/CatalogStatus';
@@ -324,7 +325,7 @@ function Footer() {
         <div className="flex flex-col items-start gap-3 md:items-end">
           {/* Open dataset export (§8.1 item 6): verified cards only, honest README-only file when empty. */}
           <ExportButton summary={summary} label={t('openDataset')} />
-          <a href="/methods#plain-words" className="text-amber underline">Plain words</a>
+          <a href="/methods#plain-words" className={textLink}>Plain words</a>
           <a href="#top" className="console-label text-dim transition-colors duration-200 can-hover:hover:text-text">
             {t('backToTop')}
           </a>

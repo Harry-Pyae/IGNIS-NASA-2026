@@ -1,5 +1,6 @@
 import { useId, type CSSProperties, type ReactNode } from 'react';
 import { cx } from '../../lib/cx';
+import { buttonClass } from './buttonStyles';
 
 interface SliderProps {
   label: string;
@@ -40,7 +41,7 @@ export function Slider({ label, hint, describedBy, value, min, max, step = 1, un
           {value == null && allowUnspecified ? unspecifiedLabel : <>{value}<span className="ml-1 text-dim">{unit}</span></>}
         </output>
         {allowUnspecified && (
-          <button type="button" className="text-xs text-dim underline underline-offset-2 hover:text-text" onClick={() => value == null ? onChange(unspecifiedValue) : onClear?.()}>
+          <button type="button" className={buttonClass('tertiary', 'sm', '!text-xs')} onClick={() => value == null ? onChange(unspecifiedValue) : onClear?.()}>
             {value == null ? setValueLabel : clearValueLabel}
           </button>
         )}
