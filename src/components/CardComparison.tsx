@@ -32,7 +32,7 @@ export function CardComparison({cards, standalone = false}: {cards: Experiment[]
     <p className="my-3 text-sm text-dim">{t('compareDescription')}</p>
     {!standalone && <div className="mb-4 grid gap-3 sm:grid-cols-2">{two.map((c,i) =>
       <label key={i} className="min-w-0 text-sm">Experiment {i+1}
-        <select className="mt-1 block w-full rounded border border-border bg-bg p-2" value={c.id} onChange={e => setPair(i === 0 ? [e.target.value,right.id] : [left.id,e.target.value])}>
+        <select className="mt-1 h-10 w-full rounded-xl border border-border bg-bg/70 px-3 text-sm text-text" value={c.id} onChange={e => setPair(i === 0 ? [e.target.value,right.id] : [left.id,e.target.value])}>
           {(i === 0 ? eligible : others).map(item => <option key={item.id} value={item.id}>{label(item)}</option>)}
         </select>
       </label>)}</div>}
