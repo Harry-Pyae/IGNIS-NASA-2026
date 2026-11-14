@@ -29,13 +29,11 @@ html::view-transition-new(root) { animation-duration: 240ms; animation-timing-fu
 }
 @media print {
   body:has(.mission-brief) :is(.ambient, .app-header),
-  #top:has(.mission-brief) > :not(:has(.mission-brief)),
-  #console > :not(:has(.mission-brief)),
-  #console .mission-brief ~ *, #console :has(> .mission-brief) > :not(.mission-brief),
+  #top:has(.mission-brief) :not(.mission-brief, .mission-brief *, :has(.mission-brief)),
   .mission-brief aside, .mission-brief .step-tag { display: none !important; }
   body:has(.mission-brief), body:has(.mission-brief) #root, #console:has(.mission-brief),
   .mission-brief, .mission-brief * { background: white !important; color: black !important; box-shadow: none !important; text-shadow: none !important; }
-  #console:has(.mission-brief), #console :has(> .mission-brief) { display: block; padding: 0; }
+  #top :has(.mission-brief) { display: block; padding: 0; }
   .mission-brief li, .mission-brief h3 { break-inside: avoid; }
   .brief-print-only { display: block; margin-block: 1em; overflow-wrap: anywhere; }
   .mission-brief a[href]::after { content: " (" attr(href) ")"; overflow-wrap: anywhere; }
