@@ -65,6 +65,8 @@ export const COPY = {
   // Longer explanations live in `glossary` (/methods). Facts still waiting for R1's source are deliberately absent:
   // the Moon-base oxygen figure, "flames need moving air", the ISS cabin pressure, and the transition/partial outcomes.
   plain: {
+    draft: { restored: "Unfinished inputs restored.", discard: "Discard draft", return: "Return to your draft" },
+    retrieval: { find: "Find matching experiments", choose: "Choose a material", view: "View ranked experiments" },
     hints: {
       material: 'What the sample is made of and its shape. IGNIS only compares experiments with a compatible material and form.',
       o2: 'The share of oxygen in the air around the sample. Earth-normal air is 21%.',

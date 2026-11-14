@@ -4,6 +4,7 @@
  * so the engine, Zod schemas and console UI stay off the first paint. Owner: Coder B (console sections).
  */
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type FormEvent } from 'react';
+import { z } from 'zod';
 import { flushSync } from 'react-dom';
 import { Badge, Button, Chip, CHIP_STATUS, CitationChip, Panel, PresetChip, SectionHeader, Slider, textLink } from '../components/ui';
 import { cx } from '../lib/cx';
@@ -13,7 +14,7 @@ import { pickMaterial, presetScenario, resolveMaterial, SCENARIO_PRESETS } from 
 import { applyEnvironment, isElevatedO2, visibleEnvironmentPresets, type EnvironmentPreset } from '../engine/environments';
 import { briefingKey, currentBriefing, evidenceViews, investigationSummary, mapCoordinates, onMapAxes, retrievalState } from '../engine/views';
 import { datasetCitation, evidenceLocator, evidenceSource } from '../lib/evidenceSource';
-import { FIELD_UNITS, PARAM_LABELS, ParseScenarioResponseSchema, SynthesizeResponseSchema, type Briefing, type ContinuousParam, type Experiment, type MatchResult, type ParsedScenario, type ResolvedScenario } from '../lib/types';
+import { FIELD_UNITS, PARAM_LABELS, ParsedScenarioSchema, ParseScenarioResponseSchema, SynthesizeResponseSchema, type Briefing, type ContinuousParam, type Experiment, type MatchResult, type ParsedScenario, type ResolvedScenario } from '../lib/types';
 import { gapGrid, gapRadar, GRID, type GapRadar as GapRadarData } from '../engine/gaps';
 import { whyMatched } from '../engine/match';
 import { t } from '../i18n';
@@ -55,6 +56,23 @@ const subscribeWide = (onChange: () => void) => {
 const useWide = () => useSyncExternalStore(subscribeWide, () => window.matchMedia(WIDE).matches, () => false);
 const reducedMotion = () => !window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
 
+const draftKey = 'ignis-console-draft';
+const storedDraftSchema = z.object({
+  version: z.literal(1),
+  description: z.string(),
+  presetId: z.string().nullable(),
+  materialChoice: z.string().nullable(),
+  scenario: ParsedScenarioSchema,
+});
+function readDraft() {
+  try {
+    const parsed = storedDraftSchema.safeParse(JSON.parse(sessionStorage.getItem(draftKey) ?? 'null'));
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
+}
+
 export function Console() {
   const { catalog, reload } = useVerifiedCatalog();
   const { summary: catalogSummary } = useCatalogSummary();
@@ -66,8 +84,11 @@ export function Console() {
   const hasCatalogSnapshot = catalog.state === 'ready' || catalog.state === 'empty';
   const revision = hasCatalogSnapshot ? catalog.revision : 'pending';
   const dataStatus = hasCatalogSnapshot ? 'connected' : catalog.state === 'unavailable' ? 'unavailable' : 'loading';
-  const [presetId, setPresetId] = useState<string | null>(SCENARIO_PRESETS[0]?.id ?? null);
-  const [scenario, setScenario] = useState<ParsedScenario>(() => ({
+  const [savedDraft] = useState(readDraft);
+  const [shareVisit] = useState(() => new URLSearchParams(window.location.search).has('share'));
+  const initialDraft = shareVisit ? null : savedDraft;
+  const [presetId, setPresetId] = useState<string | null>(() => initialDraft ? initialDraft.presetId : SCENARIO_PRESETS[0]?.id ?? null);
+  const [scenario, setScenario] = useState<ParsedScenario>(() => initialDraft?.scenario ?? ({
     domain: 'solid_flammability',
     fuel_material_raw: SCENARIO_PRESETS[0]?.material?.fuel_material ?? null,
     fuel_form: SCENARIO_PRESETS[0]?.fuel_form ?? null,
@@ -76,9 +97,30 @@ export function Console() {
     flow_cm_s: SCENARIO_PRESETS[0]?.flow_cm_s ?? null,
     pressure_kpa: SCENARIO_PRESETS[0]?.pressure_kpa ?? null,
   }));
-  const [materialChoice, setMaterialChoice] = useState<string | null>(null);
+  const [materialChoice, setMaterialChoice] = useState<string | null>(initialDraft?.materialChoice ?? null);
   const [confirmed, setConfirmed] = useState<ResolvedScenario | null>(null);
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState(initialDraft?.description ?? '');
+  const [restoredDraft, setRestoredDraft] = useState(initialDraft !== null);
+  const skipDraftWrite = useRef(false);
+  useEffect(() => {
+    if (shareVisit || skipDraftWrite.current) {
+      skipDraftWrite.current = false;
+      return;
+    }
+    if (!description && !materialChoice && presetId === SCENARIO_PRESETS[0]?.id &&
+      scenario.fuel_material_raw === (SCENARIO_PRESETS[0]?.material?.fuel_material ?? null) &&
+      scenario.fuel_form === (SCENARIO_PRESETS[0]?.fuel_form ?? null) &&
+      scenario.o2_pct === (SCENARIO_PRESETS[0]?.o2_pct ?? null) &&
+      scenario.flow_cm_s === (SCENARIO_PRESETS[0]?.flow_cm_s ?? null) &&
+      scenario.thickness_mm === (SCENARIO_PRESETS[0]?.thickness_mm ?? null) &&
+      scenario.pressure_kpa === (SCENARIO_PRESETS[0]?.pressure_kpa ?? null)) {
+      try { sessionStorage.removeItem(draftKey); } catch { /* Storage may be blocked. */ }
+      return;
+    }
+    try {
+      sessionStorage.setItem(draftKey, JSON.stringify({ version: 1, description, presetId, materialChoice, scenario }));
+    } catch { /* The live form remains editable. */ }
+  }, [description, materialChoice, presetId, scenario, shareVisit]);
   const [parsing, setParsing] = useState(false);
   // Round 8 · A5: a parse applies only if nothing changed since it was sent (edit, preset, slider, environment,
   // material choice, share restore or a newer parse). Superseded requests are aborted and their result, error and
@@ -266,6 +308,25 @@ export function Console() {
     editor.querySelector('summary')?.focus();
   };
 
+  const retrievalLabel = material.status !== 'resolved' ? COPY.plain.retrieval.choose
+    : confirmed === draft && views ? COPY.plain.retrieval.view : COPY.plain.retrieval.find;
+  function retrieve() {
+    if (material.status !== 'resolved') {
+      focusScenarioEditor();
+      (scenarioEditor.current?.querySelector<HTMLElement>('[data-material-picker]')
+        ?? document.getElementById('scenario-material'))?.focus();
+      return;
+    }
+    if (confirmed === draft) {
+      if (dataStatus === 'unavailable') reload();
+      if (wide) showMatches(); else showMap();
+      return;
+    }
+    focusAfterConfirm.current = true;
+    setConfirmed(draft);
+    setMessage('');
+  }
+
   function editScenario(update: Partial<ParsedScenario>, materialEdited = false) {
     invalidateParse();
     if (confirmed) setInputsChanged(true);
@@ -410,6 +471,22 @@ export function Console() {
       />}
       <div className="flex flex-col gap-6 xl:grid xl:grid-cols-[400px_minmax(0,1fr)] xl:items-start">
       <Panel as="section" aria-labelledby="s1" className="reveal xl:sticky xl:top-[calc(var(--header-h,0px)+1rem)] xl:flex xl:max-h-[calc(100dvh-var(--header-h,0px)-2rem)] xl:flex-col">
+        {restoredDraft && <div className="mb-3 flex flex-wrap items-center gap-2 text-sm" role="status">
+          <span>{COPY.plain.draft.restored}</span>
+          <Button size="sm" onClick={() => {
+            skipDraftWrite.current = true;
+            setRestoredDraft(false);
+            setDescription('');
+            const preset = SCENARIO_PRESETS[0];
+            if (preset) choosePreset(preset.id);
+            try { sessionStorage.removeItem(draftKey); } catch { /* Storage may be blocked. */ }
+          }}>{COPY.plain.draft.discard}</Button>
+        </div>}
+        {shareVisit && savedDraft && <Button size="sm" className="mb-3" onClick={() => {
+          const url = new URL(window.location.href);
+          url.searchParams.delete('share');
+          window.location.assign(url);
+        }}>{COPY.plain.draft.return}</Button>}
         <SectionHeader id="s1" step={t('describeStep')} title={t('missionScenario')} />
         <MissionCaption step={guidedStep === 0 ? 0 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[0].caption)} />
         <div className="grid gap-8 lg:grid-cols-2 xl:-mr-2 xl:min-h-0 xl:grid-cols-1 xl:gap-5 xl:overflow-y-auto xl:pr-2">
@@ -456,7 +533,7 @@ export function Console() {
                   <div className="flex flex-col gap-2 rounded-xl border border-warn/30 bg-warn/[0.05] p-3 text-sm text-dim">
                     <p>{material.reason === 'ambiguous' ? t('chooseAmbiguousMaterial') : t('chooseCatalogMaterial')}</p>
                     {material.candidates.length > 0 ? (
-                      <select value="" onChange={(event) => { invalidateParse(); setMaterialChoice(event.target.value); setConfirmed(null); }} className="h-10 rounded-xl border border-border bg-bg px-3 text-sm text-text">
+                      <select data-material-picker value="" onChange={(event) => { invalidateParse(); setMaterialChoice(event.target.value); setConfirmed(null); }} className="h-10 rounded-xl border border-border bg-bg px-3 text-sm text-text">
                         <option value="" disabled>{t('selectMaterial')}</option>
                         {material.candidates.map((candidate) => <option key={candidate} value={candidate}>{candidate.replace(/_/g, ' ')}</option>)}
                       </select>
@@ -538,18 +615,7 @@ export function Console() {
         </div>
         <div className="mt-5 flex flex-col gap-2 xl:border-t xl:border-border xl:pt-4">
             <div className="flex flex-wrap items-center gap-3">
-              <Button id="confirm-scenario" variant="primary" disabled={material.status !== 'resolved'} aria-describedby={material.status !== 'resolved' ? 'confirm-blocked' : undefined} onClick={() => {
-                if (confirmed === draft) {
-                  if (wide) showMatches(); else showMap();
-                  return;
-                }
-                focusAfterConfirm.current = true;
-                setConfirmed(draft);
-                setMessage(catalog.state === 'unavailable' ? t('confirmedCatalogUnavailable') : t('confirmedCatalog'));
-              }}>
-                {t('confirmScenario')}
-              </Button>
-              {material.status !== 'resolved' && <p id="confirm-blocked" className="text-sm text-dim">{COPY.materialUnresolved}</p>}
+              <Button id="confirm-scenario" variant="primary" onClick={retrieve}>{retrievalLabel}</Button>
               {(() => {
                 // A3: a count only after a settled read; loading and failure say so instead of "0".
                 const retrieval = retrievalState(dataStatus, confirmed, views);
@@ -615,13 +681,7 @@ export function Console() {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
             <SectionHeader id="s3" step={t('matchesStep')} title={t('matchPanel')} className="!mb-0 !border-0 !pb-0" />
             <p className="min-w-0 flex-1 text-sm text-dim">{COPY.plain.collapsed.matches}</p>
-            {missionCase
-              ? <Button variant="primary" onClick={() => startMission(missionCase.preset_id)}>{COPY.landingCta.mission}</Button>
-              : <Button onClick={() => {
-                const confirm = document.getElementById('confirm-scenario');
-                confirm?.scrollIntoView({ behavior: reducedMotion() ? 'instant' : 'smooth', block: 'center' });
-                confirm?.focus({ preventScroll: true });
-              }}>{COPY.plain.collapsed.matchesAction}</Button>}
+            <Button onClick={retrieve}>{retrievalLabel}</Button>
           </div>
           <ShareBanner share={share} />
           <MissionCaption step={guidedStep === 2 ? 2 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[2].caption)} />
