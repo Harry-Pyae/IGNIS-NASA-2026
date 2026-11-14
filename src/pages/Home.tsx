@@ -1,3 +1,4 @@
+import { UsageHelp } from '../components/ui/UsageHelp';
 import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
   Button,
@@ -60,6 +61,7 @@ function Hero() {
             <br />
             <span className="text-lit-dim">Nothing it didn&apos;t.</span>
           </h1>
+          <UsageHelp topic="helpHome" />
           <p {...rise(2)} className="anim-rise mt-7 max-w-lg text-[17px] leading-[1.65] text-dim sm:text-[18px]">
             Describe a spacecraft fire scenario in mission terms. IGNIS retrieves the closest verified NASA
             microgravity combustion experiments, explains what they actually observed — and marks where the current

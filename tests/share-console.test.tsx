@@ -51,7 +51,7 @@ it('before Confirm, steps 03/04 are slim single rows and step 05 labels its cata
   const html = renderToStaticMarkup(<Console />);
   expect(html).toContain(COPY.plain.collapsed.matches);
   expect(html).toContain(COPY.plain.collapsed.brief);
-  expect(html).toContain(COPY.plain.collapsed.matchesAction);
+  expect(html).toMatch(/Find matching experiments|Choose a material/);
   expect(html).toContain(COPY.plain.gapScope.catalog);
   // Anchors and the step headings survive the collapse (guided mission + deep links).
   for (const id of ['s1', 's2', 's3', 's4', 's5']) expect(html).toContain(`id="${id}"`);
