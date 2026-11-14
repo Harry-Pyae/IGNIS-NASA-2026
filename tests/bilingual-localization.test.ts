@@ -58,12 +58,12 @@ describe('Complete Myanmar / English Bilingual Localization Suite', () => {
     setActiveLocale('en');
     const enGloss = glossary();
     expect(enGloss.length).toBeGreaterThan(0);
-    expect(enGloss[0].term).not.toMatch(/[က-႟]/);
+    expect(enGloss[0]?.term).not.toMatch(/[က-႟]/);
 
     setActiveLocale('my');
     const myGloss = glossary();
     expect(myGloss.length).toBe(BURMESE_GLOSSARY.length);
-    expect(/[က-႟]/.test(myGloss[0].term)).toBe(true);
+    expect(/[က-႟]/.test(myGloss[0]?.term ?? '')).toBe(true);
   });
 
   it('BURMESE_METHODS_STAGES and BURMESE_METHODS_PRINCIPLES have 4 stages and 5 principles with proper Burmese text', () => {
