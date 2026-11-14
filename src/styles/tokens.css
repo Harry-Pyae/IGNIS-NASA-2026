@@ -221,35 +221,35 @@
   }
 }
 
-/* ---- Light mode tokens (iOS 28 Liquid Glass Dashboard) ---- */
+/* ---- Light mode tokens (Warm Cream Canvas + iOS 28 Liquid Glass) ---- */
 html.light,
 [data-theme='light'] {
   color-scheme: light;
-  --color-bg: #FFF9F2; /* Warm Cream background ground */
-  --color-panel: rgba(255, 255, 255, 0.38); /* Ultra-transparent iOS 28 Liquid Glass */
-  --color-border: rgba(255, 255, 255, 0.65); /* Crystal specular glass rim */
-  --color-raised: rgba(255, 255, 255, 0.55); /* Elevated liquid glass layer */
+  --color-bg: #FFF9F2; /* Warm Cream Canvas */
+  --color-panel: rgba(255, 255, 255, 0.15); /* 10–20% transparent liquid glass panel */
+  --color-border: rgba(255, 255, 255, 0.65); /* Specular pure glass rim */
+  --color-raised: rgba(255, 255, 255, 0.24); /* Elevated transparent glass */
 
-  /* Text: High contrast AA */
-  --color-text: #1a1a1a;
+  /* Text: Charcoal (#222222) for maximum clarity over luminous glass */
+  --color-text: #222222;
   --color-dim: #444444;
-  --color-faint: #6c6c6c;
+  --color-faint: #666666;
 
   /* Accents */
   --color-amber: #F97316; /* Primary Fire Orange */
-  --color-flame: #EA580C; /* Deep Orange */
-  --color-blue: #2563EB;
-  --color-blue-badge: #1D4ED8;
-  --color-violet: #7C3AED;
-  --color-violet-badge: #6D28D9;
+  --color-flame: #EA580C; /* Deep Flame Orange */
+  --color-blue: #1D4ED8;
+  --color-blue-badge: #1E40AF;
+  --color-violet: #6D28D9;
+  --color-violet-badge: #5B21B6;
   --color-success: #15803D;
-  --color-warn: #D97706;
+  --color-warn: #C2410C;
 
-  /* Mission Brief blocks with liquid glass translucency */
-  --color-observed-bg: rgba(240, 253, 244, 0.52);
-  --color-observed-border: rgba(34, 197, 94, 0.38);
-  --color-interp-bg: rgba(239, 246, 255, 0.52);
-  --color-interp-border: rgba(59, 130, 246, 0.38);
-  --color-untested-bg: rgba(255, 251, 235, 0.52);
-  --color-untested-border: rgba(245, 158, 11, 0.38);
+  /* Mission Brief & dense reading blocks with translucent liquid glass */
+  --color-observed-bg: rgba(255, 255, 255, 0.28);
+  --color-observed-border: rgba(22, 163, 74, 0.45);
+  --color-interp-bg: rgba(255, 255, 255, 0.28);
+  --color-interp-border: rgba(37, 99, 235, 0.45);
+  --color-untested-bg: rgba(255, 255, 255, 0.28);
+  --color-untested-border: rgba(234, 88, 12, 0.45);
 }
