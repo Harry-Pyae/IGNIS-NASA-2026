@@ -10,6 +10,7 @@ import {
 import { CatalogBlock, ExportButton } from '../components/CatalogStatus';
 import { preloadVerifiedCatalog, useCatalogSummary } from '../lib/catalog';
 import { COPY } from '../lib/copy';
+import { CONSOLE_DRAFT_KEY, readSession } from '../lib/consoleDraft';
 import { t } from '../i18n';
 import { isConsoleAnchor, requestConsole, takePendingAnchor, watchConsole } from './consoleLoader';
 
@@ -124,17 +125,20 @@ const Console = lazy(() => loadConsole().then((m) => ({ default: m.Console })));
 function LazyConsole() {
   const slot = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
-  useEffect(
-    () =>
-      watchConsole(slot.current!, {
-        prefetch: () => {
-          void loadConsole();
-          preloadVerifiedCatalog(); // data ready before mount: the console renders settled, so nothing shifts
-        },
-        mount: () => setMounted(true),
-      }),
-    [],
-  );
+  useEffect(() => {
+    const stop = watchConsole(slot.current!, {
+      prefetch: () => {
+        void loadConsole();
+        preloadVerifiedCatalog(); // data ready before mount: the console renders settled, so nothing shifts
+      },
+      mount: () => setMounted(true),
+    });
+    // Coming back (a nav click or typed URL, not a reload or Back) with a console draft: land on the console, not the
+    // hero. Reload and Back keep the browser's own scroll restoration; a #hash deep link still wins.
+    const arrival = (performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined)?.type;
+    if (arrival === 'navigate' && !window.location.hash && readSession(CONSOLE_DRAFT_KEY)) requestConsole('console');
+    return stop;
+  }, []);
   return (
     <div ref={slot}>
       {mounted ? (
@@ -165,7 +169,7 @@ function ConsolePlaceholder() {
 function ScrollToPending() {
   useEffect(() => {
     const id = takePendingAnchor();
-    if (id) document.getElementById(id)?.scrollIntoView({ block: 'start' });
+    if (id) document.getElementById(id)?.scrollIntoView({ block: 'start', behavior: 'instant' }); // arrival: land, don't glide
   }, []);
   return null;
 }
