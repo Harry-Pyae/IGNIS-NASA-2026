@@ -9,8 +9,10 @@ restoration hook with the current catalog and a callback.
 const share = useScenarioShare(catalog, restoreSharedScenario);
 ```
 
-The callback takes a `ResolvedScenario` and confirms it so the existing
-`evidenceViews` runs. It restores the editor fields and maps a resolved
+The callback takes a `ResolvedScenario` and leaves it unconfirmed.
+The share hook reruns deterministic retrieval for catalog comparison without
+requesting a Brief. The visitor must click Confirm to generate the Brief.
+The callback restores the editor fields and maps a resolved
 material's canonical name to `fuel_material_raw` and `materialChoice`.
 
 The console renders the copy button when both `confirmed` and `views` exist.
