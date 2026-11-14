@@ -161,6 +161,113 @@ html { scroll-padding-top: 6.5rem; }
       inset 0 -1px 0 0 rgb(0 0 0 / 0.25);
   }
 
+  /* Warm Liquid Glass Dashboard overrides (Light Mode) */
+  html.light .surface,
+  [data-theme='light'] .surface {
+    background-color: rgba(255, 255, 255, 0.74);
+    background-image:
+      radial-gradient(100% 80% at 0% 0%, rgba(249, 115, 22, 0.05), transparent 60%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 249, 242, 0.6));
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border-color: rgba(249, 115, 22, 0.16);
+    box-shadow:
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.95),
+      0 4px 16px -2px rgba(234, 88, 12, 0.04),
+      0 20px 48px -12px rgba(249, 115, 22, 0.08);
+  }
+  html.light .surface-raised,
+  [data-theme='light'] .surface-raised {
+    background-color: rgba(255, 255, 255, 0.92);
+    border-color: rgba(249, 115, 22, 0.22);
+    box-shadow:
+      inset 0 1px 2px 0 rgba(255, 255, 255, 1),
+      0 12px 32px -6px rgba(249, 115, 22, 0.12),
+      0 4px 12px -2px rgba(234, 88, 12, 0.06);
+  }
+  html.light .surface-tinted,
+  [data-theme='light'] .surface-tinted {
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+  }
+  html.light .surface-inset,
+  [data-theme='light'] .surface-inset {
+    background-color: rgba(255, 240, 224, 0.45);
+    border: 1px solid rgba(249, 115, 22, 0.14);
+    box-shadow: inset 0 2px 4px 0 rgba(234, 88, 12, 0.04);
+  }
+
+  /* Liquid Glass materials (iOS 26 Liquid Glass) */
+  .glass-dashboard-card {
+    background: rgba(255, 255, 255, 0.74);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow:
+      inset 0 1px 1px 0 rgba(255, 255, 255, 1),
+      0 8px 24px -4px rgba(249, 115, 22, 0.06),
+      0 2px 6px -1px rgba(234, 88, 12, 0.03);
+    transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out), border-color 0.25s ease;
+  }
+  .glass-dashboard-card:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(249, 115, 22, 0.35);
+    box-shadow:
+      inset 0 1px 2px 0 rgba(255, 255, 255, 1),
+      0 16px 36px -8px rgba(249, 115, 22, 0.14),
+      0 4px 12px -2px rgba(234, 88, 12, 0.06);
+  }
+  html:not(.light) .glass-dashboard-card {
+    background: color-mix(in srgb, var(--color-panel) 82%, transparent);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.6);
+  }
+  html:not(.light) .glass-dashboard-card:hover {
+    border-color: var(--color-amber);
+    box-shadow: 0 18px 40px -10px rgba(0, 0, 0, 0.8);
+  }
+
+  /* Ambient glowing lighting */
+  html.light .ambient-glow {
+    background: radial-gradient(circle, rgba(249, 115, 22, 0.22) 0%, rgba(255, 240, 224, 0.4) 45%, transparent 70%);
+  }
+  html.light .ambient-glow-secondary {
+    background: radial-gradient(circle, rgba(255, 176, 102, 0.24) 0%, rgba(255, 249, 242, 0.45) 50%, transparent 70%);
+  }
+  html.light .ambient-glow-bottom {
+    background: radial-gradient(circle, rgba(234, 88, 12, 0.18) 0%, rgba(255, 240, 224, 0.3) 50%, transparent 70%);
+  }
+  html:not(.light) .ambient-glow,
+  html:not(.light) .ambient-glow-secondary,
+  html:not(.light) .ambient-glow-bottom {
+    opacity: 0.2;
+    background: radial-gradient(circle, rgba(249, 115, 22, 0.15) 0%, transparent 70%);
+  }
+
+  @keyframes ribbon-drift-primary {
+    0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    50% { transform: translate(-30px, 15px) scale(1.03) rotate(1deg); }
+  }
+  @keyframes ribbon-drift-secondary {
+    0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    50% { transform: translate(25px, -20px) scale(0.98) rotate(-1.5deg); }
+  }
+  .anim-ribbon-primary {
+    animation: ribbon-drift-primary 28s ease-in-out infinite;
+    transform-origin: center;
+  }
+  .anim-ribbon-secondary {
+    animation: ribbon-drift-secondary 34s ease-in-out infinite;
+    transform-origin: center;
+  }
+  .anim-ribbon-sheen {
+    animation: ribbon-drift-primary 28s ease-in-out infinite;
+    transform-origin: center;
+  }
+
   /* Primary action: lit amber with a real shadow (§8.3 accent). */
   .btn-primary {
     background-color: var(--color-amber);

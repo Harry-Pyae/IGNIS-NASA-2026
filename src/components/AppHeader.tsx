@@ -1,9 +1,11 @@
 import { useCatalogSummary } from '../lib/catalog';
 import { useEffect, useState } from 'react';
+import { useTheme } from '../lib/theme';
 import { ExportButton, ProvenancePill } from './CatalogStatus';
 
-/** App shell header: brand mark + wordmark (left), live provenance pill + export (right). */
+/** App shell header: brand mark + wordmark (left), live provenance pill + export + theme (right). */
 export function AppHeader() {
+  const { theme, toggle: toggleTheme } = useTheme();
   const { summary, retry } = useCatalogSummary();
   const [hash, setHash] = useState(() => window.location.hash);
   useEffect(() => {
@@ -26,10 +28,20 @@ export function AppHeader() {
           <ProvenancePill summary={summary} retry={retry} />
           {/* §8.1 item 6: the verified-only open dataset (/api/export). */}
           <ExportButton summary={summary} label="Export dataset" compact />
+
+          {/* Theme switcher toggle */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${theme === 'light' ? 'Dark Space' : 'Warm Liquid Glass'} mode`}
+            className="flex items-center gap-1.5 rounded-full border border-orange-500/20 bg-white/70 dark:bg-black/30 px-2.5 py-1 text-xs font-mono text-dim transition-all hover:border-amber hover:text-amber"
+          >
+            <span>{theme === 'light' ? '☀️ Light' : '🌙 Dark'}</span>
+          </button>
         </div>
       </div>
       <nav aria-label="Project navigation" className="mx-auto flex max-w-6xl flex-wrap gap-x-5 gap-y-3 px-4 pb-3 text-sm sm:px-6">
-        {([['/', 'Home'], ['/#console', 'Scenario'], ['/library', 'Library'], ['/compare', 'Compare'], ['/methods', 'Methods'], ['/sources', 'Sources']] as const).map(([url,label]) => {
+        {([['/', 'Home'], ['/dashboard', 'Dashboard'], ['/#console', 'Scenario'], ['/library', 'Library'], ['/compare', 'Compare'], ['/methods', 'Methods'], ['/sources', 'Sources']] as const).map(([url,label]) => {
           const path = window.location.pathname.replace(/\/$/, '') || '/';
           const inScenario = path === '/' && /^#(console|s[1-5]|experiment-.+)$/.test(hash);
           const current = url === '/#console' ? inScenario
