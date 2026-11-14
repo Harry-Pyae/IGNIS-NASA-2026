@@ -76,6 +76,24 @@ export function Console() {
     setAppliedEnvironmentId(null);
     setInputsChanged(true);
   });
+  const resultsSummary = useRef<HTMLParagraphElement>(null);
+  const focusAfterConfirm = useRef(false);
+  const [firstVisit, setFirstVisit] = useState(() => {
+    try {
+      return localStorage.getItem('ignis-scenario-intro-dismissed') !== '1';
+    } catch {
+      return true;
+    }
+  });
+  useEffect(() => {
+    if (!confirmed || !focusAfterConfirm.current) return;
+    focusAfterConfirm.current = false;
+    resultsSummary.current?.focus({ preventScroll: true });
+    resultsSummary.current?.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+      block: 'center',
+    });
+  }, [confirmed]);
   const sourceMaterials = useMemo(() => experiments.map(({ domain, fuel_material, material_class }) => ({ domain, fuel_material, material_class })), [experiments]);
   const activePreset = SCENARIO_PRESETS.find((preset) => preset.id === presetId);
   const material = materialChoice
@@ -286,6 +304,15 @@ export function Console() {
         <div className="anim-ticker flex w-max font-mono">{[0,1].map(copy => <div aria-hidden={copy === 1} key={copy} className="flex shrink-0">{views.eligible.map(c => <span key={c.id} className="pr-8">{experimentLabel(c)}</span>)}</div>)}</div>
       </div>}
       <Panel as="section" aria-labelledby="s1" className="reveal">
+        {firstVisit && <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-border p-3 text-sm text-dim">
+          {missionCase
+            ? <Button size="sm" onClick={() => startMission(missionCase.preset_id)}>{COPY.landingCta.mission}</Button>
+            : <p className="min-w-0 flex-1">{COPY.missionAvailability}</p>}
+          <Button size="sm" onClick={() => {
+            setFirstVisit(false);
+            try { localStorage.setItem('ignis-scenario-intro-dismissed', '1'); } catch { /* Dismiss for this visit. */ }
+          }}>Dismiss</Button>
+        </div>}
         <SectionHeader id="s1" step={t('describeStep')} title={t('missionScenario')} />
         <MissionCaption step={guidedStep === 0 ? 0 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[0].caption)} />
         <div className="grid gap-8 lg:grid-cols-2">
@@ -374,12 +401,18 @@ export function Console() {
               </div>
             </details>
             <div className="flex flex-wrap items-center gap-3">
-              <Button variant="primary" disabled={material.status !== 'resolved'} onClick={() => {
+              <Button variant="primary" disabled={material.status !== 'resolved'} aria-describedby={material.status !== 'resolved' ? 'confirm-blocked' : undefined} onClick={() => {
+                if (confirmed === draft) {
+                  resultsSummary.current?.focus();
+                  return;
+                }
+                focusAfterConfirm.current = true;
                 setConfirmed(draft);
                 setMessage(catalog.state === 'unavailable' ? t('confirmedCatalogUnavailable') : t('confirmedCatalog'));
               }}>
                 {t('confirmScenario')}
               </Button>
+              {material.status !== 'resolved' && <p id="confirm-blocked" className="text-sm text-dim">{COPY.materialUnresolved}</p>}
               {confirmed && <span role="status" className="text-sm text-success">{t('confirmed')} · {views?.top_k.length ?? 0} {t('confirmedMatches')}</span>}
             </div>
             {message && <p role="status" className="text-sm text-dim">{message}</p>}
@@ -420,6 +453,17 @@ export function Console() {
           title={t('evidenceMap')}
         />
         <MissionCaption step={guidedStep === 1 ? 1 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[1].caption)} />
+        {confirmed && <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-border p-3 text-sm">
+          <div className="min-w-0 flex-1">
+            <p ref={resultsSummary} tabIndex={-1}>
+              {closestMatch ? `${t('closestMatch')}: ${experimentLabel(closestMatch.experiment)}`
+                : t(dataStatus === 'loading' ? 'loading' : dataStatus === 'unavailable' ? 'noMatchCatalog' : 'noEligibleMatchesForScenario')}
+              {closestMatch && <> · <a href="#s4" className="text-amber underline">{t('missionBrief')}</a></>}
+            </p>
+            <p className="text-dim">{COPY.summary.o2(confirmed.o2_pct)} · {COPY.summary.flow(confirmed.flow_cm_s)}</p>
+          </div>
+          <Button size="sm" onClick={focusScenarioEditor}>{t('editScenario')}</Button>
+        </div>}
         <InvestigationSummary
           summary={investigationSummary(draft, confirmed, views)}
           status={dataStatus}
