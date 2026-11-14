@@ -94,7 +94,21 @@ export const COPY = {
     map: {
       untested: 'Hatched: inside the catalog’s range, but no verified card at these conditions yet.',
       outside: 'Dashed: beyond the range the current IGNIS catalog covers.',
+      scenario: 'Your confirmed scenario, placed by its oxygen and airflow.',
+      prompt: 'Legend · select an item to see what it means',
     },
+    // Match Panel key: explained once above the cards, not on every card.
+    chipKeyLabel: 'What the match symbols mean',
+    chipKey: {
+      same: 'same as yours',
+      close: 'close',
+      different: 'different',
+      not_reported: 'card doesn’t report it',
+      untested: 'no card has it',
+      outside_range: 'outside the catalog’s range',
+      not_specified: 'you left it empty',
+    },
+    units: { normalized: 'normalized units', asReported: 'units as reported' },
     compared: 'How many of your conditions were compared. Empty, unreported or identical-everywhere conditions are not counted.',
     firstVisit: {
       mission: 'New here? Run the guided mission. It walks you through one real investigation.',
@@ -102,14 +116,6 @@ export const COPY = {
       dismiss: 'Dismiss',
     },
     hintButton: (label: string) => `What is ${label}?`,
-    hintLabels: {
-      mapLegend: 'What do hatched and dashed cells mean?',
-      mapCells: 'What does one map cell cover?',
-      compared: 'What does “compared on” mean?',
-      chips: 'What do these match chips mean?',
-      region: 'What does this region mean?',
-      units: 'Which units does this page show?',
-    },
     evidenceUpdated: 'Evidence updated',
     viewEvidence: 'View',
     viewEvidenceAction: 'View evidence',
