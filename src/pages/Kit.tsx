@@ -206,6 +206,7 @@ export function Kit() {
               <li>Give buttons in one row the same size, e.g. <em>Cite this</em> and <em>Compare</em> both <code className="font-mono">md</code>.</li>
               <li>Point two controls for the same thing at the same handler, with the same label.</li>
               <li>Rely on the built-in 44 px hit area and the token focus ring; never remove the outline.</li>
+              <li>Fold a long explanation into a <code className="font-mono">?</code> (InfoHint) beside what it explains, so results come first.</li>
             </ul>
           </div>
           <div>
@@ -214,6 +215,7 @@ export function Kit() {
               <li>Two primaries in one section, or a primary for a minor action.</li>
               <li>An underlined text link for an action people must find (Compare, Edit scenario).</li>
               <li><code className="font-mono">ghost</code> on public pages; it is kept for the curation tool only.</li>
+              <li>Put a disclaimer or a state behind a <code className="font-mono">?</code>: “not material safety”, the gaps note, outside-range and “not confirmed” stay visible.</li>
             </ul>
           </div>
         </div>

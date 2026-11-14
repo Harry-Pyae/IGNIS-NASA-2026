@@ -53,3 +53,25 @@ describe('Compare from a detail page', () => {
     expect(html).toContain('B-run');
   });
 });
+
+describe('the "?" pattern', () => {
+  const src = readFileSync('src/pages/Console.tsx', 'utf8');
+  /** True when some `{expr}` sits directly inside an <InfoHint …> tag (the nearest opening tag before it). */
+  const behindHint = (expr: string) => {
+    for (let i = src.indexOf(`{${expr}}`); i >= 0; i = src.indexOf(`{${expr}}`, i + 1))
+      if (src.startsWith('<InfoHint', src.lastIndexOf('<', i))) return true;
+    return false;
+  };
+
+  it('long explanations in 02, 03 and 05 sit behind a "?"', () => {
+    for (const e of ['COPY.mapScope', 'COPY.plain.map.untested', 'COPY.plain.compared', 'COPY.plain.regionCells'])
+      expect(behindHint(e), e).toBe(true);
+  });
+
+  it('disclaimers and states are never hidden behind a "?"', () => {
+    for (const e of ['COPY.gapNote', 'COPY.matchOrder', 'COPY.outsideRange', 'COPY.interpretationLimit', 'summary.notConfirmed']) {
+      expect(src, e).toContain(`{${e}}`);
+      expect(behindHint(e), e).toBe(false);
+    }
+  });
+});
