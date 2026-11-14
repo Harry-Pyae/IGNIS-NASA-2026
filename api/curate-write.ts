@@ -7,10 +7,11 @@
 import { CurateWriteRequestSchema, ExperimentSchema } from '../src/lib/types.js';
 import { verifierNameProblem } from '../src/lib/verifier.js';
 import { serviceClient } from '../src/server/db.js';
-import { apiError, json, readJson, requireCurator, route } from '../src/server/http.js';
+import { apiError, json, readJson, route } from '../src/server/http.js';
+import { curatorGate } from '../src/server/rateLimit.js';
 
 export const POST = route(async (req) => {
-  const denied = requireCurator(req);
+  const denied = await curatorGate(req);
   if (denied) return denied;
   const { data, response } = await readJson(req, CurateWriteRequestSchema);
   if (response) return response;

@@ -5,10 +5,11 @@
  */
 import { ExperimentSchema } from '../src/lib/types.js';
 import { serviceClient } from '../src/server/db.js';
-import { apiError, json, requireCurator, route } from '../src/server/http.js';
+import { apiError, json, route } from '../src/server/http.js';
+import { curatorGate } from '../src/server/rateLimit.js';
 
 export const GET = route(async (req) => {
-  const denied = requireCurator(req);
+  const denied = await curatorGate(req);
   if (denied) return denied;
   const db = serviceClient();
   if (!db) return apiError(503, 'not_configured', 'Supabase service role is not configured on the server');
