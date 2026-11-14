@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button, buttonClass, Page, PageHeader, Panel, Select, textLink } from '../components/ui';
 import { useVerifiedCatalog } from '../lib/catalog';
 import { datasetCitation, evidenceLocator, evidenceSource } from '../lib/evidenceSource';
@@ -26,9 +26,10 @@ const external = { target: '_blank', rel: 'noopener noreferrer' } as const;
 export function Library() {
   const { catalog, reload } = useVerifiedCatalog();
   const [query, setQuery] = useState(() => window.location.search);
+  const typing = useRef(false);
   const detail = window.location.pathname.replace(/\/$/, '').slice('/library/'.length);
   useEffect(() => {
-    const update = () => setQuery(window.location.search);
+    const update = () => { typing.current = false; setQuery(window.location.search); };
     window.addEventListener('popstate', update);
     return () => window.removeEventListener('popstate', update);
   }, []);
@@ -40,7 +41,10 @@ export function Library() {
       else next.searchParams.delete(key);
     }
     if (next.search === window.location.search) return;
-    window.history.pushState(null, '', next);
+    const searchEdit = Object.keys(fields).length === 1 && 'q' in fields;
+    if (searchEdit && typing.current) window.history.replaceState(null, '', next);
+    else window.history.pushState(null, '', next);
+    typing.current = searchEdit;
     setQuery(next.search);
   }
   const cards = catalog.state === 'ready' ? catalog.experiments : [];
@@ -59,14 +63,15 @@ export function Library() {
       {settled && catalog.invalid > 0 && <p role="status" className="mb-4 text-warn">Some catalog records could not be validated and are omitted.</p>}
       {settled && (detail
         ? card ? <ExperimentDetail card={card} /> : <Panel>Not in the current IGNIS catalog</Panel>
-        : <LibraryResults cards={cards} params={params} update={update} />)}
+        : <LibraryResults cards={cards} params={params} update={update} endSearch={() => { typing.current = false; }} />)}
     </div>
   </Page>;
 }
 
-function LibraryResults({ cards, params, update }: {
+function LibraryResults({ cards, params, update, endSearch }: {
   cards: Experiment[];
   params: URLSearchParams;
+  endSearch: () => void;
   update: (fields: Record<string, string>) => void;
 }) {
   const search = (params.get('q') ?? '').trim().toLowerCase();
@@ -93,7 +98,7 @@ function LibraryResults({ cards, params, update }: {
     <form className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" onSubmit={event => event.preventDefault()}>
       <label className="grid gap-1.5 sm:col-span-2">
         <span className="console-label text-dim">Search experiments</span>
-        <input type="search" className={inputClass} value={params.get('q') ?? ''}
+        <input type="search" onBlur={endSearch} className={inputClass} value={params.get('q') ?? ''}
           onChange={event => update({ q: event.target.value })} />
       </label>
       {categories.map(([key, label]) => {
