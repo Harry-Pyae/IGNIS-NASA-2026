@@ -5,7 +5,7 @@
  * OWNER: Coder A.
  */
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
-import { Badge, Button, Panel, Select } from '../components/ui';
+import { Badge, Button, Page, PageHeader, Panel, Select } from '../components/ui';
 import {
   applyExtraction,
   CARRYABLE_FIELDS,
@@ -209,26 +209,22 @@ export function Curate() {
   const input = 'w-full rounded-lg border border-border bg-bg/70 px-3 py-2 text-[15px] text-text sm:text-sm';
 
   return (
-    <main className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-10 sm:px-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <span className="console-label text-amber">Internal · curators only</span>
-          <h1 className="mt-1 text-2xl font-semibold">Curation</h1>
-          <p className="mt-1 max-w-2xl text-sm text-dim">
+    <Page wide className="flex flex-col gap-6">
+      <PageHeader eyebrow="Internal · curators only" title="Curation" intro={<>
+          <p className="text-sm">
             Only explicitly stated values. Ambiguous → null + note. Quote verbatim with original units. Changing conditions
             go in condition_changes, never stored as constant.
           </p>
-          <p className="mt-2 max-w-2xl text-sm text-dim">
+          <p className="mt-2 text-sm">
             One card per campaign and test ID, even when a run appears in multiple papers. Reopen the existing card
             to reconcile sources. Check absolute versus gauge pressure, specimen geometry and the reported outcome;
             study-wide ranges and non-ignition events must not be forced into a run's numeric fields or outcome label.
           </p>
-        </div>
+        </>} aside={
         <label className="flex flex-col gap-1">
           <span className="console-label text-dim">Curator secret</span>
           <input type="password" autoComplete="off" value={secret} onChange={(e) => saveSecret(e.target.value)} className={`${input} w-64`} />
-        </label>
-      </div>
+        </label>} />
 
       {status && (
         <Panel tone={status.tone === 'success' ? 'observed' : 'untested'} className="!p-4" role="status">
@@ -381,6 +377,6 @@ export function Curate() {
           </Panel>
         </form>
       </div>
-    </main>
+    </Page>
   );
 }

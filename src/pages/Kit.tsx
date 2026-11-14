@@ -8,6 +8,8 @@ import {
   EmptyState,
   ICON_NAMES,
   Icon,
+  Page,
+  PageHeader,
   Panel,
   PresetChip,
   SectionHeader,
@@ -147,15 +149,11 @@ export function Kit() {
   const [o2, setO2] = useState(21);
   const [active, setActive] = useState('Cabin wall panel (PMMA)');
   return (
-    <main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6">
-      <div>
-        <span className="console-label text-amber">Design kit</span>
-        <h1 className="mt-2 text-3xl font-semibold">IGNIS primitives</h1>
-        <p className="mt-2 text-dim">
-          Import from <code className="font-mono text-text">src/components/ui</code>. Tokens live in{' '}
-          <code className="font-mono text-text">src/styles/tokens.css</code>.
-        </p>
-      </div>
+    <Page wide className="flex flex-col gap-6">
+      <PageHeader eyebrow="Design kit" title="IGNIS primitives" intro={<>
+        Import from <code className="font-mono text-text">src/components/ui</code>. Tokens live in{' '}
+        <code className="font-mono text-text">src/styles/tokens.css</code>. Every page uses <code className="font-mono text-text">Page</code> + <code className="font-mono text-text">PageHeader</code>.
+      </>} />
 
       <Block title="Color tokens">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
@@ -374,6 +372,6 @@ export function Kit() {
           </div>
         </div>
       </Block>
-    </main>
+    </Page>
   );
 }
