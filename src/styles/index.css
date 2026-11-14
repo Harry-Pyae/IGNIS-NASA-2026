@@ -409,33 +409,46 @@ html { scroll-padding-top: 6.5rem; }
   accent-color: var(--color-focus);
 }
 [data-theme='light'] .ambient {
-  background-image: radial-gradient(ellipse at 88% 10%, var(--color-header-glass), transparent 53%),
-    radial-gradient(ellipse at 9% 54%, var(--color-dense-surface), transparent 53%);
+  background-image:
+    radial-gradient(ellipse at 88% 8%, color-mix(in srgb, var(--color-glass-tint) 33%, transparent), transparent 66%),
+    radial-gradient(ellipse at 8% 65%, color-mix(in srgb, var(--color-glass-amber) 35%, transparent), transparent 65%);
 }
 [data-theme='light'] .app-header {
-  --color-amber: #742c0c;
-  --color-dim: #303d50;
+  --color-amber: #602306;
+  --color-dim: #283341;
   --color-focus: #8a300c;
   border-bottom-color: var(--color-header-edge);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.55), 0 12px 28px -18px var(--shadow-header);
+  box-shadow: inset 0 1px 0 var(--color-glass-edge), 0 12px 28px -18px var(--shadow-header);
   animation: none;
 }
 @supports ((backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px))) {
   [data-theme='light'] .app-header {
     /* Keep navigation legible when the dark hero scrolls behind the header. */
-    --header-opacity: 82%;
-    --color-header-glass: color-mix(in srgb, var(--color-glass-tint) 42%, var(--color-dense-surface));
+    --header-opacity: 72%;
+    --color-header-glass: var(--color-dense-surface);
+    background-image: linear-gradient(112deg,
+      color-mix(in srgb, var(--color-glass-tint) 38%, transparent),
+      color-mix(in srgb, var(--color-glass-amber) 22%, transparent));
     -webkit-backdrop-filter: blur(16px) saturate(115%);
     backdrop-filter: blur(16px) saturate(115%);
   }
 }
+[data-theme='light'] :is(.theme-control, .surface) {
+  background-image: linear-gradient(135deg,
+    color-mix(in srgb, var(--color-glass-tint) 20%, transparent),
+    color-mix(in srgb, var(--color-glass-amber) 10%, transparent));
+  box-shadow: inset 0 1px 0 var(--color-glass-edge), 0 14px 30px -24px var(--shadow-header);
+}
 [data-theme='light'] .theme-control {
-  background-color: color-mix(in srgb, var(--color-panel) 74%, transparent);
+  background-color: color-mix(in srgb, var(--color-dense-surface) 60%, transparent);
+}
+[data-theme='light'] :is(.surface-raised, .evidence-plot) {
+  background-color: var(--color-dense-surface);
 }
 [data-theme='light'] .hero-scrim {
   background: linear-gradient(90deg, var(--color-bg) 0%, var(--color-hero-glass) 38%,
     color-mix(in srgb, var(--color-hero-glass) 96%, transparent) 52%,
-    color-mix(in srgb, var(--color-glass-tint) 34%, transparent) 70%, transparent 90%);
+    color-mix(in srgb, var(--color-glass-tint) 32%, transparent) 70%, transparent 90%);
 }
 @media (width < 80rem) {
   [data-theme='light'] .home-hero {
