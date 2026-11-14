@@ -280,7 +280,7 @@ export function Curate() {
 
   return (
     <Page wide className="flex flex-col gap-6">
-      <PageHeader eyebrow="Internal · curators only" title="Curation" intro={<>
+      <PageHeader help="helpCurate" eyebrow="Internal · curators only" title="Curation" intro={<>
           <p className="text-sm">
             Only explicitly stated values. Ambiguous → null + note. Quote verbatim with original units. Changing conditions
             go in condition_changes, never stored as constant.
