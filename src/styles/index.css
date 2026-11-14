@@ -41,7 +41,7 @@ html { scroll-padding-top: 6.5rem; }
 @layer base {
   html {
     background-color: var(--color-bg);
-    color-scheme: dark;
+    color-scheme: var(--theme-scheme);
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
   }
@@ -62,7 +62,7 @@ html { scroll-padding-top: 6.5rem; }
     color: var(--color-text);
   }
   :focus-visible {
-    outline: 2px solid var(--color-amber);
+    outline: 2px solid var(--color-focus);
     outline-offset: 2px;
   }
   h1, h2, h3 {
@@ -135,35 +135,35 @@ html { scroll-padding-top: 6.5rem; }
    * Panel applies these; brief tones keep their own fills but share the depth.
    */
   .surface {
-    background-color: color-mix(in srgb, var(--color-panel) 78%, transparent);
+    background-color: color-mix(in srgb, var(--color-panel) var(--surface-opacity), transparent);
     background-image:
       radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--color-amber) 4%, transparent), transparent 55%),
       linear-gradient(180deg, color-mix(in srgb, var(--color-text) 3.5%, transparent), transparent 42%);
     box-shadow:
       inset 0 1px 0 0 color-mix(in srgb, var(--color-text) 7%, transparent),
-      0 1px 2px rgb(0 0 0 / 0.35),
-      0 28px 56px -32px rgb(0 0 0 / 0.75);
+      0 1px 2px var(--shadow-near),
+      0 28px 56px -32px var(--shadow-far);
   }
   .surface-raised {
-    background-color: color-mix(in srgb, var(--color-panel) 88%, transparent);
+    background-color: color-mix(in srgb, var(--color-panel) var(--raised-opacity), transparent);
   }
   .surface-tinted {
     background-image: linear-gradient(180deg, color-mix(in srgb, var(--color-text) 3%, transparent), transparent 50%);
     box-shadow:
       inset 0 1px 0 0 color-mix(in srgb, var(--color-text) 6%, transparent),
-      0 18px 40px -28px rgb(0 0 0 / 0.7);
+      0 18px 40px -28px var(--shadow-tinted);
   }
   /* Recessed well inside a surface (step cards, stat tiles). */
   .surface-inset {
     background-color: color-mix(in srgb, var(--color-bg) 62%, transparent);
     box-shadow:
       inset 0 1px 0 0 color-mix(in srgb, var(--color-text) 5%, transparent),
-      inset 0 -1px 0 0 rgb(0 0 0 / 0.25);
+      inset 0 -1px 0 0 var(--shadow-inset);
   }
 
   /* Primary action: lit amber with a real shadow (§8.3 accent). */
   .btn-primary {
-    background-color: var(--color-amber);
+    background-color: var(--color-action);
     background-image: linear-gradient(180deg, color-mix(in srgb, white 18%, transparent), transparent 55%);
     box-shadow:
       inset 0 1px 0 0 color-mix(in srgb, white 40%, transparent),
@@ -249,9 +249,9 @@ html { scroll-padding-top: 6.5rem; }
    * Without support or with reduced motion, it simply shows the settled state.
    */
   .app-header {
-    background-color: color-mix(in srgb, var(--color-bg) 82%, transparent);
+    background-color: color-mix(in srgb, var(--color-bg) var(--header-opacity), transparent);
     border-bottom: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
-    box-shadow: 0 12px 32px -22px rgb(0 0 0 / 0.85);
+    box-shadow: 0 12px 32px -22px var(--shadow-header);
     -webkit-backdrop-filter: blur(14px) saturate(130%);
     backdrop-filter: blur(14px) saturate(130%);
   }
@@ -266,7 +266,7 @@ html { scroll-padding-top: 6.5rem; }
   }
   @keyframes ignis-header-settle {
     from {
-      background-color: color-mix(in srgb, var(--color-bg) 35%, transparent);
+      background-color: color-mix(in srgb, var(--color-bg) var(--header-top-opacity), transparent);
       border-bottom-color: transparent;
       box-shadow: 0 0 0 0 transparent;
     }
@@ -343,12 +343,12 @@ html { scroll-padding-top: 6.5rem; }
   .ignis-range::-webkit-slider-runnable-track {
     height: 4px;
     border-radius: 999px;
-    background: linear-gradient(to right, var(--color-amber) var(--fill), var(--color-border) var(--fill));
+    background: linear-gradient(to right, var(--color-focus) var(--fill), var(--color-control-border) var(--fill));
   }
   .ignis-range::-moz-range-track {
     height: 4px;
     border-radius: 999px;
-    background: linear-gradient(to right, var(--color-amber) var(--fill), var(--color-border) var(--fill));
+    background: linear-gradient(to right, var(--color-focus) var(--fill), var(--color-control-border) var(--fill));
   }
   .ignis-range::-webkit-slider-thumb {
     -webkit-appearance: none;
@@ -357,7 +357,7 @@ html { scroll-padding-top: 6.5rem; }
     margin-top: -7px;
     border-radius: 999px;
     background: var(--color-text);
-    border: 3px solid var(--color-amber);
+    border: 3px solid var(--color-focus);
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-amber) 18%, transparent);
   }
   .ignis-range::-moz-range-thumb {
@@ -365,7 +365,7 @@ html { scroll-padding-top: 6.5rem; }
     height: 12px;
     border-radius: 999px;
     background: var(--color-text);
-    border: 3px solid var(--color-amber);
+    border: 3px solid var(--color-focus);
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-amber) 18%, transparent);
   }
   /* Gap hatching (Coder B uses this for untested map cells). */
@@ -376,4 +376,69 @@ html { scroll-padding-top: 6.5rem; }
       transparent 1px 7px
     );
   }
+}
+
+/* Keep the Dark hero composition and strengthen the reading area in Light. */
+.hero-scrim {
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--color-bg) 92%, transparent) 0%,
+    color-mix(in srgb, var(--color-bg) 86%, transparent) 40%,
+    color-mix(in srgb, var(--color-bg) 58%, transparent) 56%,
+    color-mix(in srgb, var(--color-bg) 18%, transparent) 70%,
+    transparent 82%);
+}
+.theme-control input + span {
+  color: var(--color-dim);
+}
+.theme-control input:checked + span {
+  background-color: var(--color-action);
+  color: var(--color-on-action);
+  font-weight: 600;
+}
+.theme-control input:focus-visible + span {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .theme-control label:hover input:not(:checked) + span {
+    background-color: color-mix(in srgb, var(--color-action) 12%, transparent);
+    color: var(--color-text);
+  }
+}
+:root[data-theme='light'] {
+  accent-color: var(--color-focus);
+}
+[data-theme='light'] .ambient {
+  background-image: radial-gradient(ellipse at 88% 10%, #fff0e6, transparent 53%),
+    radial-gradient(ellipse at 9% 54%, #edf2fa, transparent 53%);
+}
+[data-theme='light'] .hero-scrim {
+  background: linear-gradient(90deg, var(--color-bg) 0% 39%,
+    color-mix(in srgb, var(--color-bg) 95%, transparent) 54%,
+    color-mix(in srgb, var(--color-bg) 40%, transparent) 76%, transparent 100%);
+}
+[data-theme='light'] .hero-caption {
+  background: color-mix(in srgb, var(--color-panel) 94%, transparent);
+  border-radius: 4px;
+  padding-inline: 0.35rem;
+}
+[data-theme='light'] :is(textarea, select, input:not([type='radio'], [type='range'], [type='checkbox'])) {
+  border-color: var(--color-control-border);
+}
+[data-theme='light'] :is(textarea, select, input:not(.theme-control input)):focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+@media (min-width: 1280px) {
+  [data-theme='light'] .hero-caption {
+    top: 1rem;
+    bottom: auto;
+  }
+}
+[data-theme='light'] button:disabled {
+  opacity: 1;
+  background: #edf0f3;
+  color: var(--color-faint);
+  border-color: var(--color-border);
+  box-shadow: none;
 }

@@ -890,7 +890,7 @@ export function EvidenceMap({
               <defs>
                 <pattern id="ignis-untested-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
                   <rect width="6" height="6" fill="var(--color-bg)" fillOpacity=".45" />
-                  <line x1="0" y1="0" x2="0" y2="6" stroke="var(--color-faint)" strokeOpacity=".38" strokeWidth="1.3" />
+                  <line x1="0" y1="0" x2="0" y2="6" stroke="var(--plot-hatch)" strokeOpacity="var(--plot-hatch-opacity)" strokeWidth="1.3" />
                 </pattern>
                 <clipPath id="ignis-plot-clip"><rect x={left} y={top} width={plotWidth} height={plotHeight} /></clipPath>
               </defs>
@@ -932,13 +932,13 @@ export function EvidenceMap({
               )}
               {ticks(GRID.flow.min, GRID.flow.max, 5).map((flow) => (
                 <g key={`x-${flow}`}>
-                  <line x1={x(flow)} x2={x(flow)} y1={top} y2={top + plotHeight} stroke="var(--color-border)" strokeDasharray="3 5" />
+                  <line x1={x(flow)} x2={x(flow)} y1={top} y2={top + plotHeight} stroke="var(--plot-grid)" strokeDasharray="3 5" />
                   <text x={x(flow)} y={height - 20} textAnchor="middle" fill="var(--color-dim)" fontSize="11">{flow}</text>
                 </g>
               ))}
               {ticks(GRID.o2.min, GRID.o2.max, 4).map((o2) => (
                 <g key={`y-${o2}`}>
-                  <line x1={left} x2={left + plotWidth} y1={y(o2)} y2={y(o2)} stroke="var(--color-border)" strokeDasharray="3 5" />
+                  <line x1={left} x2={left + plotWidth} y1={y(o2)} y2={y(o2)} stroke="var(--plot-grid)" strokeDasharray="3 5" />
                   <text x={left - 10} y={y(o2) + 4} textAnchor="end" fill="var(--color-dim)" fontSize="11">{o2}</text>
                 </g>
               ))}
