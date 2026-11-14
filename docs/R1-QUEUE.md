@@ -4,11 +4,12 @@ Generated 2026-11-14 by the Round 8 extraction run (Coder A). Every draft below 
 `/curate` as a **draft** (`verified_by` empty, invisible to the public). Reopen it there, check it against the PDF, correct
 anything, and publish under your own name. Nothing here is verified until you sign it.
 
-**What each draft already carries:** the verbatim source row as the key quote, the p.9 table locator, original units, a
-`condition_changes` entry for every changed flow, PSI-25 provenance, and, in **notes**, a verbatim quote and locator for
+**What each draft already carries:** a verbatim key quote, an exact locator, original units, a
+`condition_changes` entry for every changed flow, PSI provenance where the source gives it, and, in **notes**, a verbatim quote and locator for
 every populated field. Nulls stay null.
 
-Source PDF: [NTRS 20150008962](https://ntrs.nasa.gov/api/citations/20150008962/downloads/20150008962.pdf), appendix p.9.
+Sources: BASS-II rows from [NTRS 20150008962](https://ntrs.nasa.gov/api/citations/20150008962/downloads/20150008962.pdf), appendix p.9.
+The Saffire drafts were **hand-transcribed**: the extractor declined to fill their stated outcomes. Each has notes with a quote and locator per field.
 
 ## 1. Ready in /curate: easiest first
 
@@ -36,7 +37,15 @@ Flow reduced 5→2.6 cm/s, 2.2 cm sample, "Quenched".
 - [ ] **Change:** confirm in the run log or PSI files whether the final flow was held; if it was, set `stored` to `final_held` (as on GMT45-T4).
 - [ ] **Provenance:** PSI-25 / DOI 10.60555/4qc4-de67 / Version 4 (from `docs/sources.md`), 0.32 mm (p.2), 1 atm → 101.325 kPa (p.3). Then publish under your name.
 
-### 4. BASS-II GMT190-T20  ·  `0d093ec8-1f30-49b8-b290-aa4b96587828`
+### 4. Saffire IV-1  ·  `4786c0c7-715a-436f-a7a9-e061d76f17bd`  ·  [NTRS 20210011521](https://ntrs.nasa.gov/citations/20210011521)
+
+One source, every value in Table 1 (p.3), outcome in one sentence (p.7).
+
+- [ ] **Values:** Table 1 (p.3), column IV-1: SIBAL Cloth, 50 cm, 20 cm/s **concurrent**, 100.0 kPa, 22.0 mol % O₂ (taken as vol %).
+- [ ] **Outcome:** p.7, "In all of these tests on Saffire I-V … established a steady opposed spread rate and flame size" → `sustained`. The source says "opposed" for a concurrent run; decide whether that matters.
+- [ ] **Provenance:** add the Saffire PSI investigation / dataset DOI (not in this paper). Thickness is not stated here, so leave it null. Then publish under your name.
+
+### 5. BASS-II GMT190-T20  ·  `0d093ec8-1f30-49b8-b290-aa4b96587828`
 
 Flow reduced 11→3 cm/s, **1.2 cm** sample (width is in the summary only), "Quenched".
 
@@ -44,7 +53,7 @@ Flow reduced 11→3 cm/s, **1.2 cm** sample (width is in the summary only), "Que
 - [ ] **Change:** confirm in the run log or PSI files whether the final flow was held; if it was, set `stored` to `final_held` (as on GMT45-T4).
 - [ ] **Provenance:** PSI-25 / DOI 10.60555/4qc4-de67 / Version 4 (from `docs/sources.md`), 0.32 mm (p.2), 1 atm → 101.325 kPa (p.3). Then publish under your name.
 
-### 5. BASS-II GMT190-T22  ·  `fe0f41a8-a578-46e6-b07f-83e43481ca4b`
+### 6. BASS-II GMT190-T22  ·  `fe0f41a8-a578-46e6-b07f-83e43481ca4b`
 
 Flow reduced 10.5→5 cm/s, **1.2 cm** sample, "Quenched".
 
@@ -52,7 +61,23 @@ Flow reduced 10.5→5 cm/s, **1.2 cm** sample, "Quenched".
 - [ ] **Change:** confirm in the run log or PSI files whether the final flow was held; if it was, set `stored` to `final_held` (as on GMT45-T4).
 - [ ] **Provenance:** PSI-25 / DOI 10.60555/4qc4-de67 / Version 4 (from `docs/sources.md`), 0.32 mm (p.2), 1 atm → 101.325 kPa (p.3). Then publish under your name.
 
-### 6. BASS-II GMT190-T21  ·  `e6a7a06a-b193-4e6a-ad41-9516dff13b5a`
+### 7. Saffire I-1  ·  `da69e3d6-bf01-4836-88e4-b09a45d61f12`  ·  [NTRS 20170008805](https://ntrs.nasa.gov/citations/20170008805)
+
+Explicit outcome (2017 deck p.16), but the pressure is not in that source and O₂ is 21.7 % (deck) vs 21 % (2021 Table 2).
+
+- [ ] **Values:** p.14: "Flow speed of 20 cm/s", "Initial oxygen concentration 21.7% (ISS reading)", 40.6 × 94 cm. The 2021 Table 2 (p.8) gives 21 %; pick one and note why.
+- [ ] **Pressure:** not in this deck (null). The 2021 Table 2 gives 100 kPa; cite it in notes, or leave null.
+- [ ] **Outcome:** p.16, "The flame burned the entire allotted test time of about 7 min." → `sustained` (the flow shut-off ended the test). Then publish under your name.
+
+### 8. Saffire V-2  ·  `e3b0b9bc-f2c3-4968-b467-6bf1e6ba02b0`  ·  [NTRS 20210011521](https://ntrs.nasa.gov/citations/20210011521)
+
+Explicit outcome (p.4), but a NEW material (`cotton_jersey`), a fan-off interval, and a 300 s / 280 s inconsistency in the source.
+
+- [ ] **Material:** p.4, "cotton jersey material with an area density of 18.1 mg/cm2". This creates catalog material `cotton_jersey`; confirm it should stay distinct from `cotton_fiberglass`.
+- [ ] **Change:** the fan was off for 70 s mid-run (p.4), recorded in condition_changes. The source says "initial 300 seconds" and "approximately 280 seconds" for the same moment; note which you trust.
+- [ ] **Values/outcome:** Table 1 (p.3): 20 cm/s concurrent, 70.7 kPa, 26.2 mol %. "continued to burn … until the material was consumed" (p.4) → `sustained`. Then publish under your name.
+
+### 9. BASS-II GMT190-T21  ·  `e6a7a06a-b193-4e6a-ad41-9516dff13b5a`
 
 Flow **increased** 11→47 cm/s, 1.2 cm sample, "Blow-off". Needs one judgment: Blow-off → `extinguished`.
 
@@ -93,6 +118,8 @@ Cotton-fiberglass, 5 cm wide, **25 cm/s** (NTRS 20170008805 p.9). No per-sample 
 
 The extractor proposed `sustained`, but from a general sentence ("spread rate is steady for most of the tests"), not one about this sample, so it wasn't loaded. Same evidence as II-6: the 2021 Table 2 (p.8) gives II-5: 20 cm/s, 21 % O₂, 100 kPa, steady flame size 4 cm. Same O₂ conflict (22.1 % vs 21 %). Extracted: cotton_fiberglass, fabric, 20 cm/s, O₂ 22.1 (2017 deck).
 
+**Update:** NTRS 20210011521 p.7 states, for all Saffire I–V cotton and SIBAL samples, that they "established a steady opposed spread rate and flame size". That covers II-5 and II-6, which makes `sustained` a stated outcome (the same basis as IV-1). Only the O₂ conflict remains; resolve it, then card them the same way.
+
 ## 3. Not draftable from these sources (reason stated)
 
 ### Saffire-II (NTRS 20170008805)
@@ -112,7 +139,4 @@ The extractor proposed `sustained`, but from a general sentence ("spread rate is
 
 ## 4. Next candidates (outside this pass, outcomes stated in the sources)
 
-- **Saffire V-2** (cotton jersey, 50 cm, 20 cm/s, 70.7 kPa, 26.2 mol %): "burned steadily for the initial 300 seconds… continued to burn for another 150 seconds until the material was consumed" (NTRS 20210011521 p.4).
-- **Saffire IV-1** (SIBAL, 50 cm, 20 cm/s, 100.0 kPa, 22.0 mol %): Table 2 (p.8) gives a steady size of 8.5 cm.
-- **Saffire-I** (SIBAL 40.6 × 94 cm, 20 cm/s concurrent, 21.7 % O₂): "The flame burned the entire allotted test time of about 7 min." (NTRS 20170008805 p.16).
 - **PMMA rods** (NTRS 20150008961) and the **PSI-25 archive**, per `docs/sources.md`.
