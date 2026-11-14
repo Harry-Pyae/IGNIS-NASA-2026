@@ -36,7 +36,7 @@ export function CardComparison({cards, standalone = false}: {cards: Experiment[]
       </label>)}</div>
     {!standalone && <a className="mb-4 inline-block text-sm text-amber underline" href={`/compare?ids=${two.map((card) => encodeURIComponent(card.id)).join(',')}`}>Open comparison page</a>}
     <table className="w-full table-fixed border-collapse text-left text-sm break-words">
-      <caption className="sr-only">Recorded conditions and observations of two matched experiments</caption>
+      <caption className="sr-only">Recorded conditions and observations of two {standalone ? 'verified' : 'matched'} experiments</caption>
       <thead><tr><th scope="col">Field</th>{two.map(c => <th scope="col" className="p-2" key={c.id}>{label(c)}</th>)}</tr></thead>
       <tbody>{fields.map(([name,read]) => {
         const values = two.map(read);

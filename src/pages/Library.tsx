@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Button, Panel, Select } from '../components/ui';
+import { Button, Page, PageHeader, Panel, Select } from '../components/ui';
 import { useVerifiedCatalog } from '../lib/catalog';
-import { evidenceLocator, evidenceSource } from '../lib/evidenceSource';
+import { datasetCitation, evidenceLocator, evidenceSource } from '../lib/evidenceSource';
 import { COPY } from '../lib/copy';
 import { FIELD_UNITS, PARAM_LABELS, CONTINUOUS_PARAMS, type Experiment } from '../lib/types';
 
@@ -45,8 +45,8 @@ export function Library() {
   const settled = catalog.state === 'empty' || catalog.state === 'ready';
   const card = detail ? cards.find(item => item.id === detail) : undefined;
 
-  return <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-    <h1 className="display mb-6 text-4xl">{detail ? 'Experiment detail' : 'Evidence Library'}</h1>
+  return <Page>
+    <PageHeader eyebrow="Library / verified catalog" title={detail ? 'Experiment detail' : 'Evidence Library'} />
     {detail && <a className={linkClass} href={'/library' + query}>Back to library</a>}
     <div className="mt-5">
       {catalog.state === 'loading' && <p role="status">Loading verified catalog…</p>}
@@ -59,7 +59,7 @@ export function Library() {
         ? card ? <ExperimentDetail card={card} /> : <Panel>Not in the current IGNIS catalog</Panel>
         : <LibraryResults cards={cards} params={params} update={update} />)}
     </div>
-  </main>;
+  </Page>;
 }
 
 function LibraryResults({ cards, params, update }: {
@@ -137,8 +137,9 @@ function ExperimentDetail({ card }: { card: Experiment }) {
   const [copyStatus, setCopyStatus] = useState('');
   const source = evidenceSource(card);
   const locator = evidenceLocator(card);
+  const dataset = datasetCitation(card);
   const doi = card.doi?.replace(/^(?:https?:\/\/(?:dx\.)?doi\.org\/|doi:\s*)/i, '');
-  const citation = [card.source_title, `${card.campaign} / ${card.test_id}`, locator, source?.url,
+  const citation = [card.source_title, `${card.campaign} / ${card.test_id}`, locator, source?.url, dataset,
     card.ntrs_id && 'NTRS ' + card.ntrs_id, doi && 'DOI ' + doi].filter(Boolean).join(' · ');
   const fields = [
     ['Domain', readable(card.domain)], ['Material', readable(card.fuel_material)],
@@ -181,6 +182,7 @@ function ExperimentDetail({ card }: { card: Experiment }) {
       {doi && <p>{/^10\.\d{4,9}\/\S+$/.test(doi)
         ? <a className={linkClass} href={'https://doi.org/' + doi.split('/').map(encodeURIComponent).join('/')}>DOI {doi}</a>
         : 'DOI ' + doi}</p>}
+      {dataset && <p className="break-words text-sm text-dim [overflow-wrap:anywhere]">{dataset}</p>}
       <Button className="mt-4" onClick={async () => {
         try {
           await navigator.clipboard.writeText(citation);

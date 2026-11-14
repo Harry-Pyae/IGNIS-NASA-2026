@@ -1,5 +1,5 @@
 import { CardComparison } from '../components/CardComparison';
-import { Button, Panel } from '../components/ui';
+import { Button, Page, PageHeader, Panel } from '../components/ui';
 import { useVerifiedCatalog } from '../lib/catalog';
 import { compareSelection } from '../features/compare/compareSelection';
 
@@ -8,8 +8,8 @@ export function Compare() {
   const { cards, missing } = compareSelection(window.location.search, catalog.state === 'ready' ? catalog.experiments : []);
   const settled = catalog.state === 'ready' || catalog.state === 'empty';
 
-  return <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-    <h1 className="display my-4 text-4xl text-text">Compare experiments</h1>
+  return <Page>
+    <PageHeader eyebrow="Compare / verified catalog" title="Compare experiments" />
     <Panel>
       {catalog.state === 'loading' && <p role="status">Loading verified experiments…</p>}
       {catalog.state === 'unavailable' && <div className="flex flex-wrap items-center gap-2">
@@ -27,5 +27,5 @@ export function Compare() {
         {cards.length >= 2 && <CardComparison cards={cards} standalone />}
       </>}
     </Panel>
-  </main>;
+  </Page>;
 }
