@@ -24,7 +24,7 @@ export function Compare() {
           </ul>
         </div>}
         {cards.length < 2 && <p>Select two distinct verified solid-material experiments to compare.</p>}
-        {cards.length >= 2 && <CardComparison cards={cards} />}
+        {cards.length >= 2 && <CardComparison cards={cards} standalone />}
       </>}
     </Panel>
   </main>;
