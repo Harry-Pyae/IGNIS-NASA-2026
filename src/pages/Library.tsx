@@ -151,10 +151,9 @@ function ExperimentDetail({ card }: { card: Experiment }) {
   return <div className="space-y-5">
     <Panel>
       {card.media_url && <figure className="mb-4">
-        <div className="aspect-video overflow-hidden rounded-lg border border-border bg-bg/60">
-          <img src={card.media_url} alt={`${COPY.campaignContext}: ${card.test_id}`} loading="lazy" className="size-full object-cover" />
-        </div>
-        <figcaption className="mt-2 console-label text-dim">{COPY.campaignContext}</figcaption>
+        <img src={card.media_url} alt={`${COPY.campaignContext}: ${card.campaign} ${card.test_id}`}
+          loading="lazy" className="max-h-96 max-w-full rounded-xl object-contain" />
+        <figcaption className="text-sm text-dim">{COPY.campaignContext}</figcaption>
       </figure>}
       <p className="console-label text-amber">{card.campaign}</p>
       <h2 className="my-2 text-2xl font-semibold">{card.test_id}</h2>
