@@ -12,7 +12,7 @@ export function Page({ wide = false, className, children }: { wide?: boolean; cl
 /** Eyebrow (mono, amber) → display h1 → optional intro. `aside` sits beside the title block (e.g. curator secret). */
 export function PageHeader({ eyebrow, title, intro, aside }: { eyebrow: string; title: string; intro?: ReactNode; aside?: ReactNode }) {
   return (
-    <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+    <header className="route-intro mb-8 flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
         <p className="console-label text-amber">{eyebrow}</p>
         <h1 className="display mt-3 text-4xl text-text">{title}</h1>

@@ -34,7 +34,8 @@ export const textLink = 'text-amber underline decoration-amber/45 underline-offs
 /** Class string for a button tier — use it on `<a>` when a link must look like a button (e.g. Compare). */
 export function buttonClass(variant: Variant = 'secondary', size: Size = 'md', className?: string) {
   return cx(
-    'pressable relative inline-flex shrink-0 items-center justify-center whitespace-nowrap font-medium tracking-[-0.005em] transition-[color,background-color,border-color,box-shadow,filter,transform,text-decoration-color] duration-[180ms] ease-[var(--ease-out)]',
+    'pressable relative inline-flex shrink-0 items-center justify-center whitespace-nowrap font-medium tracking-[-0.005em]',
+    variant !== 'tertiary' && 'bubble-control',
     "after:absolute after:inset-x-0 after:top-1/2 after:h-11 after:min-h-full after:-translate-y-1/2 after:content-['']",
     'disabled:cursor-not-allowed disabled:opacity-45 aria-disabled:cursor-not-allowed aria-disabled:opacity-45',
     VARIANTS[variant],

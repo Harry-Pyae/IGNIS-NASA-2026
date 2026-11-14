@@ -391,10 +391,24 @@ html { scroll-padding-top: 6.5rem; }
   color: var(--color-dim);
 }
 .theme-control input:checked + span {
-  background-color: var(--color-action);
   color: var(--color-on-action);
   font-weight: 600;
 }
+.theme-control {
+  position: relative;
+  isolation: isolate;
+}
+.theme-control::before {
+  position: absolute;
+  z-index: -1;
+  inset: 2px auto 2px 2px;
+  width: calc(50% - 2px);
+  border-radius: 6px;
+  background: var(--color-action);
+  box-shadow: inset 0 1px 0 var(--bubble-rim);
+  content: '';
+}
+.theme-control:has(input[value='light']:checked)::before { transform: translateX(100%); }
 .theme-control input:focus-visible + span {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
@@ -443,13 +457,48 @@ html { scroll-padding-top: 6.5rem; }
 [data-theme='light'] .theme-control {
   background-color: color-mix(in srgb, var(--color-dense-surface) 60%, transparent);
 }
-[data-theme='light'] #console .surface {
-  box-shadow:
-    inset 0 1px 0 var(--color-glass-edge),
-    0 2px 5px var(--shadow-near),
-    0 14px 24px -12px var(--shadow-header);
+@media screen {
+  [data-theme='light'] .console-panels {
+    background-image:
+      radial-gradient(ellipse at 14% 2%, color-mix(in srgb, var(--color-glass-amber) 28%, transparent), transparent 56%),
+      radial-gradient(ellipse at 92% 28%, color-mix(in srgb, var(--color-glass-amber) 17%, transparent), transparent 62%);
+    border-radius: var(--radius-panel);
+  }
+  [data-theme='light'] main .content-surface {
+    background-color: var(--color-dense-surface);
+    background-image: linear-gradient(135deg,
+      color-mix(in srgb, var(--color-console-tangerine) 34%, transparent),
+      color-mix(in srgb, var(--color-console-amber) 16%, transparent));
+    border-color: var(--color-console-edge);
+    box-shadow:
+      inset 0 1px 0 var(--color-glass-edge),
+      0 2px 4px var(--shadow-near),
+      0 14px 26px -15px var(--shadow-header);
+  }
+  @supports ((backdrop-filter: blur(7px)) or (-webkit-backdrop-filter: blur(7px))) {
+    [data-theme='light'] main .content-surface {
+      background-color: transparent;
+      -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
+    }
+  }
+  [data-theme='light'] main .content-surface .content-surface {
+    background: color-mix(in srgb, var(--color-dense-surface) 70%, transparent);
+    box-shadow: inset 0 1px 0 var(--color-glass-edge);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  [data-theme='light'] .content-surface-art {
+    opacity: 0.24;
+  }
+  [data-theme='light'] .console-panels section.surface :is(details, [role='status'], [role='group'].rounded-xl).border-border {
+    background-color: color-mix(in srgb, var(--color-dense-surface) 59%, transparent);
+  }
+  [data-theme='light'] .console-panels .match-cards article {
+    background-color: color-mix(in srgb, var(--color-dense-surface) 88%, transparent);
+  }
 }
-[data-theme='light'] .theme-control input:checked + span {
+[data-theme='light'] .theme-control::before {
   background-color: var(--color-hero-action);
 }
 [data-theme='light'] .app-header :is(.catalog-provenance, .btn-primary) {
@@ -519,4 +568,74 @@ html { scroll-padding-top: 6.5rem; }
   color: var(--color-faint);
   border-color: var(--color-border);
   box-shadow: none;
+}
+
+/* A typed offset lets the active underline travel between full-page routes. */
+@property --tab-offset {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+.project-tab span { position: relative; }
+.project-tab[aria-current='page'] span::after {
+  position: absolute;
+  inset: auto 0 -2px;
+  height: 1px;
+  background: currentColor;
+  transform: translateX(var(--tab-offset));
+  content: '';
+}
+
+.bubble-control:not(.theme-control, .btn-primary) {
+  background-image: linear-gradient(155deg, var(--bubble-top), var(--bubble-bottom));
+  box-shadow: inset 0 1px 0 var(--bubble-rim), 0 4px 9px -6px var(--bubble-shadow);
+}
+/* Preserve the export glass fill and use the same rim on filled actions. */
+.bubble-control.btn-primary:not(.app-header *) {
+  box-shadow: inset 0 1px 0 var(--bubble-rim), 0 6px 12px -7px var(--bubble-shadow);
+}
+[data-theme='light'] .bubble-control.btn-primary:not(.app-header *, :disabled, [aria-disabled='true']) {
+  background-color: var(--color-action);
+  background-color: color-mix(in srgb, var(--color-action) 94%, transparent);
+  background-image: linear-gradient(160deg,
+    color-mix(in srgb, var(--bubble-rim) 30%, transparent), transparent 72%);
+}
+.bubble-control[aria-pressed='true'] {
+  box-shadow: inset 0 1px 0 var(--bubble-rim), 0 0 0 2px color-mix(in srgb, var(--color-amber) 23%, transparent);
+}
+.bubble-control:is(:disabled, [aria-disabled='true']) {
+  background-image: none !important;
+  box-shadow: none !important;
+}
+@media (hover: hover) and (pointer: fine) {
+  .bubble-control:not(.theme-control, :disabled, [aria-disabled='true']):hover {
+    box-shadow: inset 0 1px 0 var(--bubble-rim), 0 4px 12px -5px var(--bubble-shadow);
+  }
+}
+.bubble-control:not(.theme-control, :disabled, [aria-disabled='true']):active {
+  box-shadow: inset 0 0 0 1px var(--bubble-rim), inset 0 2px 4px var(--bubble-shadow);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pressable {
+    transition: transform var(--dur-press) var(--ease-out),
+      box-shadow var(--dur-press) ease-out, background-color var(--dur-interface) ease-out,
+      border-color var(--dur-interface) ease-out;
+  }
+  .pressable[aria-disabled='true']:active { transform: none; }
+  .theme-control::before { transition: transform var(--dur-interface) var(--ease-out); }
+  .route-intro, .bubble-control[aria-pressed='true'] {
+    animation: interface-reveal var(--dur-interface) ease-out;
+  }
+  .hint-content:not([hidden]) {
+    animation: hint-reveal var(--dur-interface) ease-out;
+  }
+  details[open]:not(.motion-still, .motion-still *) > :not(summary) {
+    animation: interface-reveal var(--dur-interface) ease-out;
+  }
+  @keyframes interface-reveal {
+    from { opacity: 0.82; translate: 0 3px; }
+  }
+  @keyframes hint-reveal {
+    from { opacity: 0.78; }
+  }
 }

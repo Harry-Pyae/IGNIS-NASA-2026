@@ -137,17 +137,29 @@
   /* Live choreography (§8.3, Phase 5) */
   --dur-glide: 300ms; /* scenario marker glide on slider drag */
   --stagger-dot: 20ms; /* map dots stagger in */
-  --dur-press: 160ms; /* button press feedback */
+  --dur-press: 125ms; /* button press feedback */
+  --dur-interface: 200ms;
+  --bubble-top: rgb(176 199 241 / 0.13);
+  --bubble-bottom: rgb(108 131 178 / 0.04);
+  --bubble-rim: rgb(210 225 255 / 0.21);
+  --bubble-shadow: rgb(0 0 0 / 0.34);
   /* The aurora drift (20s) + starfield live in /art/bg-glow.webp — no CSS duplicate layers. */
 }
 
 :root[data-theme='light'] {
+  --bubble-top: rgb(255 156 78 / 0.18);
+  --bubble-bottom: rgb(255 193 103 / 0.08);
+  --bubble-rim: rgb(255 243 211 / 0.85);
+  --bubble-shadow: rgb(148 65 17 / 0.23);
   --theme-scheme: light;
   --color-bg: #ffead4;
   --color-panel: #ffdfbe;
   --color-border: #e8be9e;
   --color-glass-tint: #ff7923;
   --color-glass-amber: #ffae48;
+  --color-console-tangerine: #ff7018;
+  --color-console-amber: #ff9d36;
+  --color-console-edge: #dfab82;
   --color-glass-edge: rgb(255 240 198 / 0.82);
   --color-header-glass: #ffd1a7;
   --color-header-edge: #d99563;

@@ -14,13 +14,14 @@ const date = (iso: string | null) =>
 /** Header provenance pill (§8.1 item 0) — visible at every width; compact below sm. */
 export function ProvenancePill({ summary, retry }: { summary: CatalogSummary; retry?: () => void }) {
   const failed = summary.state === 'unavailable' && summary.reason === 'error';
+  const disconnected = summary.state === 'unavailable' && summary.reason === 'not_configured';
   return (
     <span
       className="catalog-provenance console-label inline-flex min-w-0 items-center gap-2 rounded-full border border-border bg-panel/80 px-3 py-1.5 tracking-[0.08em] text-dim"
       aria-live="polite"
     >
-      <Icon name={failed ? 'withheld' : 'provenance'} size={14} className={failed ? 'text-warn' : 'text-amber'} />
-      <span key={catalogLine(summary, true)} className="swap-in truncate sm:hidden">
+      <Icon name={failed ? 'withheld' : disconnected ? 'link-off' : 'provenance'} size={16} className={failed ? 'shrink-0 text-warn' : 'shrink-0 text-amber'} />
+      <span key={catalogLine(summary, true)} className="swap-in min-w-0 leading-tight [overflow-wrap:anywhere] sm:hidden">
         {catalogLine(summary, true)}
       </span>
       <span key={catalogLine(summary)} className="swap-in hidden truncate sm:inline">
