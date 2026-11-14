@@ -3,7 +3,6 @@ import { Button, Panel, Select } from '../components/ui';
 import { useVerifiedCatalog } from '../lib/catalog';
 import { evidenceLocator, evidenceSource } from '../lib/evidenceSource';
 import { FIELD_UNITS, PARAM_LABELS, CONTINUOUS_PARAMS, type Experiment } from '../lib/types';
-import mediaLedger from '../../docs/media-ledger.md?raw';
 
 const missing = 'not reported';
 const categories = [
@@ -138,12 +137,6 @@ function ExperimentDetail({ card }: { card: Experiment }) {
   const source = evidenceSource(card);
   const locator = evidenceLocator(card);
   const doi = card.doi?.replace(/^(?:https?:\/\/(?:dx\.)?doi\.org\/|doi:\s*)/i, '');
-  const media = card.media_url && /^https?:\/\//i.test(card.media_url) &&
-    mediaLedger.split(/\r?\n/).some(line => {
-      const columns = line.split('|').slice(1, -1).map(column => column.trim());
-      return columns[6]?.toLowerCase() === 'yes' &&
-        columns[0]?.split(/[\s()<>`]+/).includes(card.media_url!);
-    }) ? card.media_url : null;
   const citation = [card.source_title, `${card.campaign} / ${card.test_id}`, locator, source?.url,
     card.ntrs_id && 'NTRS ' + card.ntrs_id, doi && 'DOI ' + doi].filter(Boolean).join(' · ');
   const fields = [
@@ -192,10 +185,6 @@ function ExperimentDetail({ card }: { card: Experiment }) {
       }}>Cite this</Button>
       <p role="status" className="mt-2 break-words text-sm">{copyStatus}</p>
     </Panel>
-    {media && <figure>
-      <img src={media} alt={card.campaign + ' campaign still'} className="max-h-96 rounded-xl object-contain" />
-      <figcaption className="text-sm text-dim">Campaign context</figcaption>
-    </figure>}
     <a className={linkClass} href={'/compare?ids=' + encodeURIComponent(card.id)}>Compare</a>
   </div>;
 }
