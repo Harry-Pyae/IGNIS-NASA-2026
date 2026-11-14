@@ -473,6 +473,65 @@ export const SynthesizeRequestSchema = z.object({
 });
 export const SynthesizeResponseSchema = BriefingSchema;
 
+// ---------------------------------------------------------------------------
+// Beat 2 · the 60-second case (/case/green-flash): "Check against source"
+// ---------------------------------------------------------------------------
+/** Why the production validator (src/server/claims.ts) refuses a claim. */
+export const CLAIM_PROBLEMS = [
+  'forbidden_wording', 'missing_evidence', 'unknown_evidence_id', 'missing_refs', 'ref_not_cited', 'ref_mismatch',
+  'unit_mismatch', 'unsupported_number', 'unsupported_outcome', 'missing_gap', 'unknown_gap',
+] as const;
+export const ClaimProblemSchema = z.enum(CLAIM_PROBLEMS);
+export type ClaimProblem = z.infer<typeof ClaimProblemSchema>;
+
+/** ONE typed claim ("card says field = value") against ONE verified card. */
+export const ClaimCheckRequestSchema = z.object({
+  /** Re-read server-side as the public role: drafts and unknown ids → 404 not_found. */
+  experiment_id: z.uuid(),
+  field: FactFieldSchema,
+  /** The edited value. Numeric fields are checked in their canonical unit, FIELD_UNITS[field]. */
+  value: z.union([z.number().finite(), z.string().trim().min(1).max(80)]),
+});
+export type ClaimCheckRequest = z.infer<typeof ClaimCheckRequestSchema>;
+
+const ClaimCheckBaseSchema = z.object({
+  experiment_id: z.uuid(),
+  test_id: z.string(),
+  field: FactFieldSchema,
+  /** The card's verbatim key observation. */
+  quote: z.string(),
+  locator: z.object({
+    source_title: z.string(),
+    source_url: z.url(),
+    ntrs_id: z.string().nullable(),
+    page: z.number().int().positive().nullable(),
+    figure: z.string().nullable(),
+    table: z.string().nullable(),
+  }),
+  /** Same constant production briefs report: proof it is the same validator. */
+  validator_version: z.string(),
+});
+export const ClaimCheckResponseSchema = z.discriminatedUnion('verdict', [
+  ClaimCheckBaseSchema.extend({
+    verdict: z.literal('accepted'),
+    /** The card's own value and canonical unit (null for categorical fields). */
+    value: z.union([z.number(), z.string()]),
+    unit: z.string().nullable(),
+    /** Server-rendered OBSERVED text, the same renderer as a brief. */
+    text: z.string(),
+  }),
+  ClaimCheckBaseSchema.extend({
+    verdict: z.literal('withheld'),
+    problem: ClaimProblemSchema,
+    claimed: z.object({ value: z.union([z.number(), z.string()]), unit: z.string().nullable() }),
+    /** What the cited card records; value null = the card records nothing for this field. */
+    source: z.object({ value: z.union([z.number(), z.string()]).nullable(), unit: z.string().nullable() }),
+    /** e.g. "This claim is WITHHELD — the cited card says 10 cm/s (p.3)." */
+    message: z.string(),
+  }),
+]);
+export type ClaimCheckResponse = z.infer<typeof ClaimCheckResponseSchema>;
+
 export const ExtractRequestSchema = z.object({
   text: z.string().trim().min(20).max(30000),
 });

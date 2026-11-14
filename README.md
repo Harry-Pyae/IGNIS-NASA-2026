@@ -85,6 +85,7 @@ All bodies are JSON, validated with Zod (`src/lib/types.ts`). Errors are always
 |---|---|---|
 | `POST /api/parse-scenario` | `{ text }` | `{ scenario: ParsedScenario, provider }` |
 | `POST /api/synthesize` | `{ scenario: ResolvedScenario, experiment_ids: uuid[1..5] (unique) }` | `Briefing { status, claims, withheld_count, evidence, coverage, catalog_revision, provider }` |
+| `POST /api/check-claim` | `{ experiment_id: uuid, field: FactField, value: number \| string }` | `{ verdict: 'accepted', value, unit, text, quote, locator }` or `{ verdict: 'withheld', problem, claimed, source, message, quote, locator }`: the production claim validator on one claim vs one verified card, no LLM (Beat 2; fixtures in `CLAIM_CHECK_FIXTURES`) |
 | `POST /api/extract` 🔒 | `{ text }` | `{ draft: ExtractDraft, dropped, provider }` |
 | `POST /api/curate-write` 🔒 | `{ action: 'save_draft', id?, record }` · `{ action: 'publish', id?, record, verified_by }` | `201/200 { experiment }` |
 | `GET /api/curate-cards` 🔒 | `?id=` optional | `{ items }` or `{ experiment }` |
