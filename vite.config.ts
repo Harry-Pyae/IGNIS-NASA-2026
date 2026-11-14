@@ -7,7 +7,7 @@ import { defineConfig, loadEnv, type Plugin } from 'vite';
 /**
  * Local dev only: serve /api/<name> from api/<name>.ts with the same
  * Web-standard `export function POST(request)` signature Vercel uses,
- * so `npm run dev` runs the full app without the Vercel CLI.
+ * so `npm run dev` runs the full app without the Vercel CLI
  */
 function devApi(): Plugin {
   return {
