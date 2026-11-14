@@ -101,3 +101,20 @@ describe('A2 · edits carry the version they were read at', () => {
     expect(writeBody(record('X'), null, true, 'Ada Reviewer')).toMatchObject({ action: 'publish', id: undefined, expected_updated_at: undefined });
   });
 });
+
+describe('Round 8 · curate per-tab draft', () => {
+  it('keeps only record form fields — never the secret, signature, quotes or flags — and round-trips', async () => {
+    const { parseDraft, serializeDraft, EMPTY_FORM } = await import('../src/lib/curation');
+    const values = { ...EMPTY_FORM, test_id: 'BASS GMT96-T7', o2_pct: '21', 'x-curator-secret': 'nope', verified_by: 'Ada', field_quotes: '{}' } as Record<string, string>;
+    const raw = serializeDraft(values, { id: OLD_ID, status: 'published', updated_at: 't0' }, new Date('2026-11-14T10:00:00Z'))!;
+    expect(raw).not.toMatch(/nope|Ada|field_quotes|x-curator-secret/);
+    expect(parseDraft(raw)).toEqual({ v: 1, values: { domain: 'solid_flammability', test_id: 'BASS GMT96-T7', o2_pct: '21' }, editing: { id: OLD_ID, status: 'published', updated_at: 't0' }, saved_at: '2026-11-14T10:00:00.000Z' });
+  });
+
+  it('a blank new card is not worth keeping; corrupted or foreign storage is ignored', async () => {
+    const { parseDraft, serializeDraft, EMPTY_FORM } = await import('../src/lib/curation');
+    expect(serializeDraft(EMPTY_FORM, null)).toBeNull();
+    for (const bad of ['{', 'null', '{"v":2,"values":{},"editing":null,"saved_at":"x"}', '{"v":1,"values":{},"editing":{"id":1},"saved_at":"x"}'])
+      expect(parseDraft(bad)).toBeNull();
+  });
+});
