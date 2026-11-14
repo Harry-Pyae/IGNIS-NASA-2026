@@ -9,10 +9,10 @@ export function InfoHint({ id, label, children }: {
   const [open, setOpen] = useState(false);
 
   return <span className="relative inline-flex">
-    <Button type="button" size="sm" className="min-h-11 min-w-11 !transition-none !transform-none"
+    <Button type="button" size="sm" className="!size-6 !rounded-full !px-0 !text-[11px] !transition-none !transform-none"
       aria-label={label} aria-expanded={open} aria-controls={id}
-      onFocus={() => setOpen(true)} onBlur={() => setOpen(false)}
-      onClick={() => setOpen(true)}
+      onBlur={() => setOpen(false)}
+      onClick={() => setOpen((value) => !value)}
       onKeyDown={event => {
         if (event.key === 'Escape' && open) {
           event.stopPropagation();
@@ -20,7 +20,7 @@ export function InfoHint({ id, label, children }: {
         }
       }}>?</Button>
     <span id={id} hidden={!open}
-      className="absolute top-full left-0 z-10 w-48 rounded-lg border border-border bg-bg p-3 text-sm text-text shadow-lg">
+      className="absolute top-full left-0 z-10 mt-2 w-max max-w-[min(16rem,calc(100vw-3rem))] rounded-lg border border-border bg-bg p-3 text-sm text-text shadow-lg">
       {children}
     </span>
   </span>;

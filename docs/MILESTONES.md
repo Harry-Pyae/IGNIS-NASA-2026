@@ -22,6 +22,16 @@ During the event, code changes are bug fixes and runbook items only.
   BASS GMT96-T8, BASS-II GMT45-T4; NTRS 20150008962), revision `becd7b54435772eaf9f7499a69267ad5`. The real-data
   sequence passed on production the same day: step c (Groq), the warmed cache, and the forced-Gemini synthesize proof.
   Details are in `QA-LOG.md`, "Real-data production checks".
+- **UI consistency pass + investigation workbench** (Coder A, decisions in `DECISIONS-ROUND6.md`). Headless-Edge
+  acceptance on the dev server against the live catalog:
+  - 1440×900: O₂ 21 → 17 with no page scroll; after Confirm the plot (y 125–439) and the matches heading (y 742) share
+    one screen, with both sliders visible in the rail.
+  - 390 px: Confirm shows the condition bar; one tap puts the plot at y 247–473.
+  - 1024 px: the bar appears once the controls are off screen.
+  - Keyboard order is rail, then evidence; every focusable element has a ring; reduced motion jumps instantly; there is
+    no sideways scroll at any width.
+
+  R3 re-runs the non-technical-person test on this layout.
 - **Migrations 0004 and 0005 applied in production** (team lead, SQL editor, 2026-11-14). Columns confirmed by an anon
   read; revision unchanged. Dataset provenance code merged to `main` right after.
 - **Midday:** R1's publish never reached the database. Same project (`zvzofutgfwzptlbfibpz`); all 3 seed rows still have
