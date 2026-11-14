@@ -151,7 +151,14 @@
   --color-glass-edge: rgb(255 240 198 / 0.82);
   --color-header-glass: #ffd1a7;
   --color-header-edge: #d99563;
-  --color-hero-glass: #ffc894;
+  --color-header-apricot: #ffc694;
+  --color-header-amber-beige: #d7b58b;
+  --color-hero-base: #28160e;
+  --color-hero-scrim: #48250f;
+  --color-hero-ivory: #fff3d9;
+  --color-hero-cream: #f2dfbf;
+  --color-hero-accent: #ffad5e;
+  --color-hero-action: #ff7824;
   --color-dense-surface: #ffecd9;
   --color-disabled-surface: #f1dfd0;
   --color-raised: #8793a3;

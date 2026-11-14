@@ -417,6 +417,7 @@ html { scroll-padding-top: 6.5rem; }
   --color-amber: #602306;
   --color-dim: #283341;
   --color-focus: #8a300c;
+  background-image: linear-gradient(90deg, var(--color-header-apricot), var(--color-header-amber-beige));
   border-bottom-color: var(--color-header-edge);
   box-shadow: inset 0 1px 0 var(--color-glass-edge), 0 12px 28px -18px var(--shadow-header);
   animation: none;
@@ -424,11 +425,11 @@ html { scroll-padding-top: 6.5rem; }
 @supports ((backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px))) {
   [data-theme='light'] .app-header {
     /* Keep navigation legible when the dark hero scrolls behind the header. */
-    --header-opacity: 72%;
+    --header-opacity: 42%;
     --color-header-glass: var(--color-dense-surface);
-    background-image: linear-gradient(112deg,
-      color-mix(in srgb, var(--color-glass-tint) 38%, transparent),
-      color-mix(in srgb, var(--color-glass-amber) 22%, transparent));
+    background-image: linear-gradient(90deg,
+      color-mix(in srgb, var(--color-header-apricot) 79%, transparent),
+      color-mix(in srgb, var(--color-header-amber-beige) 78%, transparent));
     -webkit-backdrop-filter: blur(16px) saturate(115%);
     backdrop-filter: blur(16px) saturate(115%);
   }
@@ -442,27 +443,53 @@ html { scroll-padding-top: 6.5rem; }
 [data-theme='light'] .theme-control {
   background-color: color-mix(in srgb, var(--color-dense-surface) 60%, transparent);
 }
+[data-theme='light'] .theme-control input:checked + span {
+  background-color: var(--color-hero-action);
+}
+[data-theme='light'] .app-header :is(.catalog-provenance, .btn-primary) {
+  background: color-mix(in srgb, var(--color-dense-surface) 63%, transparent);
+  box-shadow: inset 0 1px 0 var(--color-glass-edge);
+}
 [data-theme='light'] :is(.surface-raised, .evidence-plot) {
   background-color: var(--color-dense-surface);
 }
+[data-theme='light'] .home-hero {
+  --color-text: var(--color-hero-ivory);
+  --color-dim: var(--color-hero-cream);
+  --color-faint: var(--color-hero-cream);
+  --color-amber: var(--color-hero-accent);
+  --color-focus: var(--color-hero-accent);
+  --color-action: var(--color-hero-action);
+  background-color: var(--color-hero-base);
+}
+[data-theme='light'] .home-hero .text-success {
+  color: var(--color-hero-cream);
+}
 [data-theme='light'] .hero-scrim {
-  background: linear-gradient(90deg, var(--color-bg) 0%, var(--color-hero-glass) 38%,
-    color-mix(in srgb, var(--color-hero-glass) 96%, transparent) 52%,
-    color-mix(in srgb, var(--color-glass-tint) 32%, transparent) 70%, transparent 90%);
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--color-hero-base) 96%, transparent),
+    color-mix(in srgb, var(--color-hero-scrim) 87%, transparent) 39%,
+    color-mix(in srgb, var(--color-hero-scrim) 66%, transparent) 52%,
+    transparent 76%);
+}
+[data-theme='light'] .hero-bottom-fade {
+  background-image: linear-gradient(0deg, var(--color-hero-base),
+    color-mix(in srgb, var(--color-hero-base) 64%, transparent) 35%, transparent);
 }
 @media (width < 80rem) {
   [data-theme='light'] .home-hero {
-    background: linear-gradient(155deg, var(--color-hero-glass), transparent 78%);
+    background-image: radial-gradient(ellipse at 100% 52%,
+      var(--color-hero-scrim), transparent 75%);
   }
 }
 /* On narrow screens the copy is above the framed image. Fade at the top edge. */
 [data-theme='light'] .hero-image-edge {
   background: linear-gradient(180deg,
-    color-mix(in srgb, var(--color-glass-tint) 32%, transparent), transparent 38%);
+    color-mix(in srgb, var(--color-hero-base) 52%, transparent), transparent 32%);
   box-shadow: none;
 }
 [data-theme='light'] .hero-caption {
-  background: color-mix(in srgb, var(--color-dense-surface) 94%, transparent);
+  background: color-mix(in srgb, var(--color-hero-base) 87%, transparent);
   border-radius: 4px;
   padding-inline: 0.35rem;
 }
