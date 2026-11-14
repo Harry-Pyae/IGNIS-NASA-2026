@@ -49,3 +49,23 @@ describe('A4 · one map accounting: summary counts come from the map\'s own part
     expect(v.plotted.length + v.off_axis.length + v.not_plotted.length).toBe(v.eligible.length);
   });
 });
+
+describe('A7 · preset availability from the real catalog', () => {
+  it('counts eligible / exact / class-only / map partition per preset; no material → needs_material', async () => {
+    const { presetAvailability } = await import('../src/engine/views');
+    const fabric = [
+      card({ id: 'f1', o2_pct: 21, flow_cm_s: 10 }),
+      card({ id: 'f2', o2_pct: 21, flow_cm_s: null }),
+      card({ id: 'f3', fuel_material: 'nomex_like', material_class: 'fabric', o2_pct: 35, flow_cm_s: 5 }), // class-only, off-axis
+      card({ id: 'p1', fuel_material: 'PMMA', material_class: 'thermoplastic', fuel_form: 'flat_sheet' }),
+      card({ id: 'draft', verified_by: null }),
+    ];
+    const byId = Object.fromEntries(presetAvailability(fabric).map((p) => [p.preset_id, p]));
+    expect(byId['crew-clothing']).toMatchObject({ state: 'ready', exact: 2, visible: 1, missing_coordinates: 1 });
+    const crew = byId['crew-clothing']!;
+    if (crew.state === 'ready') expect(crew.eligible).toBe(crew.exact + crew.class_only);
+    expect(byId['cable-insulation']).toEqual({ preset_id: 'cable-insulation', state: 'needs_material' });
+    expect(byId['cargo-packaging']).toEqual({ preset_id: 'cargo-packaging', state: 'needs_material' });
+    expect(presetAvailability([]).find((p) => p.preset_id === 'crew-clothing')).toMatchObject({ state: 'ready', eligible: 0 });
+  });
+});
