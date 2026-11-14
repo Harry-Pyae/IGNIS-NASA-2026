@@ -122,3 +122,18 @@ Color always has a text or shape counterpart.
 - **Accounts (Tier 2, V6) stay unbuilt** unless Tiers 0–1 are green by Day 2 10:00. If they open, this line is
   replaced by a named override of the Build Plan's "no accounts" rule.
 - **Routing stays a pathname switch.** `'/name/*'` keys match one extra segment (`src/main.tsx`). No React Router.
+- **Dataset provenance (0005)** adds optional `psi_investigation_id`, `dataset_doi`, `dataset_version`, `dataset_file`
+  and `dataset_row_or_time`. They're curator-entered (never extracted by the LLM), null when not recorded, and shown as
+  a second citation line only when present. `datasetCitation()` in `src/lib/evidenceSource.ts` is the one formatter
+  used for the console card, the detail page and "Cite this". 0005 goes to production **before** the code that writes it.
+- **No `no_ignition` outcome during the event.** The paper's two failed ignitions at 16.4 % O₂ fit none of the four
+  outcomes. They stay in R1's research queue. Adding an outcome is a post-event contract change, because it touches
+  the map legend, chips and copy. They're never forced into an existing outcome.
+- **Shared-file sign-off: Coder C's `Console.tsx` diff** (`share-and-compare`, `6f3d0ae`). Reviewed by Coder A. The
+  banner, copy button and comparison link are accepted. One condition: restoring a share link must **not** call
+  `setConfirmed`. A link re-runs deterministic retrieval only, and the Brief generates only when the visitor confirms
+  (spec plus quota: ten opens of one link must not mean ten generations). Coder B is told her file changed.
+- **Copy note for R3 (pitch, README).** Echo the challenge's own words: data that is "hard to find, harder to compare,
+  harder yet to interpret". IGNIS finds, compares and interprets it, with citations. Present detection and suppression
+  investigations as context only, per the challenge's scope note. For export, write "export gives modelers traceable,
+  cited inputs". IGNIS's own copy never uses "predict"; quote the challenge text with attribution if you need its wording.

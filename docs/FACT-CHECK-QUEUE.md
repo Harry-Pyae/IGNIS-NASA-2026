@@ -45,5 +45,10 @@ inexact; a sentence you can't source gets cut, not softened.
 
 ## C. Still open from earlier rounds
 
+- **Seed PSI corrections (2026-11-14):** the two BASS seeds (GMT96-T7, GMT96-T8) cite **PSI-26**, not PSI-25.
+  BASS-II GMT45-T4 cites **PSI-25**. Once 0005 is live, record them in `psi_investigation_id` (with the dataset DOI and
+  version from each investigation's "Cite this Investigation"), check them against the PSI pages, and republish under your name.
+- **Two failed ignitions at 16.4 % O₂** (same paper): there's no outcome category for them yet. Keep them in the research
+  queue and don't card them under an existing outcome (decision in `DECISIONS-ROUND6.md`, event addendum).
 - The three seed cards, plus the GMT45-T4 changing-flow decision (in the event window, `docs/MILESTONES.md` §12).
 - A real wire/cable insulation card and a cargo packaging card, to activate those two material presets (AGENTS.md → Open handoffs).
