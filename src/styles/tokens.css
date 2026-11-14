@@ -143,9 +143,15 @@
 
 :root[data-theme='light'] {
   --theme-scheme: light;
-  --color-bg: #fff;
-  --color-panel: #fff;
-  --color-border: #d5dce4;
+  --color-bg: #fff4ea;
+  --color-panel: #ffe4ce;
+  --color-border: #e8be9e;
+  --color-glass-tint: #ff9e52;
+  --color-header-glass: #ffd8b8;
+  --color-header-edge: #d99563;
+  --color-hero-glass: #ffdec1;
+  --color-dense-surface: #fff2e6;
+  --color-disabled-surface: #f1dfd0;
   --color-raised: #8793a3;
   --color-control-border: #7c8897;
   --color-text: #202833;
@@ -168,15 +174,15 @@
   --color-interp-border: #98accb;
   --color-untested-bg: #fff5de;
   --color-untested-border: #b79b56;
-  --surface-opacity: 88%;
+  --surface-opacity: 76%;
   --raised-opacity: 97%;
-  --header-opacity: 94%;
-  --header-top-opacity: 94%;
+  --header-opacity: 100%;
+  --header-top-opacity: 100%;
   --shadow-near: rgb(32 40 51 / 0.07);
   --shadow-far: rgb(32 40 51 / 0.19);
   --shadow-tinted: rgb(32 40 51 / 0.16);
   --shadow-inset: rgb(32 40 51 / 0.05);
-  --shadow-header: rgb(32 40 51 / 0.23);
+  --shadow-header: rgb(161 75 18 / 0.32);
   --plot-grid: #acb6c3;
   --plot-hatch: #526175;
   --plot-hatch-opacity: .62;
