@@ -12,6 +12,8 @@ const Methods = lazy(() => import('./pages/Methods').then(m => ({default:m.Metho
 const Sources = lazy(() => import('./pages/Sources').then(m => ({default:m.Sources})));
 
 // ponytail: pathname switch, no router — add react-router if Coder B needs nested routes.
+// A '/name/*' key matches '/name/<one segment>' (e.g. '/library/*' for detail pages); the page reads the id from the path.
+// Tier 1 pages register here in their own PR: '/library', '/library/*' (Coder B), '/compare' (Coder C), each lazy.
 const ROUTES: Record<string, () => React.JSX.Element> = {
   '/': Home,
   '/methods': () => <Methods />,
@@ -20,7 +22,7 @@ const ROUTES: Record<string, () => React.JSX.Element> = {
   '/kit': () => <Kit />,
 };
 const path = window.location.pathname.replace(/\/$/, '') || '/';
-const Page = ROUTES[path] ?? NotFound;
+const Page = ROUTES[path] ?? ROUTES[path.replace(/^(\/[^/]+)\/[^/]+$/, '$1/*')] ?? NotFound;
 const title = path === '/methods' ? 'Methods' : path === '/sources' ? 'Source bibliography' : Page === NotFound ? 'Page not found' : null;
 if (title) document.title = title + ' · IGNIS';
 
