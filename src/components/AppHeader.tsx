@@ -5,10 +5,11 @@ import { ExportButton, ProvenancePill } from './CatalogStatus';
 import { Icon } from './ui/Icon';
 
 const navigation = [
-  ['/', 'Console', 'dashboard'],
-  ['/library', 'Library', 'book'],
-  ['/methods', 'Methods', 'checklist'],
-  ['/sources', 'Sources', 'citation'],
+  // The home page (the mission console) is the IGNIS logo; this tab is the 60-second case.
+  ['/case/green-flash', '60-second case', 'verify', '60s case'],
+  ['/library', 'Library', 'book', null],
+  ['/methods', 'Methods', 'checklist', null],
+  ['/sources', 'Sources', 'citation', null],
 ] as const;
 
 function applyTheme(choice: 'dark' | 'light') {
@@ -112,14 +113,14 @@ export function AppHeader() {
       </div>
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-2 gap-y-1 px-4 pb-2 sm:px-6">
         <nav aria-label="Project navigation" className="grid w-full grid-cols-4 gap-1 text-sm sm:flex sm:w-auto sm:gap-5">
-          {navigation.map(([url, label, icon]) => {
+          {navigation.map(([url, label, icon, short]) => {
             const path = window.location.pathname.replace(/\/$/, '') || '/';
-            const current = url === '/' ? path === '/' : path === url || path.startsWith(url + '/');
+            const current = path === url || path.startsWith(url + '/');
             return (
               <a key={url} href={url} aria-current={current ? 'page' : undefined}
                 className={`project-tab flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-sm sm:flex-row sm:gap-1.5 ${current ? 'text-amber' : 'text-dim hover:text-text'}`}>
                 <Icon name={icon} size={18} />
-                <span>{label}</span>
+                {short ? <><span className="sm:hidden">{short}</span><span className="hidden sm:inline">{label}</span></> : <span>{label}</span>}
               </a>
             );
           })}
