@@ -6,11 +6,15 @@ import { Icon } from './ui/Icon';
 
 const navigation = [
   // The home page (the mission console) is the IGNIS logo; this tab is the 60-second case.
-  ['/case/green-flash', '60-second case', 'verify', '60s case'],
+  ['/case', '60-second case', 'verify', '60s case'],
   ['/library', 'Library', 'book', null],
   ['/methods', 'Methods', 'checklist', null],
   ['/sources', 'Sources', 'citation', null],
+  ['/help', 'Help', 'info', null],
 ] as const;
+
+type Theme = 'dark' | 'light';
+const readTheme = (): Theme => (document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
 
 function applyTheme(choice: 'dark' | 'light') {
   document.documentElement.dataset.theme = choice;
@@ -23,20 +27,17 @@ function applyTheme(choice: 'dark' | 'light') {
   }
 }
 
-function ThemeControl() {
-  const [theme, setTheme] = useState(() =>
-    document.documentElement.dataset.theme === 'light' ? 'light' : 'dark',
-  );
-
+/** Two instances (desktop row, phone Display menu): one shared state, a distinct radio-group name each. */
+function ThemeControl({ name, theme, setTheme, className = '' }: { name: string; theme: Theme; setTheme: (theme: Theme) => void; className?: string }) {
   return (
-    <fieldset className="theme-control bubble-control ml-auto flex shrink-0 items-center rounded-lg border border-control-border bg-panel p-0.5">
+    <fieldset className={`theme-control bubble-control flex shrink-0 items-center rounded-lg border border-control-border bg-panel p-0.5 ${className}`}>
       <legend className="sr-only">Color theme</legend>
       {(['dark', 'light'] as const).map((choice) => (
         <label key={choice} className="cursor-pointer">
           <input
             className="sr-only"
             type="radio"
-            name="color-theme"
+            name={name}
             value={choice}
             checked={theme === choice}
             onChange={() => {
@@ -64,6 +65,8 @@ function ThemeControl() {
 /** App shell header: brand mark + wordmark (left), live provenance pill + export (right). */
 export function AppHeader() {
   const { summary, retry } = useCatalogSummary();
+  const [theme, setTheme] = useState<Theme>(readTheme);
+  const display = useRef<HTMLDetailsElement>(null);
   const header = useRef<HTMLElement>(null);
   // --header-h: sticky blocks and scroll targets sit below this sticky header at every width.
   useEffect(() => {
@@ -108,24 +111,33 @@ export function AppHeader() {
           {/* Provenance strip (§8.1 item 0). Coder B expands it into the campaign/source panel. */}
           <ProvenancePill summary={summary} retry={retry} />
           {/* §8.1 item 6: the verified-only open dataset (/api/export). */}
-          <ExportButton summary={summary} label="Export dataset" compact variant="primary" />
+          {/* Round 9 shell diet: on phones Export lives on Sources (the dataset area) and the theme in a labelled menu. */}
+          <div className="hidden sm:block"><ExportButton summary={summary} label="Export dataset" compact variant="primary" /></div>
+          <details ref={display} className="relative sm:hidden">
+            <summary className="bubble-control flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-lg border border-control-border px-2.5 text-sm text-dim [&::-webkit-details-marker]:hidden">
+              <Icon name={theme === 'dark' ? 'moon' : 'sun'} size={16} />Display
+            </summary>
+            <div className="absolute top-full right-0 z-50 mt-2 rounded-xl border border-raised bg-panel p-2 shadow-lg">
+              <ThemeControl name="color-theme-menu" theme={theme} setTheme={(next) => { setTheme(next); if (display.current) display.current.open = false; }} />
+            </div>
+          </details>
         </div>
       </div>
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-2 gap-y-1 px-4 pb-2 sm:px-6">
-        <nav aria-label="Project navigation" className="grid w-full grid-cols-4 gap-1 text-sm sm:flex sm:w-auto sm:gap-5">
+        <nav aria-label="Project navigation" className="flex w-full justify-between gap-1 text-sm sm:w-auto sm:justify-start sm:gap-5">
           {navigation.map(([url, label, icon, short]) => {
             const path = window.location.pathname.replace(/\/$/, '') || '/';
             const current = path === url || path.startsWith(url + '/');
             return (
               <a key={url} href={url} aria-current={current ? 'page' : undefined}
-                className={`project-tab flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-sm sm:flex-row sm:gap-1.5 ${current ? 'text-amber' : 'text-dim hover:text-text'}`}>
-                <Icon name={icon} size={18} />
+                className={`project-tab flex min-h-11 items-center justify-center gap-1.5 rounded-sm ${current ? 'text-amber' : 'text-dim hover:text-text'}`}>
+                <Icon name={icon} size={18} className="hidden sm:block" />
                 {short ? <><span className="sm:hidden">{short}</span><span className="hidden sm:inline">{label}</span></> : <span>{label}</span>}
               </a>
             );
           })}
         </nav>
-        <ThemeControl />
+        <ThemeControl name="color-theme" theme={theme} setTheme={setTheme} className="ml-auto hidden sm:flex" />
       </div>
     </header>
   );

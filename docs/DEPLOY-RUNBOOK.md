@@ -74,6 +74,10 @@ writes cards runs on the disposable database; production checks are read-only or
 - A rate-limit 429 check (proves 0003 is applied): 21+ `POST /api/parse-scenario` with body `{}` from **one**
   IP (one `curl` call with repeated URLs reuses one connection), expecting 429 + `retry-after` after 20.
 - `GET /api/health-llm` with the curator secret: both providers `reachable: true`.
+- `npm run verify:live` (optionally `-- https://<deployment>`): read-only. The pages load (`/`, `/case`, `/help`,
+  `/library`, `/methods`, `/sources`), `/api/export` returns the verified catalog, and **`POST /api/check-claim`**
+  (rate-limited 30/min per IP, deterministic, no LLM) withholds 12 cm/s on GMT96-T7 naming the card's 10 cm/s,
+  accepts 10 cm/s with its quote, and rejects a malformed request with 400.
 - **Failover rehearsal (R3's demo-day checklist):** proves the backup provider completes real requests, not just a
   ping. Run each step **once** (AGENTS.md Gemini quota rule). The header only works with the curator secret; without
   it, it is silently ignored.

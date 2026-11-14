@@ -161,6 +161,251 @@ The draft comes from a teammate's practice build (Pyroverse, used with her permi
 | `nasaDisclaimer` | IGNIS is an independent NASA Space Apps project. Not affiliated with or endorsed by NASA. |  |  |  |  |  |
 | `brandingArt` | Illustrations on this page are branding — not NASA experiment imagery. |  |  |  |  |  |
 
+
+
+## 1b. Added since the draft: Rounds 6–9 (234 keys)
+
+Generated 2026-11-14 from `src/i18n/index.ts` (378 keys in total; the table above covers the first 144). Same rules as §1:
+every row needs an R3 translation with both ticks before Burmese can ship. New in Round 9: the Help page, the
+60-second case (two-run question), the grouped map legend, the language note on Methods.
+
+| Key | English | R3 translation | Native ✓ | Scientific ✓ | Notes |
+|---|---|---|---|---|---|
+| `evidenceUnavailable` | Catalog unavailable |  |  |  |  |
+| `notFoundEyebrow` | 404 / Navigation |  |  |  |  |
+| `notFoundTitle` | Page not found |  |  |  |  |
+| `notFoundIntro` | This address does not lead to an IGNIS page. |  |  |  |  |
+| `notFoundHome` | Return to the mission console |  |  |  |  |
+| `compareEyebrow` | Compare / verified catalog |  |  |  |  |
+| `compareTitle` | Compare experiments |  |  |  |  |
+| `compareLoading` | Loading verified experiments… |  |  |  |  |
+| `compareUnavailable` | The verified catalog is unavailable. |  |  |  |  |
+| `compareChoose` | Choose a verified experiment |  |  |  |  |
+| `compareMissing` | These IDs are unavailable for comparison in the current IGNIS catalog. |  |  |  |  |
+| `compareDistinct` | Select two distinct verified solid-material experiments to compare. |  |  |  |  |
+| `methodsEyebrow` | Methods / evidence retrieval |  |  |  |  |
+| `methodsTitle` | From scenario to source |  |  |  |  |
+| `methodsIntro` | Follow a mission question through IGNIS and see where the software checks a statement before you read it. |  |  |  |  |
+| `methodsPipeline` | Evidence pipeline |  |  |  |  |
+| `methodsPrinciples` | Five principles behind the Brief |  |  |  |  |
+| `methodsSources` | Browse the source bibliography |  |  |  |  |
+| `plainWords` | Plain words |  |  |  |  |
+| `libraryEyebrow` | Library / verified catalog |  |  |  |  |
+| `libraryBack` | Back to library |  |  |  |  |
+| `libraryLoading` | Loading verified catalog… |  |  |  |  |
+| `libraryUnavailable` | The verified catalog is unavailable. |  |  |  |  |
+| `librarySearch` | Search experiments |  |  |  |  |
+| `libraryUnknown` | Not in the current IGNIS catalog |  |  |  |  |
+| `libraryCite` | Cite this |  |  |  |  |
+| `viewExperiment` | View experiment |  |  |  |  |
+| `libraryNotReported` | not reported |  |  |  |  |
+| `campaign` | Campaign |  |  |  |  |
+| `libraryOutcome` | Observed outcome |  |  |  |  |
+| `libraryMinimum` | Minimum |  |  |  |  |
+| `libraryMaximum` | Maximum |  |  |  |  |
+| `libraryDomain` | Domain |  |  |  |  |
+| `libraryClass` | Material class |  |  |  |  |
+| `libraryIgnition` | Ignition method |  |  |  |  |
+| `librarySpread` | Spread rate |  |  |  |  |
+| `libraryDetail` | Experiment detail |  |  |  |  |
+| `libraryTitle` | Evidence Library |  |  |  |  |
+| `libraryNoMatches` | No verified cards match these filters. |  |  |  |  |
+| `libraryEmpty` | Verified experiments appear here as they are published. |  |  |  |  |
+| `libraryCopied` | Citation copied. |  |  |  |  |
+| `libraryInvalid` | Some catalog records could not be validated and are omitted. |  |  |  |  |
+| `libraryInvalidRange` | Enter valid ranges with the minimum at or below the maximum. |  |  |  |  |
+| `librarySorted` | Sorted by citation completeness |  |  |  |  |
+| `libraryCompare` | Compare |  |  |  |  |
+| `libraryAll` | All |  |  |  |  |
+| `libraryVerifiedBy` | Verified by |  |  |  |  |
+| `libraryLocator` | Locator |  |  |  |  |
+| `methodsStages0` | Confirm the scenario |  |  |  |  |
+| `methodsStages1` | Free text becomes editable conditions. A material alias resolves to a catalog name, or you choose the material yourself. Unspecified inputs stay blank. |  |  |  |  |
+| `methodsStages2` | Retrieve verified experiments |  |  |  |  |
+| `methodsStages3` | Only cards published by a named reviewer enter the catalog. Domain, material and form gates run before ranking. Oxygen, airflow, thickness and pressure are compared where reported; the match chips explain which conditions contributed. |  |  |  |  |
+| `methodsStages4` | Check each statement |  |  |  |  |
+| `methodsStages5` | The server checks the structure of the proposed Brief, its experiment IDs, and each cited field, value and unit against the retrieved cards. Observed sentences use checked facts; gaps come from the coverage check. |  |  |  |  |
+| `methodsStages6` | Follow the evidence |  |  |  |  |
+| `methodsStages7` | Read the observation or labelled interpretation, select its citation, then open the source at the location recorded on the card. Invalid statements are withheld. If narration fails, the matched evidence remains available. |  |  |  |  |
+| `methodsPrinciples0` | Report observations |  |  |  |  |
+| `methodsPrinciples1` | A recorded outcome describes the experiment in which it was observed. It is not a verdict on a new scenario. |  |  |  |  |
+| `methodsPrinciples2` | Check every claim |  |  |  |  |
+| `methodsPrinciples3` | Retrieve before narrating |  |  |  |  |
+| `methodsPrinciples4` | Material resolution, eligibility, ranking and coverage follow fixed rules. The language model parses the scenario and narrates retrieved evidence; it does not choose the matches. |  |  |  |  |
+| `methodsPrinciples5` | Keep scientific domains separate |  |  |  |  |
+| `methodsPrinciples6` | Solid-material matches exclude smoke detection and liquid-droplet combustion. Research context is labelled separately. |  |  |  |  |
+| `methodsPrinciples7` | Show the limits |  |  |  |  |
+| `methodsPrinciples8` | Missing measurements stay missing. Source quotations retain the original units. An uncovered combination and a value outside the current catalog range are different findings. |  |  |  |  |
+| `methodsDiagramTitle` | How the mission console builds a Brief |  |  |  |  |
+| `methodsDiagramDesc` | Confirmed inputs and verified catalog cards feed deterministic retrieval. Retrieved cards and coverage feed claim validation. The console displays checked claims or the evidence-only fallback. |  |  |  |  |
+| `compareExperiment` | Experiment |  |  |  |  |
+| `compareUnavailableOption` | Unavailable |  |  |  |  |
+| `libraryResultCount` | {results} results · {cards} verified {cardLabel} so far |  |  |  |  |
+| `libraryCard` | card |  |  |  |  |
+| `libraryCards` | cards |  |  |  |  |
+| `libraryOxygen` | Oxygen |  |  |  |  |
+| `libraryAirflow` | Airflow |  |  |  |  |
+| `libraryThickness` | Thickness |  |  |  |  |
+| `libraryPressure` | Pressure |  |  |  |  |
+| `libraryConditionChange` | {field} changed from {from} to {to} {unit}. Stored value is {stored}. |  |  |  |  |
+| `compareVerified` | Compare two verified experiments |  |  |  |  |
+| `compareMatched` | Compare two matched experiments |  |  |  |  |
+| `compareDescription` | Compare the reported conditions side by side. A difference between records does not explain a difference in outcomes. |  |  |  |  |
+| `compareOpen` | Open comparison page |  |  |  |  |
+| `compareVerifiedCaption` | Recorded conditions and observations of two verified experiments |  |  |  |  |
+| `compareMatchedCaption` | Recorded conditions and observations of two matched experiments |  |  |  |  |
+| `compareField` | Field |  |  |  |  |
+| `compareDifference` | Entries differ |  |  |  |  |
+| `methodsDiagramInputs` | Your inputs |  |  |  |  |
+| `methodsDiagramCards` | Verified cards |  |  |  |  |
+| `methodsDiagramRetrieval` | Retrieval + coverage |  |  |  |  |
+| `methodsDiagramValidation` | Claim validation |  |  |  |  |
+| `methodsDiagramBrief` | Brief + citations |  |  |  |  |
+| `methodsClaimsGuarantee` | Observed and supported statements cite retrieved experiments, and the server checks each cited value against its card. Gaps are marked separately. |  |  |  |  |
+| `methodsInterpretationLimit` | Interpretation of the cited experiments, not a direct observation. Checked references do not establish causation or equivalence between tests. |  |  |  |  |
+| `helpLabel` | How to use this |  |  |  |  |
+| `libraryConditions` | Reported conditions and observations |  |  |  |  |
+| `librarySourceQuote` | Verbatim source observation |  |  |  |  |
+| `helpHome` | Start with a preset, find matching experiments, then open a citation to check the original observation. |  |  |  |  |
+| `helpScenario` | Choose a material and form. Leave conditions you do not know unspecified. |  |  |  |  |
+| `helpMap` | Select a point to inspect its experiment. Check the evidence counts for runs without map coordinates. |  |  |  |  |
+| `helpMatches` | Exact matches share the requested material. Class matches use a different material in the same class. Open a source to check the observation. |  |  |  |  |
+| `helpBrief` | Select an evidence ID to open its card. If narration is unavailable or a claim is withheld, follow the available experiment sources. |  |  |  |  |
+| `helpGaps` | Read each gap within the current IGNIS catalog. A hatched region has no verified card at those conditions. |  |  |  |  |
+| `helpMethods` | Follow the pipeline to see how IGNIS checks a proposed statement against cited experiment fields before showing it. |  |  |  |  |
+| `helpSources` | Open a paper or dataset by campaign, or export the verified catalog as JSON. |  |  |  |  |
+| `helpLibrary` | Search or filter the verified cards. Clear your search and filters to return to the full catalog. |  |  |  |  |
+| `helpDetail` | Read the original quote, check its source locator, and compare the normalized units in the conditions table. |  |  |  |  |
+| `helpCompare` | Choose two distinct experiments. Check the changing-condition notes before comparing reported values. |  |  |  |  |
+| `helpCurate` | Save a private draft, reopen it to review each field against its source, then publish under your name. |  |  |  |  |
+| `helpKit` | Use this internal page to check shared components and their states. |  |  |  |  |
+| `helpNotFound` | Use the home link to return to IGNIS. |  |  |  |  |
+| `methodsLanguages` | Every interface string lives in one reviewed i18n layer. Adding a language is a translation task, not an engineering one, and a language ships only when it is complete and natively reviewed. Community translations are welcome. |  |  |  |  |
+| `helpLinkHome` | How IGNIS works |  |  |  |  |
+| `helpLinkScenario` | How to describe a scenario |  |  |  |  |
+| `helpLinkMap` | How to read this map |  |  |  |  |
+| `helpLinkMatches` | How matches are ranked |  |  |  |  |
+| `helpLinkBrief` | How claims are checked |  |  |  |  |
+| `helpLinkGaps` | How to read the gaps |  |  |  |  |
+| `helpLinkMethods` | How to trace a claim to its source |  |  |  |  |
+| `helpLinkSources` | How to trace a source |  |  |  |  |
+| `helpLinkLibrary` | How to find and compare runs |  |  |  |  |
+| `helpLinkDetail` | How to read a card |  |  |  |  |
+| `helpLinkCompare` | How to compare two runs |  |  |  |  |
+| `helpLinkCurate` | Curator guide |  |  |  |  |
+| `helpNav` | Help |  |  |  |  |
+| `helpEyebrow` | Help |  |  |  |  |
+| `helpTitle` | How to use IGNIS |  |  |  |  |
+| `helpIntro` | Short walkthroughs for each task. Your inputs are kept while you read. |  |  |  |  |
+| `helpBack` | Back to where you were |  |  |  |  |
+| `helpContents` | On this page |  |  |  |  |
+| `helpPageStart` | Getting started |  |  |  |  |
+| `helpStart1` | IGNIS finds verified NASA microgravity fire experiments that match a scenario and shows what they observed. It never fills in what was not tested. |  |  |  |  |
+| `helpStart2` | Three ways in: try the 60-second case, pick a preset on the console, or browse the Library. |  |  |  |  |
+| `helpPageDescribe` | Describe a scenario |  |  |  |  |
+| `helpDescribe1` | Pick a preset, or Custom. Choose a material and its form: IGNIS only compares runs with a compatible material and form. |  |  |  |  |
+| `helpDescribe2` | Set oxygen and airflow, or leave them Not specified. Unknown is allowed and is never filled in for you. Then select Find matching experiments. |  |  |  |  |
+| `helpPageMap` | Read the evidence map |  |  |  |  |
+| `helpMap1` | Airflow runs across, oxygen up. Each mark is one verified run; its shape and color show the observed outcome. Your scenario is the ring. |  |  |  |  |
+| `helpMap2` | A hatched cell has no verified run in the current IGNIS catalog at those conditions. Select a mark, or a run by name, to open it. Runs missing oxygen or airflow are counted but not plotted. |  |  |  |  |
+| `helpPageMatches` | How matches are ranked |  |  |  |  |
+| `helpMatches1` | Runs are ordered by how close their reported conditions are to yours, not by material safety. |  |  |  |  |
+| `helpMatches2` | An exact match shares your material; a class match uses a different material in the same class. Each chip shows same, close, not reported or untested for one condition. |  |  |  |  |
+| `helpPageTrace` | Trace a claim to its source |  |  |  |  |
+| `helpTrace1` | Every observed statement cites a run (E1, E2 …). Select it to open the card: the verbatim quote, its page, figure or table, and the source PDF. |  |  |  |  |
+| `helpTrace2` | Before you see a statement, the server checks every value it cites against that card. A statement that fails is withheld and counted. See it happen in the 60-second case. |  |  |  |  |
+| `helpPageFind` | Find and compare runs |  |  |  |  |
+| `helpFind1` | The Library lists every verified card. Search, or filter by material, campaign, form, outcome, oxygen and airflow; your filters are kept when you come back. |  |  |  |  |
+| `helpFind2` | Open a card for its full record, or Compare two runs side by side. Read any changing-condition note before comparing values. |  |  |  |  |
+| `helpPageGaps` | Read the gaps |  |  |  |  |
+| `helpGaps1` | The gap radar lists regions inside the catalog’s range with no verified run. A gap means no matching verified evidence in the current IGNIS catalog; it says nothing about safety either way. |  |  |  |  |
+| `helpPageCurate` | For curators |  |  |  |  |
+| `helpCurate1` | Internal. Enter the curator secret on /curate. Drafts to verify are listed first: reopen one, check every field against its source, then publish under your own full name. Never a placeholder or someone else’s name. |  |  |  |  |
+| `helpGlossary` | Plain-language definitions of every term are on the Methods page. |  |  |  |  |
+| `helpGlossaryLink` | Open the glossary |  |  |  |  |
+| `caseEyebrow` | The 60-second case |  |  |  |  |
+| `caseTitle` | Which fabric run used 10 cm/s? |  |  |  |  |
+| `caseIntro` | Two verified NASA fabric tests at the same oxygen, with different airflow. Find the record, then check a claim against it. |  |  |  |  |
+| `caseTitleFlash` | Start with what NASA saw |  |  |  |  |
+| `caseBeat1` | The green flash |  |  |  |  |
+| `caseInspect` | Inspect the green flash |  |  |  |  |
+| `caseHideExplanation` | Hide the explanation |  |  |  |  |
+| `caseNasaExplains` | What NASA says |  |  |  |  |
+| `caseCheckedBy` | Checked against the source by {name} |  |  |  |  |
+| `caseStep1` | 1 · The two runs |  |  |  |  |
+| `caseStep2` | 2 · Does this number match the experiment record? |  |  |  |  |
+| `caseRunFacts` | {material} · {form} · O₂ {o2} % · {outcome} |  |  |  |  |
+| `caseInspectRow` | Inspect the source row |  |  |  |  |
+| `caseHideRow` | Hide the source row |  |  |  |  |
+| `caseRowCaption` | {table}, p.{page} |  |  |  |  |
+| `caseRowWithdrawn` | The card no longer matches this transcribed row, so the row is not shown. Open the PDF to read it. |  |  |  |  |
+| `caseOpenPdf` | Open the PDF at p.{page} |  |  |  |  |
+| `caseObservation` | Observation (p.{page}) |  |  |  |  |
+| `caseClaimRunLabel` | Run in the claim |  |  |  |  |
+| `caseClaimValueLabel` | Airflow in the claim (cm/s) |  |  |  |  |
+| `caseClaimUnit` | cm/s airflow. |  |  |  |  |
+| `caseClaimVerb` | ran at |  |  |  |  |
+| `caseCheck` | Check against the record |  |  |  |  |
+| `caseChecking` | Checking… |  |  |  |  |
+| `caseInvalid` | Enter the airflow as a number, in cm/s. |  |  |  |  |
+| `caseYouChecked` | You checked: {run} at {value} cm/s |  |  |  |  |
+| `caseWithheld` | Withheld |  |  |  |  |
+| `caseAccepted` | Accepted |  |  |  |  |
+| `caseFieldProof` | Airflow in the record: {value} cm/s |  |  |  |  |
+| `caseSameCheck` | This is the same check every IGNIS brief passes before you see it. |  |  |  |  |
+| `caseNoAi` | Deterministic: the claim is compared with the verified card. No AI is involved. |  |  |  |  |
+| `caseLimitation` | Two rows alone cannot establish airflow as the cause of any difference between these runs. |  |  |  |  |
+| `caseLocate` | Locate {run} on the map |  |  |  |  |
+| `caseCompare` | Compare the two fabric runs |  |  |  |  |
+| `caseCardsLoading` | Loading the verified cards… |  |  |  |  |
+| `caseCatalogUnavailable` | The verified catalog could not be reached. This is a connection problem, not missing evidence. |  |  |  |  |
+| `caseRunsMissing` | These runs are not in the current verified catalog, so there is nothing to check against. |  |  |  |  |
+| `caseRateLimited` | Too many checks in a minute. Try again shortly. |  |  |  |  |
+| `caseError` | The check could not run right now. This is a connection problem, not a verdict. Try again in a moment. |  |  |  |  |
+| `caseCreditData` | Experiment data: NASA, {campaign} ({source}). |  |  |  |  |
+| `legendRegion` | Evidence map legend |  |  |  |  |
+| `legendExplained` | Tap for meaning |  |  |  |  |
+| `legendKeyOnly` | Also on the map |  |  |  |  |
+| `recoveryRegion` | Display error |  |  |  |  |
+| `recoveryApp` | IGNIS could not display this page. |  |  |  |  |
+| `recoveryHeader` | Navigation could not be displayed. The page is still available. |  |  |  |  |
+| `recoveryPage` | This page failed to display. You can still use navigation. |  |  |  |  |
+| `recoverySection` | This section failed to display. The other sections are still available. |  |  |  |  |
+| `recoveryNamedSection` | {section} failed to display. The other sections are still available. |  |  |  |  |
+| `whyRunAppeared` | Why did this run appear? |  |  |  |  |
+| `inspectRequested` | Requested |  |  |  |  |
+| `inspectReported` | Reported |  |  |  |  |
+| `inspectClassMatch` | Shared material class: {class}. |  |  |  |  |
+| `inspectExactMatch` | Exact material match. |  |  |  |  |
+| `inspectDecisive` | {param}: {requested} {unit} requested · {reported} {unit} reported. |  |  |  |  |
+| `inspectScenarioUnset` | not specified in the scenario |  |  |  |  |
+| `inspectScenarioSet` | specified in the scenario |  |  |  |  |
+| `inspectRunUnset` | not reported in the run |  |  |  |  |
+| `inspectRunSet` | reported in the run |  |  |  |  |
+| `inspectExperimentCard` | Experiment card |  |  |  |  |
+| `inspectRecordedSource` | Recorded source |  |  |  |  |
+| `whyNoMatches` | Why are there no matches? |  |  |  |  |
+| `noMatchForms` | Requested form: {form}. Incompatible forms in otherwise eligible records: {forms}. |  |  |  |  |
+| `noMatchMaterials` | {count} records in this domain have a different material and material class. |  |  |  |  |
+| `browseCatalog` | Browse the verified catalog |  |  |  |  |
+| `specimenExplorer` | Specimen Explorer |  |  |  |  |
+| `specimenIntro` | Open a verified fabric run to inspect its reported conditions, quotation, and source locator. |  |  |  |  |
+| `specimenSelectByName` | Select a run by name |  |  |  |  |
+| `specimenInspect` | Inspect this run in the Library |  |  |  |  |
+| `specimenLocate` | Locate this specimen on the Evidence Map |  |  |  |  |
+| `handoffPrint` | Print evidence handoff |  |  |  |  |
+| `handoffRegion` | Evidence handoff |  |  |  |  |
+| `handoffTitle` | IGNIS evidence handoff |  |  |  |  |
+| `handoffRevision` | Catalog revision: {revision} |  |  |  |  |
+| `handoffScenario` | Scenario |  |  |  |  |
+| `handoffFormUnset` | Form not specified |  |  |  |  |
+| `handoffUnset` | not specified |  |  |  |  |
+| `handoffNarrated` | Evidence-validated narration included. |  |  |  |  |
+| `handoffPending` | Narration pending. Ranked evidence is included below. |  |  |  |  |
+| `handoffRuns` | Ranked verified runs |  |  |  |  |
+| `handoffRecordId` | Record ID |  |  |  |  |
+| `handoffLocatorUnset` | Locator not reported |  |  |  |  |
+
 ## 2. Glossary (terms from her strings)
 
 | English | Her Burmese | Check | R3 ✓ |

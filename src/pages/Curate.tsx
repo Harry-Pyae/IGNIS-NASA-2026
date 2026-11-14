@@ -155,12 +155,30 @@ export function Curate() {
     setListStale(false);
   }, [call]);
 
+  // Round 9 · finding 9: the unsaved-edit offer (and the card it names) shows only once the server has accepted this
+  // secret; switching to a different secret after that is an access change, so the offered draft is discarded.
+  const [authorizedFor, setAuthorizedFor] = useState<string | null>(null);
+  const lastAuthorized = useRef<string | null>(null);
+  const authorized = cards !== null && authorizedFor === secret;
   useEffect(() => {
     if (secret.length < 4) return;
     let alive = true;
     call('/api/curate-cards')
-      .then(({ items }) => alive && setCards(items as CurateListItem[]))
-      .catch(() => alive && setCards(null));
+      .then(({ items }) => {
+        if (!alive) return;
+        if (lastAuthorized.current !== null && lastAuthorized.current !== secret) {
+          setRecoverable(null);
+          try { sessionStorage.removeItem(CURATE_DRAFT_KEY); } catch { /* storage unavailable */ }
+        }
+        lastAuthorized.current = secret;
+        setAuthorizedFor(secret);
+        setCards(items as CurateListItem[]);
+      })
+      .catch(() => {
+        if (!alive) return;
+        setAuthorizedFor(null);
+        setCards(null);
+      });
     return () => {
       alive = false;
     };
@@ -402,7 +420,7 @@ export function Curate() {
           )}
         </Panel>
 
-        {recoverable && <div role="region" aria-label="Unsaved edit" className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-warn/35 p-3 text-sm">
+        {authorized && recoverable && <div role="region" aria-label="Unsaved edit" className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-warn/35 p-3 text-sm">
           <p className="min-w-0 flex-1">
             An unsaved edit from earlier in this tab ({recoverable.editing ? `card ${recoverable.values.test_id ?? recoverable.editing.id}` : `new card${recoverable.values.test_id ? ` ${recoverable.values.test_id}` : ''}`}, {recoverable.saved_at.slice(11, 16)} UTC) can be restored. The reviewer name is never kept.
           </p>
