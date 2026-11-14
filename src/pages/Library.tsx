@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button, Panel, Select } from '../components/ui';
 import { useVerifiedCatalog } from '../lib/catalog';
 import { evidenceLocator, evidenceSource } from '../lib/evidenceSource';
+import { COPY } from '../lib/copy';
 import { FIELD_UNITS, PARAM_LABELS, CONTINUOUS_PARAMS, type Experiment } from '../lib/types';
 
 const missing = 'not reported';
@@ -149,6 +150,12 @@ function ExperimentDetail({ card }: { card: Experiment }) {
 
   return <div className="space-y-5">
     <Panel>
+      {card.media_url && <figure className="mb-4">
+        <div className="aspect-video overflow-hidden rounded-lg border border-border bg-bg/60">
+          <img src={card.media_url} alt={`${COPY.campaignContext}: ${card.test_id}`} loading="lazy" className="size-full object-cover" />
+        </div>
+        <figcaption className="mt-2 console-label text-dim">{COPY.campaignContext}</figcaption>
+      </figure>}
       <p className="console-label text-amber">{card.campaign}</p>
       <h2 className="my-2 text-2xl font-semibold">{card.test_id}</h2>
       <p className="text-sm text-dim">Verified by {card.verified_by} · {card.verified_at?.slice(0, 10) ?? missing}</p>
