@@ -1,0 +1,379 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+.brief-print-only, .map-radar, .map-pulse { display: none; }
+html { scroll-padding-top: 6.5rem; }
+@media (prefers-reduced-motion: no-preference) {
+  .map-dot, .map-pulse { transform-box: fill-box; transform-origin: center; }
+  .map-pulse { display: inline; }
+  .map-radar { display: block; width: 100%; height: 100%; background: conic-gradient(from 0deg, transparent 310deg, color-mix(in srgb,var(--color-amber) 11%,transparent) 360deg); }
+  .scenario-glide { transition: transform var(--dur-glide) var(--ease-out); }
+  .map-hatching { animation: hatch-in 180ms ease-out backwards; animation-delay: calc(400ms + var(--dots) * var(--stagger-dot)); }
+  @keyframes hatch-in { from { opacity: 0; } }
+  .match-cards article { transition: transform var(--dur-hover) var(--ease-out), border-color var(--dur-hover); }
+  @media (hover: hover) and (pointer: fine) {
+    .match-cards article:hover { transform: translateY(-2px); border-color: var(--color-amber); }
+  }
+  .ambient { animation: ambient-drift 20s ease-in-out infinite; }
+  @keyframes ambient-drift { 50% { transform: scale(1.025) translateY(-0.5%); } }
+}
+@media (prefers-reduced-motion: reduce) {
+  .experiment-ticker { overflow-x: auto; }
+  .experiment-ticker [aria-hidden="true"] { display: none; }
+}
+@media print {
+  body:has(.mission-brief) :is(.ambient, .app-header),
+  #top:has(.mission-brief) > :not(:has(.mission-brief)),
+  #console > :not(:has(.mission-brief)),
+  #console .mission-brief ~ *, #console :has(> .mission-brief) > :not(.mission-brief),
+  .mission-brief aside, .mission-brief .step-tag { display: none !important; }
+  body:has(.mission-brief), body:has(.mission-brief) #root, #console:has(.mission-brief),
+  .mission-brief, .mission-brief * { background: white !important; color: black !important; box-shadow: none !important; text-shadow: none !important; }
+  #console:has(.mission-brief), #console :has(> .mission-brief) { display: block; padding: 0; }
+  .mission-brief li, .mission-brief h3 { break-inside: avoid; }
+  .brief-print-only { display: block; margin-block: 1em; overflow-wrap: anywhere; }
+  .mission-brief a[href]::after { content: " (" attr(href) ")"; overflow-wrap: anywhere; }
+}
+
+/* `can-hover:hover:…` — hover styles only on real pointers (no sticky hover on touch). */
+@custom-variant can-hover (@media (hover: hover) and (pointer: fine));
+
+@layer base {
+  html {
+    background-color: var(--color-bg);
+    color-scheme: dark;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-bg font-sans text-text antialiased;
+    min-height: 100dvh;
+    text-rendering: optimizeLegibility;
+    font-size: 16px;
+    line-height: 1.6;
+    font-feature-settings: 'kern' 1, 'calt' 1;
+  }
+  h1, h2, h3, h4 {
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--color-amber) 35%, transparent);
+    color: var(--color-text);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-amber);
+    outline-offset: 2px;
+  }
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+}
+
+@layer components {
+  /*
+   * App ambient background: /art/bg-glow.webp already contains the §8.3 aurora
+   * glows, grid and grain — it REPLACES the CSS starfield/aurora layers.
+   * A fixed layer (not body background) so `cover` maps to the viewport, not the long page.
+   */
+  .ambient {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: var(--color-bg);
+    background-image: url('/art/bg-glow-sm.webp');
+    background-size: cover;
+    background-position: center top;
+  }
+  @media (min-width: 961px) {
+    .ambient {
+      background-image: url('/art/bg-glow.webp');
+    }
+  }
+
+  /* Console label: IBM Plex Mono, uppercase, ~1px tracking (§8.3). */
+  .console-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: var(--tracking-console);
+    text-transform: uppercase;
+  }
+
+  /* Display type: Space Grotesk semibold, tight, softly lit from above. */
+  .display {
+    font-weight: 600;
+    letter-spacing: -0.035em;
+    line-height: 1;
+  }
+  .text-lit {
+    background: linear-gradient(180deg, var(--color-text) 30%, color-mix(in srgb, var(--color-text) 72%, var(--color-dim)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .text-lit-dim {
+    background: linear-gradient(180deg, var(--color-dim) 20%, color-mix(in srgb, var(--color-dim) 55%, var(--color-faint)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /*
+   * Surfaces. Light comes from above: an inner top highlight, a faint warm sheen in the
+   * corner, translucency so the ambient glow reads through, and a long soft shadow.
+   * Panel applies these; brief tones keep their own fills but share the depth.
+   */
+  .surface {
+    background-color: color-mix(in srgb, var(--color-panel) 78%, transparent);
+    background-image:
+      radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--color-amber) 4%, transparent), transparent 55%),
+      linear-gradient(180deg, color-mix(in srgb, var(--color-text) 3.5%, transparent), transparent 42%);
+    box-shadow:
+      inset 0 1px 0 0 color-mix(in srgb, var(--color-text) 7%, transparent),
+      0 1px 2px rgb(0 0 0 / 0.35),
+      0 28px 56px -32px rgb(0 0 0 / 0.75);
+  }
+  .surface-raised {
+    background-color: color-mix(in srgb, var(--color-panel) 88%, transparent);
+  }
+  .surface-tinted {
+    background-image: linear-gradient(180deg, color-mix(in srgb, var(--color-text) 3%, transparent), transparent 50%);
+    box-shadow:
+      inset 0 1px 0 0 color-mix(in srgb, var(--color-text) 6%, transparent),
+      0 18px 40px -28px rgb(0 0 0 / 0.7);
+  }
+  /* Recessed well inside a surface (step cards, stat tiles). */
+  .surface-inset {
+    background-color: color-mix(in srgb, var(--color-bg) 62%, transparent);
+    box-shadow:
+      inset 0 1px 0 0 color-mix(in srgb, var(--color-text) 5%, transparent),
+      inset 0 -1px 0 0 rgb(0 0 0 / 0.25);
+  }
+
+  /* Primary action: lit amber with a real shadow (§8.3 accent). */
+  .btn-primary {
+    background-color: var(--color-amber);
+    background-image: linear-gradient(180deg, color-mix(in srgb, white 18%, transparent), transparent 55%);
+    box-shadow:
+      inset 0 1px 0 0 color-mix(in srgb, white 40%, transparent),
+      inset 0 -1px 0 0 rgb(0 0 0 / 0.18),
+      0 8px 24px -10px color-mix(in srgb, var(--color-amber) 70%, transparent);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .btn-primary:hover:not(:disabled) {
+      filter: brightness(1.06);
+      box-shadow:
+        inset 0 1px 0 0 color-mix(in srgb, white 45%, transparent),
+        inset 0 -1px 0 0 rgb(0 0 0 / 0.18),
+        0 12px 32px -10px color-mix(in srgb, var(--color-amber) 85%, transparent);
+    }
+  }
+
+  /* Card hover: 0.25s lift + amber border (§8.3). Pointer devices only; lift only when motion is OK. */
+  .hover-lift {
+    transition:
+      transform var(--dur-hover) var(--ease-out),
+      border-color var(--dur-hover) ease,
+      box-shadow var(--dur-hover) ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .hover-lift:hover {
+      border-color: color-mix(in srgb, var(--color-amber) 45%, var(--color-border));
+      box-shadow:
+        inset 0 1px 0 0 color-mix(in srgb, var(--color-text) 8%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--color-amber) 10%, transparent),
+        0 24px 48px -24px color-mix(in srgb, var(--color-amber) 28%, transparent);
+    }
+  }
+  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .hover-lift:hover {
+      transform: translateY(-2px);
+    }
+  }
+
+  /* Press feedback for anything tappable — motion only when the user allows it. */
+  .pressable {
+    touch-action: manipulation;
+    user-select: none;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .pressable {
+      transition: transform var(--dur-press) var(--ease-out);
+    }
+    .pressable:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+    .ignis-range::-webkit-slider-thumb {
+      transition: transform var(--dur-press) var(--ease-out);
+    }
+    .ignis-range:active::-webkit-slider-thumb {
+      transform: scale(1.12);
+    }
+  }
+
+  /*
+   * Scroll reveal: content rises 16px and fades in as it enters the viewport.
+   * CSS scroll-driven animation — off the main thread, no JS, no IntersectionObserver.
+   * Browsers without view() timelines simply show the content. Set --i to stagger.
+   * NEVER on Mission Brief / UNTESTED containers (decision 2) — .motion-still wins anyway.
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .reveal {
+        animation: ignis-reveal both cubic-bezier(0.2, 0.7, 0.2, 1);
+        animation-timeline: view();
+        animation-range: entry calc(var(--i, 0) * 6%) entry calc(55% + var(--i, 0) * 6%);
+      }
+      /* Hero art drifts slowly as you scroll away from it — depth, not distraction. */
+      .hero-drift {
+        animation: ignis-hero-drift linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0 100vh;
+      }
+    }
+  }
+  /*
+   * App header: light and borderless over the top of the page, settling into a frosted bar with
+   * a hairline and soft shadow as you scroll (first 96px). Scroll-driven, off the main thread.
+   * Without support or with reduced motion, it simply shows the settled state.
+   */
+  .app-header {
+    background-color: color-mix(in srgb, var(--color-bg) 82%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+    box-shadow: 0 12px 32px -22px rgb(0 0 0 / 0.85);
+    -webkit-backdrop-filter: blur(14px) saturate(130%);
+    backdrop-filter: blur(14px) saturate(130%);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: scroll()) {
+      .app-header {
+        animation: ignis-header-settle linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0 96px;
+      }
+    }
+  }
+  @keyframes ignis-header-settle {
+    from {
+      background-color: color-mix(in srgb, var(--color-bg) 35%, transparent);
+      border-bottom-color: transparent;
+      box-shadow: 0 0 0 0 transparent;
+    }
+  }
+
+  /*
+   * Data that arrives (catalog counts, provenance line) fades in instead of popping.
+   * Key the element to its value so each new value re-enters. Rare + informative → worth it.
+   */
+  /* Reduced motion: no transition and no starting style, so the new value is simply there (round 3, item 9). */
+  @media (prefers-reduced-motion: no-preference) {
+    .swap-in {
+      transition:
+        opacity 360ms var(--ease-out),
+        filter 360ms var(--ease-out);
+    }
+    @starting-style {
+      .swap-in {
+        opacity: 0;
+        filter: blur(3px);
+      }
+    }
+  }
+
+  /* Slider thumb: the halo widens on hover so the grab target announces itself. */
+  .ignis-range::-webkit-slider-thumb {
+    /* One list for both: the press scale itself only happens under no-preference. */
+    transition:
+      box-shadow 200ms ease,
+      transform var(--dur-press) var(--ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .ignis-range:hover::-webkit-slider-thumb {
+      box-shadow: 0 0 0 7px color-mix(in srgb, var(--color-amber) 22%, transparent);
+    }
+  }
+
+  @keyframes ignis-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+  }
+  @keyframes ignis-hero-drift {
+    to {
+      transform: scale(1.06) translateY(4%);
+    }
+  }
+
+  /*
+   * Credibility surfaces (Mission Brief, UNTESTED, evidence quotes) are completely still for
+   * EVERY user — decision 2 in docs/DECISIONS-ROUND2.md. Panel adds this to its brief tones;
+   * wrap any other evidence container in it.
+   */
+  .motion-still,
+  .motion-still * {
+    animation: none !important;
+    transition: none !important;
+  }
+  .motion-still *:active {
+    transform: none !important;
+  }
+
+  /* Native range input, token-styled. --fill is set inline on the input itself. */
+  .ignis-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 24px;
+    background: transparent;
+    cursor: pointer;
+    touch-action: pan-y;
+  }
+  .ignis-range::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 999px;
+    background: linear-gradient(to right, var(--color-amber) var(--fill), var(--color-border) var(--fill));
+  }
+  .ignis-range::-moz-range-track {
+    height: 4px;
+    border-radius: 999px;
+    background: linear-gradient(to right, var(--color-amber) var(--fill), var(--color-border) var(--fill));
+  }
+  .ignis-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    margin-top: -7px;
+    border-radius: 999px;
+    background: var(--color-text);
+    border: 3px solid var(--color-amber);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-amber) 18%, transparent);
+  }
+  .ignis-range::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    background: var(--color-text);
+    border: 3px solid var(--color-amber);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-amber) 18%, transparent);
+  }
+  /* Gap hatching (Coder B uses this for untested map cells). */
+  .hatch {
+    background-image: repeating-linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-faint) 35%, transparent) 0 1px,
+      transparent 1px 7px
+    );
+  }
+}
