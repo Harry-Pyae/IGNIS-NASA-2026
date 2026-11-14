@@ -298,7 +298,7 @@ export function Curate() {
 
       {status && (
         <Panel tone={status.tone === 'success' ? 'observed' : 'untested'} className="!p-4" role="status">
-          <pre className="font-mono text-[13px] whitespace-pre-wrap text-text">{status.text}</pre>
+          <pre className="font-mono text-[14px] whitespace-pre-wrap text-text">{status.text}</pre>
         </Panel>
       )}
 
@@ -323,21 +323,38 @@ export function Curate() {
         ) : cards.length === 0 ? (
           <p className="mt-3 text-sm text-dim">No cards yet.</p>
         ) : (
-          <ul className="mt-3 flex max-h-64 flex-col divide-y divide-border overflow-auto rounded-lg border border-border">
-            {cards.map((c) => (
-              <li key={c.id} className={cx('flex flex-wrap items-center gap-3 px-3 py-2 text-sm', editing?.id === c.id && 'bg-amber/8')}>
-                <Badge variant={c.status === 'published' ? 'success' : 'warn'}>{c.status}</Badge>
-                <span className="min-w-0 flex-1 truncate">
-                  <span className="font-medium text-text">{c.test_id}</span>
-                  <span className="text-dim"> · {c.campaign} · {c.source_title}</span>
-                </span>
-                {c.verified_by && <span className="text-dim">by {c.verified_by}</span>}
-                <Button size="sm" variant="ghost" disabled={busy} onClick={() => reopen(c.id)}>
-                  Reopen
-                </Button>
-              </li>
-            ))}
-          </ul>
+          // Drafts first, every card visible (no inner scroll box hiding the rest), each group counted.
+          <div className="mt-3 grid gap-4">
+            {(['draft', 'published'] as const).map((group) => {
+              const list = cards.filter((c) => (c.status === 'published') === (group === 'published'));
+              return (
+                <section key={group} aria-labelledby={`curate-${group}`}>
+                  <h3 id={`curate-${group}`} className="console-label mb-2 text-dim">
+                    {group === 'draft' ? `Drafts to verify · ${list.length}` : `Published · ${list.length}`}
+                  </h3>
+                  {list.length === 0 ? (
+                    <p className="text-sm text-dim">{group === 'draft' ? 'No drafts waiting.' : 'Nothing published yet.'}</p>
+                  ) : (
+                    <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
+                      {list.map((c) => (
+                        <li key={c.id} className={cx('flex flex-wrap items-center gap-3 px-3 py-2 text-sm', editing?.id === c.id && 'bg-amber/8')}>
+                          <Badge variant={c.status === 'published' ? 'success' : 'warn'}>{c.status}</Badge>
+                          <span className="min-w-0 flex-1 truncate">
+                            <span className="font-medium text-text">{c.test_id}</span>
+                            <span className="text-dim"> · {c.campaign} · {c.source_title}</span>
+                          </span>
+                          {c.verified_by && <span className="text-dim">by {c.verified_by}</span>}
+                          <Button size="sm" variant={group === 'draft' ? 'secondary' : 'ghost'} disabled={busy} onClick={() => reopen(c.id)}>
+                            {group === 'draft' ? 'Review' : 'Reopen'}
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
+              );
+            })}
+          </div>
         )}
       </Panel>
 
@@ -350,13 +367,13 @@ export function Curate() {
             onChange={(e) => setExcerpt(e.target.value)}
             rows={14}
             placeholder="Paste a paper excerpt or results table… It stays here while you check the draft."
-            className={`${input} font-mono text-[13px]`}
+            className={`${input} font-mono text-[14px]`}
           />
           <fieldset className="flex flex-col gap-1.5">
             <legend className="console-label mb-1 text-dim">Carry into the new draft (unticked = cleared)</legend>
             <div className="flex flex-wrap gap-x-4 gap-y-1">
               {CARRYABLE_FIELDS.map((f) => (
-                <label key={f} className="flex items-center gap-1.5 font-mono text-[12px] text-dim">
+                <label key={f} className="flex items-center gap-1.5 font-mono text-xs text-dim">
                   <input
                     type="checkbox"
                     checked={carry.includes(f)}
@@ -371,7 +388,7 @@ export function Curate() {
             Extract into a new draft
           </Button>
           {dropped.length > 0 && (
-            <div className="rounded-lg border border-untested-border bg-untested-bg p-3 text-[13px] text-text">
+            <div className="rounded-lg border border-untested-border bg-untested-bg p-3 text-[14px] text-text">
               <p className="console-label text-warn">Discarded by the server</p>
               <ul className="mt-1 list-disc pl-4">
                 {dropped.map((d) => (
@@ -408,7 +425,7 @@ export function Curate() {
               <Badge variant={editing ? (editing.status === 'published' ? 'success' : 'warn') : 'neutral'}>
                 {editing ? `Editing ${editing.status}` : 'New card'}
               </Badge>
-              {editing && <code className="font-mono text-[11px] text-dim">{editing.id}</code>}
+              {editing && <code className="font-mono text-[12px] text-dim">{editing.id}</code>}
             </div>
             {Object.entries(FIELD_KINDS).map(([name, kind]) => {
               const label = `${name}${REQUIRED.has(name) ? ' *' : ''}`;
@@ -450,14 +467,14 @@ export function Curate() {
                     />
                   )}
                   {error.text}
-                  {quotes[name] && <span className="font-mono text-[11px] text-warn">“{quotes[name]}”</span>}
+                  {quotes[name] && <span className="font-mono text-[12px] text-warn">“{quotes[name]}”</span>}
                 </label>
               );
             })}
 
             {conflict && editing && <div role="region" aria-label="Edit conflict" className="rounded-lg border border-warn/35 p-3 text-sm sm:col-span-2">
               <p className="font-semibold text-warn">Someone saved this card after you opened it ({conflict.updated_at.slice(0, 19).replace('T', ' ')} UTC). Your edit is still in the form.</p>
-              {changedFields(values, conflict).length > 0 ? <table className="mt-2 w-full table-fixed text-left text-[13px] [overflow-wrap:anywhere]">
+              {changedFields(values, conflict).length > 0 ? <table className="mt-2 w-full table-fixed text-left text-[14px] [overflow-wrap:anywhere]">
                 <thead><tr className="text-dim"><th className="w-1/4 py-1">Field</th><th className="py-1">Your edit</th><th className="py-1">Saved version</th></tr></thead>
                 <tbody>{changedFields(values, conflict).map((row) => <tr key={row.field} className="border-t border-border align-top">
                   <td className="py-1 font-mono">{row.field}</td><td className="py-1">{row.mine || '—'}</td><td className="py-1">{row.current || '—'}</td>
@@ -497,7 +514,7 @@ export function Curate() {
                 Verify &amp; publish
               </Button>
             </div>
-            <p className="text-[13px] text-dim sm:col-span-2">
+            <p className="text-[14px] text-dim sm:col-span-2">
               Publishing means you checked every non-null field against the source yourself. Never publish under
               someone else&apos;s name — save a draft and hand it over instead.
             </p>

@@ -174,9 +174,9 @@ select option { background-color: var(--color-panel); color: var(--color-text); 
   /* Console label: IBM Plex Mono, uppercase, ~1px tracking (§8.3). */
   .console-label {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12.5px;
     font-weight: 500;
-    line-height: 16px;
+    line-height: 18px;
     letter-spacing: var(--tracking-console);
     text-transform: uppercase;
   }

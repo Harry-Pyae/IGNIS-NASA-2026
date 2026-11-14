@@ -165,7 +165,7 @@ export function Kit() {
                 className="h-12 rounded-lg border border-border"
                 style={{ background: `var(--color-${c})` } as CSSProperties}
               />
-              <code className="font-mono text-[11px] text-dim">{c}</code>
+              <code className="font-mono text-[12px] text-dim">{c}</code>
             </div>
           ))}
         </div>
@@ -186,23 +186,23 @@ export function Kit() {
           <div className="flex flex-col items-start gap-2">
             <Button variant="primary">Confirm scenario</Button>
             <p className="text-sm text-text">Primary: filled amber</p>
-            <p className="text-[13px] text-dim">The one main action of a section: Confirm scenario, Run guided mission, Export dataset. At most one per section.</p>
+            <p className="text-[14px] text-dim">The one main action of a section: Confirm scenario, Run guided mission, Export dataset. At most one per section.</p>
           </div>
           <div className="flex flex-col items-start gap-2">
             <div className="flex flex-wrap gap-2"><Button>Cite this</Button><a href="#kit" className={buttonClass('secondary', 'md')}>Compare</a></div>
             <p className="text-sm text-text">Secondary: outlined</p>
-            <p className="text-[13px] text-dim">Real actions people must not miss: Cite this, Compare, Edit scenario, Copy share link, Retry. A link that acts like a button uses <code className="font-mono">buttonClass()</code>.</p>
+            <p className="text-[14px] text-dim">Real actions people must not miss: Cite this, Compare, Edit scenario, Copy share link, Retry. A link that acts like a button uses <code className="font-mono">buttonClass()</code>.</p>
           </div>
           <div className="flex flex-col items-start gap-2">
             <div className="flex flex-wrap items-center gap-4"><Button variant="tertiary">Clear oxygen</Button><a href="#kit" className={textLink}>NASA paper (PDF)</a></div>
             <p className="text-sm text-text">Tertiary: text link</p>
-            <p className="text-[13px] text-dim">Inline utilities and links in prose: Clear oxygen, Set airflow to 0, Back to library, source links. Long titles use <code className="font-mono">textLink</code> so they wrap.</p>
+            <p className="text-[14px] text-dim">Inline utilities and links in prose: Clear oxygen, Set airflow to 0, Back to library, source links. Long titles use <code className="font-mono">textLink</code> so they wrap.</p>
           </div>
         </div>
         <div className="mt-6 grid gap-4 border-t border-border pt-5 md:grid-cols-2">
           <div>
             <p className="console-label mb-2 text-success">Do</p>
-            <ul className="list-disc space-y-1 pl-5 text-[13px] text-dim">
+            <ul className="list-disc space-y-1 pl-5 text-[14px] text-dim">
               <li>Give buttons in one row the same size, e.g. <em>Cite this</em> and <em>Compare</em> both <code className="font-mono">md</code>.</li>
               <li>Point two controls for the same thing at the same handler, with the same label.</li>
               <li>Rely on the built-in 44 px hit area and the token focus ring; never remove the outline.</li>
@@ -211,7 +211,7 @@ export function Kit() {
           </div>
           <div>
             <p className="console-label mb-2 text-warn">Don&apos;t</p>
-            <ul className="list-disc space-y-1 pl-5 text-[13px] text-dim">
+            <ul className="list-disc space-y-1 pl-5 text-[14px] text-dim">
               <li>Two primaries in one section, or a primary for a minor action.</li>
               <li>An underlined text link for an action people must find (Compare, Edit scenario).</li>
               <li><code className="font-mono">ghost</code> on public pages; it is kept for the curation tool only.</li>
@@ -352,7 +352,7 @@ export function Kit() {
         <div className="flex flex-col gap-2">
           {CATALOG_STATES.map(([name, summary]) => (
             <div key={name} className="flex flex-wrap items-center gap-3">
-              <code className="w-28 shrink-0 font-mono text-[11px] text-dim">{name}</code>
+              <code className="w-28 shrink-0 font-mono text-[12px] text-dim">{name}</code>
               <ProvenancePill summary={summary} retry={() => undefined} />
             </div>
           ))}
@@ -368,7 +368,7 @@ export function Kit() {
           {ICON_NAMES.map((n) => (
             <div key={n} className="flex flex-col items-center gap-2 rounded-lg border border-border p-3 text-dim">
               <Icon name={n} size={22} className="text-text" />
-              <code className="font-mono text-[10px]">{n}</code>
+              <code className="font-mono text-[12px]">{n}</code>
             </div>
           ))}
         </div>
@@ -394,7 +394,7 @@ export function Kit() {
           </div>
         </div>
         <div className="mt-6 overflow-hidden rounded-lg border border-border py-2">
-          <div className="anim-ticker flex w-max gap-8 font-mono text-[11px] text-dim">
+          <div className="anim-ticker flex w-max gap-8 font-mono text-[12px] text-dim">
             {[0, 1].map((k) => (
               <span key={k} className="flex gap-8" aria-hidden={k === 1}>
                 {['BASS GMT96-T7', 'BASS GMT96-T8', 'BASS-II GMT45-T4', 'Telemetry ticker · 30s loop'].map((t) => (

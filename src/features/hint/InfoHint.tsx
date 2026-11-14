@@ -48,7 +48,7 @@ export function InfoHint({ id, label, children, align = 'start' }: {
 
   const text = 'rounded-lg border border-border bg-bg p-3 text-left text-sm font-normal normal-case leading-relaxed tracking-normal text-text shadow-lg';
   return <span className="inline-flex">
-    <Button type="button" size="sm" className="!size-6 !rounded-full !px-0 !text-[11px] !transition-none !transform-none"
+    <Button type="button" size="sm" className="!size-6 !rounded-full !px-0 !text-[12px] !transition-none !transform-none"
       aria-label={label} aria-expanded={open} aria-controls={id}
       onBlur={() => setOpen(false)}
       onClick={(event) => {

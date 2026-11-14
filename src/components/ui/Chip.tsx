@@ -42,7 +42,7 @@ export function Chip({ status, label, statusText, className }: ChipProps) {
         className,
       )}
     >
-      <span aria-hidden className="font-sans text-[13px] leading-none">
+      <span aria-hidden className="font-sans text-[14px] leading-none">
         {s.symbol}
       </span>
       {label ? `${label}: ${text}` : text}
@@ -61,7 +61,7 @@ export function PresetChip({ active, className, type = 'button', ...rest }: Pres
       type={type}
       aria-pressed={active}
       className={cx(
-        'bubble-control pressable inline-flex min-h-9 items-center gap-2 rounded-full border px-4 py-1.5 text-left text-[13px]',
+        'bubble-control pressable inline-flex min-h-9 items-center gap-2 rounded-full border px-4 py-1.5 text-left text-[14px]',
         active
           ? 'border-amber bg-amber/10 text-text shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-amber)_12%,transparent),0_6px_18px_-8px_color-mix(in_srgb,var(--color-amber)_45%,transparent)]'
           : 'border-border bg-panel/70 text-dim can-hover:hover:border-raised can-hover:hover:text-text',
@@ -89,7 +89,7 @@ export function CitationChip({ evidenceId, label, className, type = 'button', ..
       type={type}
       aria-label={label ?? `Evidence ${evidenceId}`}
       className={cx(
-        'bubble-control inline-flex h-6 touch-manipulation items-center rounded-md border border-amber/60 px-1.5 font-mono text-[11px] font-medium text-amber',
+        'bubble-control inline-flex h-6 touch-manipulation items-center rounded-md border border-amber/60 px-1.5 font-mono text-[12px] font-medium text-amber',
         'can-hover:hover:bg-amber/12',
         className,
       )}

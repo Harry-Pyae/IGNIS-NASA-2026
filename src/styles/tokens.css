@@ -66,6 +66,13 @@
 }
 
 @theme {
+  /* ---- Type scale: one step up from Tailwind's defaults (12/14px) so small text reads at a glance on a demo
+     screen. Every text-xs / text-sm in the app follows; one-off pixel sizes were raised to match. ---- */
+  --text-xs: 0.8125rem; /* 13px */
+  --text-xs--line-height: 1.45;
+  --text-sm: 0.9375rem; /* 15px */
+  --text-sm--line-height: 1.5;
+
   /* ---- Surfaces ---- */
   --color-bg: #0c0f16;
   --color-panel: #131824;
