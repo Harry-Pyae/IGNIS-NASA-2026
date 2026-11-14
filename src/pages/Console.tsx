@@ -17,6 +17,7 @@ import { FIELD_UNITS, PARAM_LABELS, ParseScenarioResponseSchema, SynthesizeRespo
 import { gapGrid, gapRadar, GRID, type GapRadar as GapRadarData } from '../engine/gaps';
 import { whyMatched } from '../engine/match';
 import { t } from '../i18n';
+import { RecoveryBoundary } from '../features/recovery/RecoveryBoundary';
 import { InfoHint } from '../features/hint/InfoHint';
 import { CardComparison } from '../components/CardComparison';
 import { CopyShareLink, ShareBanner } from '../features/share/ScenarioShare';
@@ -419,6 +420,7 @@ export function Console() {
         onAction={showMap}
       />}
       <div className="console-panels flex flex-col gap-6 xl:grid xl:grid-cols-[400px_minmax(0,1fr)] xl:items-start">
+      <RecoveryBoundary>
       <Panel as="section" aria-labelledby="s1" className="reveal xl:sticky xl:top-[calc(var(--header-h,0px)+1rem)] xl:flex xl:max-h-[calc(100dvh-var(--header-h,0px)-2rem)] xl:flex-col">
         <SectionHeader id="s1" step={t('describeStep')} title={t('missionScenario')} />
         <MissionCaption step={guidedStep === 0 ? 0 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[0].caption)} />
@@ -571,10 +573,12 @@ export function Console() {
             {message && <p role="status" className="text-sm text-dim">{message}</p>}
         </div>
       </Panel>
+      </RecoveryBoundary>
 
       <div className="flex min-w-0 flex-col gap-6">
 
       {inputsChanged && !confirmed && <p role="status" className="rounded-lg border border-warn/35 p-3 text-sm text-warn">{COPY.staleScenario}</p>}
+      <RecoveryBoundary>
       <Panel as="section" aria-labelledby="s2" className="reveal scroll-mt-[calc(var(--header-h,0px)+1rem)]">
         <SectionHeader
           id="s2"
@@ -592,9 +596,11 @@ export function Console() {
         {dataStatus === 'unavailable' && <Button size="sm" className="mb-4" onClick={reload}>{t('retry')}</Button>}
         <EvidenceMap key={revision} experiments={views?.eligible ?? experiments} scenario={confirmed} matches={views?.top_k ?? []} status={dataStatus} selectedId={selectedId} onSelect={setSelectedId} />
       </Panel>
+      </RecoveryBoundary>
 
       <div className="grid gap-6">
         {confirmed ? <>
+        <RecoveryBoundary>
         <Panel as="section" aria-labelledby="s3" className="reveal">
         <SectionHeader id="s3" step={t('matchesStep')} title={t('matchPanel')} />
         <ShareBanner share={share} />
@@ -608,6 +614,8 @@ export function Console() {
           <MatchPanel matches={views?.top_k ?? []} status={dataStatus} confirmed={confirmed !== null} selectedId={selectedId} onSelect={setSelectedId} />
           {confirmed && views && <CardComparison cards={views.top_k.map(m => m.experiment)}/>}
         </Panel>
+        </RecoveryBoundary>
+        <RecoveryBoundary>
         <Panel as="section" aria-labelledby="s4" className="mission-brief motion-still">
           <SectionHeader id="s4" step={t('briefStep')} title={t('missionBrief')} />
           <MissionCaption step={guidedStep === 3 ? 3 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[3].caption)} />
@@ -620,7 +628,9 @@ export function Console() {
             onCitation={(id) => { setSelectedId(id); focusExperiment(id); }}
           />
         </Panel>
+        </RecoveryBoundary>
         </> : <>
+        <RecoveryBoundary>
         <Panel as="section" aria-labelledby="s3" className="!py-4">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
             <SectionHeader id="s3" step={t('matchesStep')} title={t('matchPanel')} className="!mb-0 !border-0 !pb-0" />
@@ -636,6 +646,8 @@ export function Console() {
           <ShareBanner share={share} />
           <MissionCaption step={guidedStep === 2 ? 2 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[2].caption)} />
         </Panel>
+        </RecoveryBoundary>
+        <RecoveryBoundary>
         <Panel as="section" aria-labelledby="s4" className="mission-brief motion-still !py-4">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
             <SectionHeader id="s4" step={t('briefStep')} title={t('missionBrief')} className="!mb-0 !border-0 !pb-0" />
@@ -643,14 +655,17 @@ export function Console() {
           </div>
           <MissionCaption step={guidedStep === 3 ? 3 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[3].caption)} />
         </Panel>
+        </RecoveryBoundary>
         </>}
       </div>
 
+      <RecoveryBoundary>
       <Panel as="section" aria-labelledby="s5" className="motion-still">
         <SectionHeader id="s5" step={t('gapStep')} title={t('evidenceGapRadar')} />
         <MissionCaption step={guidedStep === 4 ? 4 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[4].caption)} />
         <GapRadarPanel data={radar} status={dataStatus} scenarioActive={confirmed !== null} />
       </Panel>
+      </RecoveryBoundary>
       </div>
       </div>
       {research && <ResearchContext section={research} />}
