@@ -21,7 +21,7 @@ Snapshot written by Coder A after the console merge. Overwrite on the next hando
 - **Round 6 (2026-11-10):** the feature and design upgrade review is **adopted** (`docs/DECISIONS-ROUND6.md`; the review file stays uncommitted in `reports/`). Coder A shipped the approved copy (`COPY.landingCta`, `missionAvailability`, `summary`, `environmentExplanation`, `environmentApplied`, `contextBanner`, `campaignContext`), the mission-entry gate `src/engine/mission.ts` (`MISSION_CASE = null` until a reviewed case exists), `contextSection()` (null until an entry is signed) and the revision-binding helpers `briefingKey()` / `currentBriefing()`. No visible change on the live site: Coder B renders all of it. 205 tests.
 - **Round 5 (2026-11-10):** `src/engine/environments.ts` (Environments row in the console, hidden until R1 signs a preset), `src/lib/context-content.ts` (renders only signed entries; no importer yet), `src/i18n/my.draft.ts` (UNREVIEWED, CI guard: nothing may import it). R1 queue `docs/FACT-CHECK-QUEUE.md`, R3 sheet `docs/MY-REVIEW.md`. 197 tests.
 - **main:** the `round6` merge, on top of Round 5, the Apache-2.0 license, the console code-split (`21bb12c`), the console merge, the match-summary wording and the lite/region change.
-- **Live:** <https://ignisprototype01.vercel.app>, serving Round 6. Vercel Production deploys from `main`; CI (check + disposable-DB) is green on every `main` commit. Vercel builds one at a time, so a merge can wait ~15 min behind branch previews. Functions are pinned to `iad1` (`vercel.json`).
+- **Live:** <https://ignis-nasa-2026.vercel.app>, serving Round 6. Vercel Production deploys from `main`; CI (check + disposable-DB) is green on every `main` commit. Vercel builds one at a time, so a merge can wait ~15 min behind branch previews. Functions are pinned to `iad1` (`vercel.json`).
 - **Deployed:** the landing page, **the mission console** (scenario builder, Evidence Map, Match Panel, Mission Brief, Gap Radar), `/curate`, `/kit`, plus the API routes:
   - `parse-scenario` (LLM)
   - `synthesize` (validated claims + briefing cache keyed by `catalog_revision`)
@@ -60,7 +60,7 @@ Snapshot written by Coder A after the console merge. Overwrite on the next hando
 | Provider smoke test + parse-scenario round trip | ✅ 200 via Groq |
 | RLS + `/curate` lifecycle | ✅ 15/15 on the disposable DB in CI (every push). Earlier live-project runs wrote test rows, so they are **not to be repeated**; production gets read-only checks only. |
 | Rate-limit 429 (0003 applied) | ✅ 20 allowed, then 429 with `retry-after`. Fails open if the counter is unreachable. |
-| og:image / canonical / og:url | ✅ absolute `https://ignisprototype01.vercel.app` URLs |
+| og:image / canonical / og:url | ✅ absolute `https://ignis-nasa-2026.vercel.app` URLs |
 | PageSpeed mobile | ✅ 2026-11-10 after the console code-split (`21bb12c`), Lighthouse 12.2 mobile with devtools throttling from the dev machine (the Google API's keyless quota was exhausted both times): **Performance 83** (79 before the split) · Accessibility / Best Practices / SEO 100 · FCP/LCP **3.5 s** (4.0) · TBT 40 ms · CLS 0.001 · unused JS at first load **0** (42 KiB). Landing JS **57.2 KB gzip** (95.6 before the split, 55.3 before the console), and Zod is off the landing path again. The absolute times are network-bound on this path (200 ms RTT, 560 ms for the HTML), so they aren't comparable with the old Google-server run (FCP 0.8 s). Re-run from Google's servers when the quota resets. |
 | Favicon tab screenshot | ⏳ R3, in the QA checklist |
 
