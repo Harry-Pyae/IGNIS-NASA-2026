@@ -74,8 +74,7 @@ export function Console() {
     setMaterialChoice(name);
     setPresetId(null);
     setAppliedEnvironmentId(null);
-    setInputsChanged(false);
-    setConfirmed({ ...conditions, material });
+    setInputsChanged(true);
   });
   const sourceMaterials = useMemo(() => experiments.map(({ domain, fuel_material, material_class }) => ({ domain, fuel_material, material_class })), [experiments]);
   const activePreset = SCENARIO_PRESETS.find((preset) => preset.id === presetId);
