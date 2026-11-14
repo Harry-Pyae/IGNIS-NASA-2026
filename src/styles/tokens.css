@@ -79,6 +79,10 @@
 
   /* ---- Accents & outcomes ---- */
   --color-amber: #f5a623; /* accent */
+  --color-action: #f5a623;
+  --color-on-action: #0c0f16;
+  --color-focus: #f5a623;
+  --color-control-border: #232b3a;
   --color-flame: #f97316; /* sustained */
   --color-blue: #4c8dff; /* extinguished — dot */
   --color-blue-badge: #2f6bd8; /* extinguished — badge */
@@ -109,6 +113,19 @@
 }
 
 :root {
+  --theme-scheme: dark;
+  --surface-opacity: 78%;
+  --raised-opacity: 88%;
+  --header-opacity: 82%;
+  --header-top-opacity: 35%;
+  --shadow-near: rgb(0 0 0 / 0.35);
+  --shadow-far: rgb(0 0 0 / 0.75);
+  --shadow-tinted: rgb(0 0 0 / 0.7);
+  --shadow-inset: rgb(0 0 0 / 0.25);
+  --shadow-header: rgb(0 0 0 / 0.85);
+  --plot-grid: var(--color-border);
+  --plot-hatch: var(--color-faint);
+  --plot-hatch-opacity: .38;
   /* ---- Motion durations (§8.3 motion inventory — exact mockup timings) ---- */
   --dur-radar: 8s; /* radar sweep, linear */
   --dur-pulse: 2.4s; /* scenario-marker pulse rings, two rings staggered -1.2s */
@@ -122,6 +139,47 @@
   --stagger-dot: 20ms; /* map dots stagger in */
   --dur-press: 160ms; /* button press feedback */
   /* The aurora drift (20s) + starfield live in /art/bg-glow.webp — no CSS duplicate layers. */
+}
+
+:root[data-theme='light'] {
+  --theme-scheme: light;
+  --color-bg: #fff;
+  --color-panel: #fff;
+  --color-border: #d5dce4;
+  --color-raised: #8793a3;
+  --color-control-border: #7c8897;
+  --color-text: #202833;
+  --color-dim: #405063;
+  --color-faint: #526175;
+  --color-amber: #963b12;
+  --color-action: #e96c28;
+  --color-on-action: #1d140f;
+  --color-focus: #b74614;
+  --color-flame: #a33b08;
+  --color-blue: #184da8;
+  --color-blue-badge: #2563c7;
+  --color-violet: #6136a8;
+  --color-violet-badge: #7442bf;
+  --color-success: #20633d;
+  --color-warn: #725000;
+  --color-observed-bg: #edf7ef;
+  --color-observed-border: #8bb49a;
+  --color-interp-bg: #edf3fc;
+  --color-interp-border: #98accb;
+  --color-untested-bg: #fff5de;
+  --color-untested-border: #b79b56;
+  --surface-opacity: 88%;
+  --raised-opacity: 97%;
+  --header-opacity: 94%;
+  --header-top-opacity: 94%;
+  --shadow-near: rgb(32 40 51 / 0.07);
+  --shadow-far: rgb(32 40 51 / 0.19);
+  --shadow-tinted: rgb(32 40 51 / 0.16);
+  --shadow-inset: rgb(32 40 51 / 0.05);
+  --shadow-header: rgb(32 40 51 / 0.23);
+  --plot-grid: #acb6c3;
+  --plot-hatch: #526175;
+  --plot-hatch-opacity: .62;
 }
 
 /*

@@ -14,7 +14,7 @@ type Variant = ButtonVariant;
 type Size = ButtonSize;
 
 const VARIANTS: Record<Variant, string> = {
-  primary: 'btn-primary text-bg font-semibold',
+  primary: 'btn-primary text-on-action font-semibold',
   secondary:
     'border border-raised bg-panel/70 text-text shadow-[inset_0_1px_0_0_color-mix(in_srgb,var(--color-text)_6%,transparent)] can-hover:hover:border-amber/60 can-hover:hover:bg-panel',
   tertiary: 'text-amber underline decoration-amber/45 underline-offset-4 can-hover:hover:decoration-amber',

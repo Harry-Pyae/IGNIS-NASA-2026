@@ -1,6 +1,45 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useCatalogSummary } from '../lib/catalog';
 import { ExportButton, ProvenancePill } from './CatalogStatus';
+
+function applyTheme(choice: 'dark' | 'light') {
+  document.documentElement.dataset.theme = choice;
+  document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+    ?.setAttribute('content', choice === 'light' ? '#ffffff' : '#0C0F16');
+  try {
+    localStorage.setItem('ignis-theme', choice);
+  } catch {
+    // The current document can still switch themes with storage disabled.
+  }
+}
+
+function ThemeControl() {
+  const [theme, setTheme] = useState(() =>
+    document.documentElement.dataset.theme === 'light' ? 'light' : 'dark',
+  );
+
+  return (
+    <fieldset className="theme-control ml-auto flex shrink-0 items-center rounded-lg border border-control-border bg-panel p-0.5">
+      <legend className="sr-only">Color theme</legend>
+      {(['dark', 'light'] as const).map((choice) => (
+        <label key={choice} className="cursor-pointer">
+          <input
+            className="sr-only"
+            type="radio"
+            name="color-theme"
+            value={choice}
+            checked={theme === choice}
+            onChange={() => {
+              applyTheme(choice);
+              setTheme(choice);
+            }}
+          />
+          <span className="block w-10 rounded-md py-1 text-center text-xs leading-4 sm:w-11">{choice === 'dark' ? 'Dark' : 'Light'}</span>
+        </label>
+      ))}
+    </fieldset>
+  );
+}
 
 /** App shell header: brand mark + wordmark (left), live provenance pill + export (right). */
 export function AppHeader() {
@@ -33,13 +72,16 @@ export function AppHeader() {
           <ExportButton summary={summary} label="Export dataset" compact variant="primary" />
         </div>
       </div>
-      <nav aria-label="Project navigation" className="mx-auto flex max-w-6xl gap-5 px-4 pb-2 text-sm sm:px-6">
-        {([['/', 'Console'], ['/library', 'Library'], ['/methods', 'Methods'], ['/sources', 'Sources']] as const).map(([url,label]) => {
-          const path = window.location.pathname.replace(/\/$/, '') || '/';
-          const current = url === '/' ? path === '/' : path === url || path.startsWith(url + '/');
-          return <a key={url} href={url} aria-current={current ? 'page' : undefined} className={current ? 'text-amber underline underline-offset-4' : 'text-dim hover:text-text'}>{label}</a>;
-        })}
-      </nav>
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-1 gap-y-1 px-4 pb-2 sm:gap-x-2 sm:px-6">
+        <nav aria-label="Project navigation" className="flex flex-wrap gap-x-2.5 text-sm sm:gap-x-5">
+          {([['/', 'Console'], ['/library', 'Library'], ['/methods', 'Methods'], ['/sources', 'Sources']] as const).map(([url,label]) => {
+            const path = window.location.pathname.replace(/\/$/, '') || '/';
+            const current = url === '/' ? path === '/' : path === url || path.startsWith(url + '/');
+            return <a key={url} href={url} aria-current={current ? 'page' : undefined} className={current ? 'text-amber underline underline-offset-4' : 'text-dim hover:text-text'}>{label}</a>;
+          })}
+        </nav>
+        <ThemeControl />
+      </div>
     </header>
   );
 }
