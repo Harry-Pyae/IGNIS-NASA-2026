@@ -19,6 +19,8 @@ import { gapGrid, gapRadar, GRID, type GapRadar as GapRadarData } from '../engin
 import { whyMatched } from '../engine/match';
 import { t } from '../i18n';
 import { InfoHint } from '../features/hint/InfoHint';
+import { RecoveryBoundary } from '../components/RecoveryBoundary';
+import { gateExperiment } from '../lib/gates';
 import { CardComparison } from '../components/CardComparison';
 import { CopyShareLink, ShareBanner } from '../features/share/ScenarioShare';
 import { useScenarioShare } from '../features/share/useScenarioShare';
@@ -470,7 +472,7 @@ export function Console() {
         onAction={showMap}
       />}
       <div className="flex flex-col gap-6 xl:grid xl:grid-cols-[400px_minmax(0,1fr)] xl:items-start">
-      <Panel as="section" aria-labelledby="s1" className="reveal xl:sticky xl:top-[calc(var(--header-h,0px)+1rem)] xl:flex xl:max-h-[calc(100dvh-var(--header-h,0px)-2rem)] xl:flex-col">
+      <RecoveryBoundary label="Scenario Builder"><Panel as="section" aria-labelledby="s1" className="reveal xl:sticky xl:top-[calc(var(--header-h,0px)+1rem)] xl:flex xl:max-h-[calc(100dvh-var(--header-h,0px)-2rem)] xl:flex-col">
         {restoredDraft && <div className="mb-3 flex flex-wrap items-center gap-2 text-sm" role="status">
           <span>{COPY.plain.draft.restored}</span>
           <Button size="sm" onClick={() => {
@@ -626,12 +628,12 @@ export function Console() {
             </div>
             {message && <p role="status" className="text-sm text-dim">{message}</p>}
         </div>
-      </Panel>
+      </Panel></RecoveryBoundary>
 
       <div className="flex min-w-0 flex-col gap-6">
 
       {inputsChanged && !confirmed && <p role="status" className="rounded-lg border border-warn/35 p-3 text-sm text-warn">{COPY.staleScenario}</p>}
-      <Panel as="section" aria-labelledby="s2" className="reveal scroll-mt-[calc(var(--header-h,0px)+1rem)]">
+      <RecoveryBoundary label="Evidence Map"><Panel as="section" aria-labelledby="s2" className="reveal scroll-mt-[calc(var(--header-h,0px)+1rem)]">
         <SectionHeader
           id="s2"
           step={t('retrieveStep')}
@@ -647,11 +649,11 @@ export function Console() {
         {catalogRefreshing && <p role="status" className="mb-4 text-sm text-dim">{COPY.plain.catalogRefreshing}</p>}
         {dataStatus === 'unavailable' && <Button size="sm" className="mb-4" onClick={reload}>{t('retry')}</Button>}
         <EvidenceMap key={revision} experiments={views?.eligible ?? experiments} scenario={confirmed} matches={views?.top_k ?? []} status={dataStatus} selectedId={selectedId} onSelect={setSelectedId} />
-      </Panel>
+      </Panel></RecoveryBoundary>
 
       <div className="grid gap-6">
         {confirmed ? <>
-        <Panel as="section" aria-labelledby="s3" className="reveal">
+        <RecoveryBoundary label="Ranked experiments"><Panel as="section" aria-labelledby="s3" className="reveal">
         <SectionHeader id="s3" step={t('matchesStep')} title={t('matchPanel')} />
         <ShareBanner share={share} />
         {confirmed && views && <CopyShareLink
@@ -662,12 +664,49 @@ export function Console() {
         />}
           <MissionCaption step={guidedStep === 2 ? 2 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[2].caption)} />
           <MatchPanel matches={views?.top_k ?? []} status={dataStatus} confirmed={confirmed !== null} selectedId={selectedId} onSelect={setSelectedId} />
+          {confirmed && views && views.top_k.length === 0 && experiments.length > 0 && (
+            <details className="mt-3 text-sm text-dim">
+              <summary className="cursor-pointer">Why no matches?</summary>
+              <ul className="mt-2 space-y-2">{experiments.filter(card => card.verified_by).map(card => {
+                const { reasons } = gateExperiment(confirmed, card);
+                return reasons.length > 0 && <li key={card.id}>
+                  <a className={textLink} href={`/library/${card.id}`}>{experimentLabel(card)}</a>
+                  {' · '}{reasons.map(reason => ({
+                    domain_mismatch: 'Different experiment domain',
+                    material_unresolved: 'Choose a catalog material',
+                    material_mismatch: `Different material or class · ${card.fuel_material.replaceAll('_', ' ')}`,
+                    form_incompatible: `Incompatible sample form · ${card.fuel_form.replaceAll('_', ' ')} vs ${confirmed.fuel_form?.replaceAll('_', ' ')}`,
+                  })[reason]).join(' · ')}
+                </li>;
+              })}</ul>
+            </details>
+          )}
           {confirmed && views && <CardComparison cards={views.top_k.map(m => m.experiment)}/>}
-        </Panel>
-        <Panel as="section" aria-labelledby="s4" className="mission-brief motion-still">
+        </Panel></RecoveryBoundary>
+        <RecoveryBoundary label="Mission Brief"><Panel as="section" aria-labelledby="s4" className="mission-brief motion-still">
           <SectionHeader id="s4" step={t('briefStep')} title={t('missionBrief')} />
           <MissionCaption step={guidedStep === 3 ? 3 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[3].caption)} />
-          {confirmed && <p className="brief-print-only">IGNIS · {confirmed.material.status === 'resolved' ? confirmed.material.fuel_material : COPY.materialUnresolved} · {COPY.summary.o2(confirmed.o2_pct)} · {COPY.summary.flow(confirmed.flow_cm_s)} · Catalog revision: {revision}</p>}
+          {confirmed && views && views.top_k.length > 0 && <>
+            <aside className="mb-4"><Button size="sm" onClick={() => window.print()}>Print evidence handoff</Button></aside>
+            <div className="brief-print-only">
+              <p>IGNIS · {confirmed.material.status === 'resolved' ? confirmed.material.fuel_material.replaceAll('_', ' ') : COPY.materialUnresolved}
+                {' · '}{confirmed.fuel_form?.replaceAll('_', ' ') ?? t('notSpecified')}
+                {' · '}{COPY.summary.o2(confirmed.o2_pct)} · {COPY.summary.flow(confirmed.flow_cm_s)}
+                {' · '}{confirmed.thickness_mm == null ? t('notSpecified') : `${confirmed.thickness_mm} mm`}
+                {' · '}{confirmed.pressure_kpa == null ? t('notSpecified') : `${confirmed.pressure_kpa} kPa`}
+                {' · '}Catalog revision {views.revision}</p>
+              <p>{COPY.interpretationLimit}</p>
+              <h3>Ranked evidence</h3>
+              <ol>{views.top_k.map(({ experiment }) => {
+                const source = evidenceSource(experiment);
+                return <li key={experiment.id}>
+                  {experimentLabel(experiment)} · {experiment.id} · {experiment.source_title} · {evidenceLocator(experiment) || t('notReported')}
+                  {source && <>{' · '}<a href={source.url}>{t('source')}</a></>}
+                  {experiment.condition_changes?.map(change => <p key={change.parameter + change.note}>{COPY.changingConditions}: {change.note}</p>)}
+                </li>;
+              })}</ol>
+            </div>
+          </>}
           <MissionBrief
             briefing={activeBriefing}
             status={activeBriefStatus}
@@ -675,9 +714,9 @@ export function Console() {
             matches={views?.top_k ?? []}
             onCitation={(id) => { setSelectedId(id); focusExperiment(id); }}
           />
-        </Panel>
+        </Panel></RecoveryBoundary>
         </> : <>
-        <Panel as="section" aria-labelledby="s3" className="!py-4">
+        <RecoveryBoundary label="Ranked experiments"><Panel as="section" aria-labelledby="s3" className="!py-4">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
             <SectionHeader id="s3" step={t('matchesStep')} title={t('matchPanel')} className="!mb-0 !border-0 !pb-0" />
             <p className="min-w-0 flex-1 text-sm text-dim">{COPY.plain.collapsed.matches}</p>
@@ -685,22 +724,22 @@ export function Console() {
           </div>
           <ShareBanner share={share} />
           <MissionCaption step={guidedStep === 2 ? 2 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[2].caption)} />
-        </Panel>
-        <Panel as="section" aria-labelledby="s4" className="mission-brief motion-still !py-4">
+        </Panel></RecoveryBoundary>
+        <RecoveryBoundary label="Mission Brief"><Panel as="section" aria-labelledby="s4" className="mission-brief motion-still !py-4">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
             <SectionHeader id="s4" step={t('briefStep')} title={t('missionBrief')} className="!mb-0 !border-0 !pb-0" />
             <p className="min-w-0 flex-1 text-sm text-dim">{COPY.plain.collapsed.brief}</p>
           </div>
           <MissionCaption step={guidedStep === 3 ? 3 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[3].caption)} />
-        </Panel>
+        </Panel></RecoveryBoundary>
         </>}
       </div>
 
-      <Panel as="section" aria-labelledby="s5" className="motion-still">
+      <RecoveryBoundary label="Evidence Gap Radar"><Panel as="section" aria-labelledby="s5" className="motion-still">
         <SectionHeader id="s5" step={t('gapStep')} title={t('evidenceGapRadar')} />
         <MissionCaption step={guidedStep === 4 ? 4 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[4].caption)} />
         <GapRadarPanel data={radar} status={dataStatus} scenarioActive={confirmed !== null} />
-      </Panel>
+      </Panel></RecoveryBoundary>
       </div>
       </div>
       {research && <ResearchContext section={research} />}
@@ -1140,6 +1179,11 @@ export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }:
                 return <Chip key={line.key} status={line.status} label={label} statusText={statusParts.join(': ')} />;
               })}
             </div>
+            <details className="mt-3 text-sm text-dim">
+              <summary className="cursor-pointer">Why this run appeared</summary>
+              <ul className="my-2 space-y-1">{why.lines.map(line => <li key={line.key}>{line.text}</li>)}</ul>
+              <a className={textLink} href={`/library/${experiment.id}`}>View experiment and source</a>
+            </details>
             {experiment.key_observation_quote && (
               <details className="mt-3 border-t border-border/70 pt-3 text-sm">
                 <summary className="cursor-pointer text-dim can-hover:hover:text-text">{t('sourceExcerpt')}</summary>

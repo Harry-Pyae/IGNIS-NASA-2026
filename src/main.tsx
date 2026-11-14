@@ -1,5 +1,6 @@
 import { lazy, StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
+import { RecoveryBoundary } from './components/RecoveryBoundary';
 import { AppHeader } from './components/AppHeader';
 import { NotFound } from './pages/NotFound';
 import { Home } from './pages/Home';
@@ -33,11 +34,13 @@ if (title) document.title = title + ' · IGNIS';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    <RecoveryBoundary label="IGNIS">
     {/* App ambient background (bg-glow art) — replaces CSS aurora/starfield layers. */}
     <div className="ambient" aria-hidden />
     <AppHeader />
     <Suspense fallback={<main role="status" aria-busy="true" className="mx-auto max-w-4xl px-4 py-12 text-dim">Loading page…</main>}>
-      <Page />
+      <RecoveryBoundary label="This page"><Page /></RecoveryBoundary>
     </Suspense>
+    </RecoveryBoundary>
   </StrictMode>,
 );
