@@ -103,7 +103,7 @@ the deploy runbook §3.
 ## Database setup (once, Coder A)
 
 1. Create a Supabase project. In **SQL Editor**, run every migration **in order**, then the seed:
-   `supabase/migrations/0001_init.sql` → `0002_round2.sql` → `0003_rate_limit.sql` → `0004_experiment_identity.sql` → `supabase/seed.sql`
+   `supabase/migrations/0001_init.sql` → `0002_round2.sql` → `0003_rate_limit.sql` → `0004_experiment_identity.sql` → `0005_dataset_provenance.sql` → `supabase/seed.sql`
    (3 **draft** cards, public only after R1 verifies them in `/curate`). Skipping 0003 is silent: the rate
    limiter deliberately fails open, so the site works but has **no shared request cap**. Check with a real 429
    after deploy (runbook §3).

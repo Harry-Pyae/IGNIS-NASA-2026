@@ -14,7 +14,10 @@ import {
 export type FormValues = Record<string, string>;
 
 /** Curator-owned fields that may be carried into the next extraction, only when explicitly chosen. */
-export const CARRYABLE_FIELDS = ['source_url', 'psi_investigation', 'domain', 'source_title', 'ntrs_id'] as const;
+export const CARRYABLE_FIELDS = [
+  'source_url', 'psi_investigation', 'domain', 'source_title', 'ntrs_id',
+  'psi_investigation_id', 'dataset_doi', 'dataset_version',
+] as const;
 
 export const EMPTY_FORM: FormValues = { domain: 'solid_flammability' };
 
@@ -44,6 +47,11 @@ export const FIELD_KINDS: Record<keyof CurateRecord, Kind | 'enum'> = {
   source_section: 'text',
   ntrs_id: 'text',
   doi: 'text',
+  psi_investigation_id: 'text',
+  dataset_doi: 'text',
+  dataset_version: 'text',
+  dataset_file: 'text',
+  dataset_row_or_time: 'text',
   media_url: 'text',
   telemetry: 'json',
   condition_changes: 'json',

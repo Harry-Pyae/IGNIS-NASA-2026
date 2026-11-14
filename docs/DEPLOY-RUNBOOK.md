@@ -14,7 +14,9 @@ Takes about 15 minutes.
       the limiter fails open by design, so nothing breaks visibly but the public API has no request cap.
    4. `supabase/migrations/0004_experiment_identity.sql`: unique normalized campaign/test identity across publications.
       It fails if existing records conflict; ask R1 to reconcile the records, never automatically delete/merge them.
-   5. `supabase/seed.sql` (3 **draft** cards: invisible to the public until R1 verifies them in `/curate`)
+   5. `supabase/migrations/0005_dataset_provenance.sql`: optional PSI dataset provenance columns. Apply it **before**
+      deploying the code that uses them: `/api/curate-write` sends every field, so without it every `/curate` save fails.
+   6. `supabase/seed.sql` (3 **draft** cards: invisible to the public until R1 verifies them in `/curate`)
 
    Any later migration in `supabase/migrations/` goes in numeric order, before the seed.
 

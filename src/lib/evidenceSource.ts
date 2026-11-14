@@ -8,6 +8,15 @@ export function evidenceLocator(experiment: Pick<Experiment, 'source_page' | 'so
   ].filter(Boolean).join(' · ');
 }
 
+/** Second citation line, e.g. "Dataset: PSI-25 v4 · run3.csv · row 12 · DOI 10.x/y"; null when nothing is recorded. */
+export function datasetCitation(experiment: Pick<Experiment,
+  'psi_investigation_id' | 'dataset_doi' | 'dataset_version' | 'dataset_file' | 'dataset_row_or_time'>): string | null {
+  const id = [experiment.psi_investigation_id, experiment.dataset_version].filter(Boolean).join(' ');
+  const parts = [id, experiment.dataset_file, experiment.dataset_row_or_time,
+    experiment.dataset_doi && `DOI ${experiment.dataset_doi}`].filter(Boolean);
+  return parts.length ? `Dataset: ${parts.join(' · ')}` : null;
+}
+
 /** Preserve the reviewed destination: NTRS downloads do not share a uniform filename. */
 export function evidenceSource(experiment: Pick<Experiment, 'source_url'>): { url: string; pdf: boolean } | null {
   try {
