@@ -1,4 +1,4 @@
-import { Page, PageHeader, Panel } from '../components/ui';
+import { Page, PageHeader, Panel, textLink } from '../components/ui';
 import { COPY } from '../lib/copy';
 
 const stages = [
@@ -46,6 +46,6 @@ export function Methods() {
         <div key={term} className="grid gap-2 py-4 sm:grid-cols-[1fr_2fr]"><dt className="font-semibold">{term}</dt><dd className="text-dim">{plain}</dd></div>
       )}</dl>
     </section>
-    <a className="mt-8 inline-block text-amber underline" href="/sources">Browse the source bibliography</a>
+    <a className={`mt-8 inline-block ${textLink}`} href="/sources">Browse the source bibliography</a>
   </Page>;
 }

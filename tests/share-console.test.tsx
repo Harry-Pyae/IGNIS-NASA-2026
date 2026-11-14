@@ -9,6 +9,8 @@ vi.mock('../src/lib/catalog', () => ({
     catalog: { state: 'ready', revision: 'r1', invalid: 0, experiments: [record] },
     reload: vi.fn(),
   }),
+  useCatalogSummary: () => ({ summary: { state: 'ready', stats: { verified: 1, in_review: 0, campaigns: [], last_updated: null, revision: 'r1' } }, retry: vi.fn() }),
+  useCatalogRevisionWatch: () => {},
 }));
 
 // Run the restoration callback while rendering so React applies its state update

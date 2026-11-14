@@ -102,6 +102,9 @@ export const COPY = {
       dismiss: 'Dismiss',
     },
     hintButton: (label: string) => `What is ${label}?`,
+    evidenceUpdated: 'Evidence updated',
+    viewEvidence: 'View',
+    catalogRefreshing: 'The verified catalog changed. Loading the new evidence…',
   },
   /** /methods "Plain words" section. Each entry: the term as it appears in the app, then what it means. */
   glossary: [

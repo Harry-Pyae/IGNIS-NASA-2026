@@ -1,7 +1,6 @@
-import { useEffect } from 'react';
-import { useCatalogSummary, useVerifiedCatalog, type VerifiedCatalog, type CatalogSummary } from '../lib/catalog';
+import { useCatalogRevisionWatch, useCatalogSummary, useVerifiedCatalog, type VerifiedCatalog, type CatalogSummary } from '../lib/catalog';
 import { ExportButton } from '../components/CatalogStatus';
-import { Button, Page, PageHeader, Panel } from '../components/ui';
+import { Button, Page, PageHeader, Panel, textLink } from '../components/ui';
 import { COPY } from '../lib/copy';
 import { evidenceSource } from '../lib/evidenceSource';
 import type { Experiment } from '../lib/types';
@@ -36,14 +35,8 @@ function doiId(value: string | null) {
 
 export function Sources() {
   const { catalog, reload } = useVerifiedCatalog();
-  const { summary, retry: refreshSummary } = useCatalogSummary();
-  useEffect(() => {
-    // The existing stores refresh rows when the lightweight revision check changes.
-    const check = () => { if (document.visibilityState === 'visible') refreshSummary(); };
-    const timer = window.setInterval(check, 60_000);
-    document.addEventListener('visibilitychange',check);
-    return () => { window.clearInterval(timer); document.removeEventListener('visibilitychange',check); };
-  }, [refreshSummary]);
+  const { summary } = useCatalogSummary();
+  useCatalogRevisionWatch();
   return <SourceList catalog={catalog} summary={summary} retry={reload}/>;
 }
 export function SourceList({catalog, summary, retry}: {catalog: VerifiedCatalog; summary: CatalogSummary; retry: () => void}) {
@@ -56,7 +49,7 @@ export function SourceList({catalog, summary, retry}: {catalog: VerifiedCatalog;
     <ExportButton summary={summary} label="Export verified dataset (.json)"/>
     <section className="mt-8" aria-labelledby="challenge-resources">
       <h2 id="challenge-resources" className="mb-2 text-xl font-semibold">Official challenge resources</h2>
-      <a className="text-amber underline" href="https://www.spaceappschallenge.org/2026/challenges/flame-in-freefall/?tab=resources"
+      <a className={textLink} href="https://www.spaceappschallenge.org/2026/challenges/flame-in-freefall/?tab=resources"
         target="_blank" rel="noopener noreferrer">NASA Space Apps · Flame in Freefall Resources</a>
     </section>
     <div className="mt-8">
@@ -82,7 +75,7 @@ export function SourceList({catalog, summary, retry}: {catalog: VerifiedCatalog;
                 return <li key={card.id}><Panel>
                   <h3 className="mb-2 text-lg font-semibold [overflow-wrap:anywhere]">{card.source_title}</h3>
                   <p className="text-sm text-dim">{group.length} verified {group.length === 1 ? 'card' : 'cards'}</p>
-                  <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-2">{[...links].map(([url,label]) => <li key={url}><a className="text-amber underline [overflow-wrap:anywhere]" href={url} target="_blank" rel="noopener noreferrer">{label}</a></li>)}</ul>
+                  <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-2">{[...links].map(([url,label]) => <li key={url}><a className={textLink} href={url} target="_blank" rel="noopener noreferrer">{label}</a></li>)}</ul>
                 </Panel></li>;
               })}</ol>
             </section>)}</div>}

@@ -5,7 +5,11 @@ import { compareSelection } from '../features/compare/compareSelection';
 
 export function Compare() {
   const { catalog, reload } = useVerifiedCatalog();
-  const { cards, missing } = compareSelection(window.location.search, catalog.state === 'ready' ? catalog.experiments : []);
+  const all = catalog.state === 'ready' ? catalog.experiments : [];
+  const { cards, missing } = compareSelection(window.location.search, all);
+  // One ID (from a detail page): keep it first and let the visitor pick the second from the verified catalog.
+  const others = all.filter((card) => card.verified_by && card.domain === 'solid_flammability' && card.id !== cards[0]?.id);
+  const choices = cards.length === 1 && others.length ? [cards[0]!, ...others] : cards;
   const settled = catalog.state === 'ready' || catalog.state === 'empty';
 
   return <Page>
@@ -23,8 +27,8 @@ export function Compare() {
             {missing.map((id) => <li key={id}>{id}</li>)}
           </ul>
         </div>}
-        {cards.length < 2 && <p>Select two distinct verified solid-material experiments to compare.</p>}
-        {cards.length >= 2 && <CardComparison cards={cards} standalone />}
+        {choices.length < 2 && <p>Select two distinct verified solid-material experiments to compare.</p>}
+        {choices.length >= 2 && <CardComparison cards={choices} standalone />}
       </>}
     </Panel>
   </Page>;

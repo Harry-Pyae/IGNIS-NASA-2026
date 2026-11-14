@@ -5,8 +5,8 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import { flushSync } from 'react-dom';
-import { Badge, Button, Chip, CitationChip, Panel, PresetChip, SectionHeader, Slider } from '../components/ui';
-import { useVerifiedCatalog } from '../lib/catalog';
+import { Badge, Button, Chip, CitationChip, Panel, PresetChip, SectionHeader, Slider, textLink } from '../components/ui';
+import { useCatalogRevisionWatch, useCatalogSummary, useVerifiedCatalog } from '../lib/catalog';
 import { COPY } from '../lib/copy';
 import { pickMaterial, presetScenario, resolveMaterial, SCENARIO_PRESETS } from '../engine/aliases';
 import { applyEnvironment, isElevatedO2, visibleEnvironmentPresets, type EnvironmentPreset } from '../engine/environments';
@@ -46,6 +46,8 @@ function InputHint({ field, label }: { field: keyof typeof COPY.plain.hints; lab
 
 export function Console() {
   const { catalog, reload } = useVerifiedCatalog();
+  const { summary: catalogSummary } = useCatalogSummary();
+  useCatalogRevisionWatch();
   const catalogExperiments = catalog.state === 'ready' ? catalog.experiments : [];
   const experiments = catalogExperiments;
   const mission = missionEntry(experiments);
@@ -81,7 +83,6 @@ export function Console() {
     setAppliedEnvironmentId(null);
     setInputsChanged(true);
   });
-  const resultsSummary = useRef<HTMLParagraphElement>(null);
   const focusAfterConfirm = useRef(false);
   const [firstVisit, setFirstVisit] = useState(() => {
     try {
@@ -90,15 +91,39 @@ export function Console() {
       return true;
     }
   });
+  // Results must be visible when they change: Confirm (and "View") move to the Evidence Map and focus its heading.
+  // Smooth only under prefers-reduced-motion: no-preference; otherwise an instant jump.
+  const showMap = useCallback(() => {
+    const heading = document.getElementById('s2');
+    if (!heading) return;
+    heading.tabIndex = -1;
+    heading.focus({ preventScroll: true });
+    heading.closest('section')?.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: no-preference)').matches ? 'smooth' : 'instant',
+      block: 'start',
+    });
+  }, []);
   useEffect(() => {
     if (!confirmed || !focusAfterConfirm.current) return;
     focusAfterConfirm.current = false;
-    resultsSummary.current?.focus({ preventScroll: true });
-    resultsSummary.current?.scrollIntoView({
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
-      block: 'center',
-    });
-  }, [confirmed]);
+    showMap();
+  }, [confirmed, showMap]);
+  // One "Evidence updated · View" chip, shown only while the map is off screen and live retrieval changed.
+  const [mapInView, setMapInView] = useState(false);
+  const [evidenceUpdated, setEvidenceUpdated] = useState(false);
+  useEffect(() => {
+    const section = document.getElementById('s2')?.closest('section');
+    if (!section) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      setMapInView(entry!.isIntersecting);
+      if (entry!.isIntersecting) setEvidenceUpdated(false);
+    }, { threshold: 0.15 });
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+  // The header count and the map move together: while the rows catch up with a new revision, say so.
+  const catalogRefreshing = catalogSummary.state === 'ready' && (catalog.state === 'ready' || catalog.state === 'empty')
+    && catalog.revision !== catalogSummary.stats.revision;
   const sourceMaterials = useMemo(() => experiments.map(({ domain, fuel_material, material_class }) => ({ domain, fuel_material, material_class })), [experiments]);
   const activePreset = SCENARIO_PRESETS.find((preset) => preset.id === presetId);
   const material = materialChoice
@@ -214,6 +239,7 @@ export function Console() {
       if ('o2_pct' in update) setAppliedEnvironmentId(null);
       setConfirmed((current) => current ? { ...current, ...update } : null);
       setMessage('');
+      if (confirmed && !mapInView) setEvidenceUpdated(true);
     };
     const panel = document.querySelector<HTMLElement & {startViewTransition?: (update: () => void) => ViewTransition}>('.match-cards');
     if (confirmed && panel?.startViewTransition && window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
@@ -231,6 +257,7 @@ export function Console() {
     setScenario((current) => applyEnvironment(current, env));
     setConfirmed((current) => current ? applyEnvironment(current, env) : null);
     setMessage('');
+    if (confirmed && !mapInView) setEvidenceUpdated(true);
   }
 
   const choosePreset = useCallback((id: string) => {
@@ -308,17 +335,15 @@ export function Console() {
         {confirmed && <p className="console-label mb-1 text-dim"><span aria-hidden="true" className="anim-blink mr-2 inline-block size-1.5 rounded-full bg-amber"/>Live retrieval</p>}
         <div className="anim-ticker flex w-max font-mono">{[0,1].map(copy => <div aria-hidden={copy === 1} key={copy} className="flex shrink-0">{views.eligible.map(c => <span key={c.id} className="pr-8">{experimentLabel(c)}</span>)}</div>)}</div>
       </div>}
+      {firstVisit && <div className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-xl border border-border bg-bg/45 p-4 text-sm text-dim">
+        <p className="min-w-0 flex-1">{missionCase ? COPY.plain.firstVisit.mission : `${COPY.plain.firstVisit.explore} ${COPY.missionAvailability}`}</p>
+        {missionCase && <Button variant="primary" onClick={() => startMission(missionCase.preset_id)}>{COPY.landingCta.mission}</Button>}
+        <Button variant="tertiary" onClick={() => {
+          setFirstVisit(false);
+          try { localStorage.setItem('ignis-scenario-intro-dismissed', '1'); } catch { /* Dismiss for this visit. */ }
+        }}>{COPY.plain.firstVisit.dismiss}</Button>
+      </div>}
       <Panel as="section" aria-labelledby="s1" className="reveal">
-        {firstVisit && <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-border p-3 text-sm text-dim">
-          <p className="min-w-0 flex-1">{missionCase ? COPY.plain.firstVisit.mission : COPY.plain.firstVisit.explore}</p>
-          {missionCase
-            ? <Button size="sm" onClick={() => startMission(missionCase.preset_id)}>{COPY.landingCta.mission}</Button>
-            : <p className="min-w-0 flex-1">{COPY.missionAvailability}</p>}
-          <Button size="sm" onClick={() => {
-            setFirstVisit(false);
-            try { localStorage.setItem('ignis-scenario-intro-dismissed', '1'); } catch { /* Dismiss for this visit. */ }
-          }}>{COPY.plain.firstVisit.dismiss}</Button>
-        </div>}
         <SectionHeader id="s1" step={t('describeStep')} title={t('missionScenario')} />
         <MissionCaption step={guidedStep === 0 ? 0 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[0].caption)} />
         <div className="grid gap-8 lg:grid-cols-2">
@@ -418,7 +443,7 @@ export function Console() {
             <div className="flex flex-wrap items-center gap-3">
               <Button variant="primary" disabled={material.status !== 'resolved'} aria-describedby={material.status !== 'resolved' ? 'confirm-blocked' : undefined} onClick={() => {
                 if (confirmed === draft) {
-                  resultsSummary.current?.focus();
+                  showMap();
                   return;
                 }
                 focusAfterConfirm.current = true;
@@ -445,7 +470,7 @@ export function Console() {
                 {activeEnvironment && (
                   <p className="text-[13px] text-text">
                     {COPY.environmentExplanation} {activeEnvironment.context}{' '}
-                    {activeEnvironment.verification.source_url && <a href={activeEnvironment.verification.source_url} target="_blank" rel="noreferrer" className="text-amber underline underline-offset-4">{t('source')}</a>}
+                    {activeEnvironment.verification.source_url && <a href={activeEnvironment.verification.source_url} target="_blank" rel="noreferrer" className={textLink}>{t('source')}</a>}
                   </p>
                 )}
                 {activeEnvironment && <p role="status" className="text-[13px] text-dim">{COPY.environmentApplied}</p>}
@@ -456,34 +481,28 @@ export function Console() {
             <Slider label="O₂" describedBy="scenario-hint-o2" hint={<InputHint field="o2" label="O₂" />} unit="%" min={14} max={30} value={scenario.o2_pct} onChange={(value) => moveSlider({ o2_pct: value })} onClear={() => moveSlider({ o2_pct: null })} allowUnspecified unspecifiedValue={21} unspecifiedLabel={t('notSpecified')} setValueLabel={t('setOxygen')} clearValueLabel={t('clearOxygen')} />
             <Slider label="Airflow" describedBy="scenario-hint-airflow" hint={<InputHint field="airflow" label="Airflow" />} unit="cm/s" min={0} max={30} value={scenario.flow_cm_s} onChange={(value) => moveSlider({ flow_cm_s: value })} onClear={() => moveSlider({ flow_cm_s: null })} allowUnspecified unspecifiedLabel={t('notSpecified')} setValueLabel={t('setAirflow')} clearValueLabel={t('clearAirflow')} />
             <p className="text-[13px] text-dim">{COPY.sliderCaption}</p>
+            {evidenceUpdated && !mapInView && confirmed && <p role="status" className="flex flex-wrap items-center gap-x-2 self-start rounded-full border border-raised bg-bg/60 px-3 py-1 text-[13px] text-text">
+              {COPY.plain.evidenceUpdated} · <Button variant="tertiary" onClick={showMap}>{COPY.plain.viewEvidence}</Button>
+            </p>}
           </div>
         </div>
       </Panel>
 
       {inputsChanged && !confirmed && <p role="status" className="rounded-lg border border-warn/35 p-3 text-sm text-warn">{COPY.staleScenario}</p>}
-      <Panel as="section" aria-labelledby="s2" className="reveal">
+      <Panel as="section" aria-labelledby="s2" className="reveal scroll-mt-[calc(var(--header-h,0px)+1rem)]">
         <SectionHeader
           id="s2"
           step={t('retrieveStep')}
           title={t('evidenceMap')}
         />
         <MissionCaption step={guidedStep === 1 ? 1 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[1].caption)} />
-        {confirmed && <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-border p-3 text-sm">
-          <div className="min-w-0 flex-1">
-            <p ref={resultsSummary} tabIndex={-1}>
-              {closestMatch ? `${t('closestMatch')}: ${experimentLabel(closestMatch.experiment)}`
-                : t(dataStatus === 'loading' ? 'loading' : dataStatus === 'unavailable' ? 'noMatchCatalog' : 'noEligibleMatchesForScenario')}
-              {closestMatch && <> · <a href="#s4" className="text-amber underline">{t('missionBrief')}</a></>}
-            </p>
-            <p className="text-dim">{COPY.summary.o2(confirmed.o2_pct)} · {COPY.summary.flow(confirmed.flow_cm_s)}</p>
-          </div>
-          <Button size="sm" onClick={focusScenarioEditor}>{t('editScenario')}</Button>
-        </div>}
         <InvestigationSummary
           summary={investigationSummary(draft, confirmed, views)}
           status={dataStatus}
+          closest={closestMatch ? experimentLabel(closestMatch.experiment) : null}
           onEdit={focusScenarioEditor}
         />
+        {catalogRefreshing && <p role="status" className="mb-4 text-sm text-dim">{COPY.plain.catalogRefreshing}</p>}
         {dataStatus === 'unavailable' && <Button size="sm" className="mb-4" onClick={reload}>{t('retry')}</Button>}
         <EvidenceMap key={revision} experiments={views?.eligible ?? experiments} scenario={confirmed} matches={views?.top_k ?? []} status={dataStatus} selectedId={selectedId} onSelect={setSelectedId} />
       </Panel>
@@ -548,9 +567,9 @@ function MissionCaption({ step, onStep, text }: { step: number | null; onStep: (
               ><span aria-hidden className={`size-3 rounded-full border ${index === step ? 'border-amber bg-amber' : 'border-faint bg-transparent'}`} /></button>
             ))}
           </div>
-          <Button size="sm" variant="ghost" disabled={step === 0} onClick={() => onStep(step - 1)}>{t('missionBack')}</Button>
+          <Button size="sm" disabled={step === 0} onClick={() => onStep(step - 1)}>{t('missionBack')}</Button>
           <Button size="sm" onClick={() => onStep(step === MISSION_STEPS.length - 1 ? null : step + 1)}>{t(step === MISSION_STEPS.length - 1 ? 'missionDone' : 'missionNext')}</Button>
-          <Button size="sm" variant="ghost" onClick={() => onStep(null)}>{t('exploreFreely')}</Button>
+          <Button variant="tertiary" onClick={() => onStep(null)}>{t('exploreFreely')}</Button>
         </div>
       </div>
     </aside>
@@ -560,10 +579,13 @@ function MissionCaption({ step, onStep, text }: { step: number | null; onStep: (
 export function InvestigationSummary({
   summary: { scenario, confirmed, counts },
   status,
+  closest = null,
   onEdit,
 }: {
   summary: ReturnType<typeof investigationSummary>;
   status: 'connected' | 'loading' | 'unavailable';
+  /** Label of the closest verified match once confirmed. */
+  closest?: string | null;
   onEdit: () => void;
 }) {
   const summary = COPY.summary;
@@ -576,11 +598,12 @@ export function InvestigationSummary({
     : [t(status === 'unavailable' ? 'evidenceUnavailable' : 'loading')];
 
   return (
-    <div role="group" aria-label={`${summary.scenario}, ${summary.conditions}, ${summary.evidence}`} className="mb-4 grid grid-cols-2 gap-3 rounded-xl border border-border bg-bg/35 p-3 sm:grid-cols-4">
+    // Sticky at the top of the Evidence Map section on desktop, so the context travels with the plot; a plain block below lg.
+    <div role="group" aria-label={`${summary.scenario}, ${summary.conditions}, ${summary.evidence}`} className="mb-4 grid grid-cols-2 gap-3 rounded-xl border border-border bg-bg/35 p-3 sm:grid-cols-4 lg:sticky lg:top-[calc(var(--header-h,0px)+0.5rem)] lg:z-20 lg:bg-bg/95 lg:backdrop-blur-sm">
+      {closest && <p className="col-span-2 text-sm text-text sm:col-span-4">{t('closestMatch')}: {closest} · <a href="#s4" className={textLink}>{t('missionBrief')}</a></p>}
       <div className="min-w-0">
         <p className="console-label text-dim">{summary.scenario}</p>
         <p className="mt-1 break-words text-sm text-text">{materialName} · {form}</p>
-        <button type="button" onClick={onEdit} className="mt-1 text-xs text-amber underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber">{t('edit')}</button>
       </div>
       <div className="min-w-0">
         <p className="console-label text-dim">{summary.conditions}</p>
@@ -592,6 +615,9 @@ export function InvestigationSummary({
         {counts && (confirmed
           ? <p className="mt-1 text-xs text-dim">{summary.topMatches(counts.top_k ?? 0)}</p>
           : <p role="status" className="mt-1 text-xs text-warn">{summary.notConfirmed}</p>)}
+      </div>
+      <div className="col-span-2 sm:col-span-4">
+        <Button size="sm" onClick={onEdit}>{t('editScenario')}</Button>
       </div>
     </div>
   );
@@ -618,7 +644,7 @@ function ResearchContext({ section }: { section: NonNullable<ReturnType<typeof c
               <li key={entry.id} className="rounded-xl border border-border/70 bg-bg/30 p-4">
                 <h4 className="text-sm font-medium text-text">{entry.title}</h4>
                 <p className="mt-2 text-sm leading-relaxed text-dim">{entry.text}</p>
-                <a href={entry.source_url!} target="_blank" rel="noreferrer" className="mt-3 inline-block text-sm text-amber underline underline-offset-4">{t('source')}</a>
+                <a href={entry.source_url!} target="_blank" rel="noreferrer" className={`mt-3 inline-block text-sm ${textLink}`}>{t('source')}</a>
               </li>
             ))}
           </ul>
@@ -808,7 +834,7 @@ export function EvidenceMap({
                 <p className="console-label break-words text-amber [overflow-wrap:anywhere]">{selected.campaign} · {selected.test_id}</p>
                 <p className="mt-1 text-sm text-text">{selected.outcome ?? 'Outcome not reported'} · {selected.o2_pct}% O₂ · {selected.flow_cm_s} cm/s</p>
                 </div>
-                {source && <a href={source.url} target="_blank" rel="noreferrer" className="text-sm text-amber underline underline-offset-4">{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}
+                {source && <a href={source.url} target="_blank" rel="noreferrer" className={`text-sm ${textLink}`}>{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}
               </div>
               {selected.condition_changes?.map((change, index) => <p key={index} className="mt-2 text-sm text-warn">{COPY.changingConditions}: {change.note}</p>)}
               {selected.key_observation_quote && <blockquote className="mt-3 break-words border-l-2 border-raised pl-3 text-sm leading-relaxed text-dim [overflow-wrap:anywhere]">“{selected.key_observation_quote}”</blockquote>}
@@ -816,7 +842,7 @@ export function EvidenceMap({
               {evidenceLocator(selected) && <p className="mt-1 break-words text-xs text-dim [overflow-wrap:anywhere]">{evidenceLocator(selected)}</p>}
               {/* Selection stays on the map; opening the match card is the visitor's choice (no jump on every click). */}
               {matches.some((match) => match.experiment.id === selected.id) && (
-                <button type="button" onClick={() => focusExperiment(selected.id)} className="mt-3 text-sm text-amber underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber">{t('openMatchCard')}</button>
+                <button type="button" onClick={() => focusExperiment(selected.id)} className={`mt-3 text-sm ${textLink}`}>{t('openMatchCard')}</button>
               )}
             </div>
           )}
@@ -835,7 +861,7 @@ export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }:
 
   return (
     <div>
-    <p className="mb-3 text-sm leading-relaxed text-dim">{COPY.matchOrder} <a href="/methods" className="text-amber underline underline-offset-4">How matching works and what it does not tell you</a></p>
+    <p className="mb-3 text-sm leading-relaxed text-dim">{COPY.matchOrder} <a href="/methods" className={textLink}>How matching works and what it does not tell you</a></p>
     <div className="match-cards grid auto-rows-fr gap-3 lg:grid-cols-3">
       {matches.map((match, index) => {
         const why = whyMatched(match);
@@ -900,14 +926,14 @@ export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }:
               <details className="mt-3 border-t border-border/70 pt-3 text-sm">
                 <summary className="cursor-pointer text-dim can-hover:hover:text-text">{t('sourceExcerpt')}</summary>
                 <blockquote className="mt-2 break-words border-l-2 border-raised pl-3 leading-relaxed text-dim [overflow-wrap:anywhere]">“{experiment.key_observation_quote}”</blockquote>
-                  <button type="button" onClick={() => { onSelect(experiment.id); const point = document.getElementById(`map-point-${experiment.id}`) ?? document.getElementById('evidence-map'); point?.focus({ preventScroll: true }); point?.scrollIntoView({ block: 'center' }); }} className="mt-3 inline-block min-h-10 text-sm text-amber underline underline-offset-4">{t('backToMap')}</button>
+                  <button type="button" onClick={() => { onSelect(experiment.id); const point = document.getElementById(`map-point-${experiment.id}`) ?? document.getElementById('evidence-map'); point?.focus({ preventScroll: true }); point?.scrollIntoView({ block: 'center' }); }} className={`mt-3 inline-block min-h-10 text-sm ${textLink}`}>{t('backToMap')}</button>
               </details>
             )}
             <p className="mt-3 mb-2 break-words text-sm text-dim [overflow-wrap:anywhere]">{experiment.source_title}</p>
             {dataset && <p className="mb-2 text-sm text-dim [overflow-wrap:anywhere]">{dataset}</p>}
             <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border/70 pt-3 text-[13px]">
               {provenance && <span className="min-w-0 break-words text-dim [overflow-wrap:anywhere]">{provenance}</span>}
-              {source && <a href={source.url} target="_blank" rel="noreferrer" className="min-h-10 text-amber underline underline-offset-4">{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}
+              {source && <a href={source.url} target="_blank" rel="noreferrer" className={`min-h-10 ${textLink}`}>{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}
             </div>
           </article>
         );
@@ -1013,7 +1039,7 @@ export function EvidenceOnlyFallback({ matches }: { matches: MatchResult[] }) {
           {evidenceLocator(experiment) && <p className="mt-1 text-xs text-dim">{evidenceLocator(experiment)}</p>}
           {experiment.condition_changes?.map((change, index) => <p key={index} className="mt-2 text-sm text-warn">{COPY.changingConditions}: {change.note}</p>)}
           {experiment.key_observation_quote && <p className="mt-2 break-words text-sm leading-relaxed text-dim [overflow-wrap:anywhere]">“{experiment.key_observation_quote}”</p>}
-          {source && <a href={source.url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-amber underline underline-offset-4">{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}
+          {source && <a href={source.url} target="_blank" rel="noreferrer" className={`mt-2 inline-block text-sm ${textLink}`}>{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}
         </article>
       ); })}
     </div>
