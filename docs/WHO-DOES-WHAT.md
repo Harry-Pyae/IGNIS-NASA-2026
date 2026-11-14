@@ -1,5 +1,140 @@
 # Who does what (Nov 14–15)
 
+## Round 3 split (Nov 14, afternoon): real data, plain language, consistent pages
+
+**The catalog is no longer zero.** As of 2026-11-14 04:17 UTC there are 3 verified cards (revision `becd7b54…`):
+BASS GMT96-T7, BASS GMT96-T8 and BASS-II GMT45-T4. All three are cotton-fiberglass fabric, 0.32 mm, at 101.325 kPa.
+The two branches waiting for merge now have their fixes: `library` shows photos with the "Campaign context" label, and
+`share-and-compare` restores links unconfirmed.
+
+Same rules as before. All new wording lives in `src/lib/copy.ts` (Coder A owns the approved copy), keyed for i18n,
+under ~25 words per hint. Hints are static: no `anim-*` classes, and they never move inside the Brief or UNTESTED
+blocks. Absence stays bounded to "the current IGNIS catalog". CI must be green before every PR.
+
+### What the 3 cards show (from the engine, for R3's demo pick)
+
+- **Strongest match:** the *Crew clothing* preset at 21 % O₂ and 10 cm/s matches **BASS GMT96-T7** on oxygen and
+  airflow (sustained). Next comes GMT96-T8 (airflow differs: 5 cm/s), then GMT45-T4 (oxygen and airflow differ,
+  conditions changed during the run).
+- **Clean gap:** one region with no verified card, **18–22 % O₂ × 2–12 cm/s** (17 empty cells around the three
+  runs). One bounded line describes it: no verified card sits between the 18.7 % run that went out and the 21 % runs
+  that kept burning.
+- **Outside range, a different state from a gap:** Moon-base oxygen (30 %) is outside the catalog's oxygen range on
+  every card. Airflow below 2.2 cm/s is outside its airflow range.
+- **Mission case candidate:** *Crew clothing* at cabin air puts all 3 IDs in its top 5, which meets the gate.
+  R1 and R3 confirm it in `catalog-coverage.md`, then Coder A fills `MISSION_CASE`.
+- **The limit to say out loud:** one material, one thickness, one pressure. Only oxygen and airflow vary, so every match
+  compares on at most 2 of 4 parameters. R1's next cards should widen material and pressure.
+
+### Layout and consistency problems found (all three coders fix their part)
+
+| Before | After | Why |
+| --- | --- | --- |
+| `/curate`: save/publish errors show in a status panel at the **top** of the page (`Curate.tsx` ~233), while Save/Publish sit at the **bottom** of a ~35-field form (~365) | Error summary right beside the buttons, each bad field marked inline (`aria-invalid` + message via `aria-describedby`), focus moves to the first bad field | The person clicking Publish never sees why it failed. This is how R1's first publish attempt could fail silently |
+| Console: inputs in section 01, results (matches, Brief, gaps) far below the map; clicking Confirm gives no sign anything happened below | After Confirm, focus and scroll move to a short results summary ("Closest match … · Brief below"), and a compact confirmed-scenario bar with "Edit inputs" jumps back | Cause and effect are a screen apart. The visitor can't see what their click did |
+| Confirm is disabled while the material is unresolved, with no reason shown | The reason, in one line, next to the disabled button | A disabled button with no explanation looks broken |
+| Page widths differ: Sources `max-w-4xl`, Methods/Library/Compare `5xl`, Console/Kit `6xl`, Curate `7xl`, 404 `3xl` | One `PageHeader` and page container primitive: content pages `max-w-5xl`, console and curate stay wide | Moving between pages shifts the layout, so the app reads as separate sites |
+| H1 styles differ: `display text-4xl my-4` (Methods, Sources, Compare), `mb-6` (Library), `text-2xl font-semibold` (Curate), `text-3xl font-semibold` (Kit) | One heading style, with the same eyebrow label (`console-label`) and intro paragraph slot | Inconsistent type hierarchy reads as unfinished |
+| Vertical padding differs: `py-10`, `py-12`, `py-20`, Console `pb-24` | One rhythm from the container primitive | Same reason |
+
+### Coder A (`main`): real data, contracts, copy, the shared shell
+
+1. **Standing order, now:**
+   - Step c on production: scenario → match → synthesize → validated Brief, clicking each citation through to its card
+     and source.
+   - The forced-Gemini proof (runbook §3, once).
+   - Fill `MISSION_CASE` once R1 and R3 confirm.
+   - Warm the cache twice; the second response reads `provider: cache`.
+   - Log everything in `QA-LOG.md`. Mark the moment in MILESTONES and STATE.
+2. **Check migration 0004** in the SQL editor:
+   `select indexname from pg_indexes where indexname = 'experiments_campaign_test_identity';`
+   One row means it's applied.
+3. **Migration 0005, in this order:**
+   1. Run 0005 in the SQL editor.
+   2. Fast-forward `main` to `provenance` and deploy.
+   3. Check the dataset fields in `/api/export`, and on a card once B's line ships.
+
+   Never deploy the code before the migration (every `/curate` save would fail).
+4. **Merge** `library` and `share-and-compare` (squash; both histories carry duplicate commits from the rebase).
+   Register `/library` and `/library/*`, then check live at desktop and 390 px.
+5. **Plain-language copy in `copy.ts`:**
+   - The input hints (b).
+   - The result legends: chips, outcomes, Brief labels, map legend, "Compared on N of M" (c).
+   - The glossary entries (d).
+   - The first-visit line (e).
+
+   Every anchored fact goes through R1 first (see "Copy checks" below). Hand the keys to B and C as soon as they land.
+6. **`PageHeader` and page container primitive** in `src/components/ui/`, shown on `/kit`. Convert Methods, Curate,
+   Kit and the 404 page.
+
+### Coder B (`console`, `library`): the console's input side, the library, sources
+
+1. **Input-to-result distance** (`Console.tsx`):
+   - After Confirm: focus and scroll to a results summary.
+   - A compact confirmed-scenario bar with "Edit inputs".
+   - The disabled-Confirm reason, shown beside the button.
+
+   Keep the narrative order (no redesign). Respect `prefers-reduced-motion`, so the scroll jumps instead of animating.
+2. **Input explainers (b):** an `InfoHint` (Coder C builds it) next to each Scenario Builder label: material/form, O₂,
+   airflow, thickness, pressure. The wording comes from A's `copy.ts` keys.
+3. **First-visit line (e)** above the Scenario Builder, dismissible. Store the dismissal in `localStorage`, wrapped in
+   try/catch. It shows the honest availability state: the mission start when `MISSION_CASE` is set, otherwise the
+   existing availability line.
+4. **Provenance line:** "Dataset: …" from `datasetCitation()` on the console card source block and the detail page,
+   once 0005 is on `main`.
+5. **`/sources` rework:**
+   - Group by campaign.
+   - For each campaign, list the NTRS paper and the PSI investigation DOI, linking to canonical DOIs in a new tab.
+   - Add an "Official challenge resources" group (needs the challenge text in `docs/`).
+
+   Then convert Library and Sources to `PageHeader`.
+
+### Coder C (`features`): hints, the results side, the curate form
+
+1. **`InfoHint`** in `src/features/hint/`, built from the existing primitives:
+   - A small "?" button. Click, tap or focus opens a short panel. Escape and blur close it.
+   - `aria-expanded` on the button, `aria-describedby` from the label to the panel.
+   - 44 px touch target, works at 390 px.
+   - Static: no animation anywhere.
+
+   Tests: it renders, the aria wiring is correct, and there are no `anim-*` classes inside `.mission-brief` or
+   `.motion-still`.
+2. **Result explainers (c)** on the console's results side (Match Panel, map legend, Brief labels, gap radar), using
+   A's keys:
+   - The chips legend.
+   - One sentence per outcome.
+   - What OBSERVED, SUPPORTED and UNTESTED mean.
+   - Gap vs. outside-range on the map.
+   - "Compared on N of M".
+
+   Edit only those sections of `Console.tsx`; B is in the input section. Agree on hunks before starting.
+3. **Glossary (d):** a "Plain words" section on `/methods` built from A's glossary keys, plus a link to it from the
+   footer.
+4. **`/curate` form errors** (an A-owned file, A reviews):
+   - An error summary beside Save/Publish.
+   - Inline field errors mapped from the API's `issues[].path`.
+   - Focus the first bad field.
+
+   Keep the top status panel for success messages only. Then convert Compare to `PageHeader`.
+
+### Copy checks before anything ships (Coder A, with R1)
+
+- **"Planned Moon base 30 %+":** in the fact-check queue this figure is still unsourced. Cite it from the official
+  challenge text (blocker: not yet in `docs/`). Cut "which makes materials easier to ignite" unless that text says so.
+- **"Microgravity flames need moving air":** this is general science. R1 confirms it from a source before it renders.
+- **"101 kPa = Earth sea level and ISS cabin":** the ISS-baseline row in the fact-check queue is still unsigned.
+- **Thickness anchor:** use "about 0.32 mm, like the BASS cotton-fiberglass fabric" (verified card, source wording
+  "about").
+- **Bounded absence:** write "⇥ outside the range of the current IGNIS catalog", not "outside what NASA tested". Write
+  "UNTESTED: no experiment in the current IGNIS catalog covers this". Both follow the bounded-absence rule.
+
+### R3: acceptance for the plain-language pass
+
+One non-technical person, cold, on the production site. Can they say what the O₂ slider does, what a hatched cell
+means, and how OBSERVED differs from SUPPORTED? Log where they hesitate in `QA-LOG.md`. B and C fix those first.
+
+---
+
 ## Round 2 split (Nov 14, midday)
 
 Four batches of work are now on the table: the merge fixes from the Tier 1 review, dataset provenance, the
