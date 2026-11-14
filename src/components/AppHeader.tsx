@@ -5,7 +5,7 @@ import { ExportButton, ProvenancePill } from './CatalogStatus';
 function applyTheme(choice: 'dark' | 'light') {
   document.documentElement.dataset.theme = choice;
   document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
-    ?.setAttribute('content', choice === 'light' ? '#ffffff' : '#0C0F16');
+    ?.setAttribute('content', choice === 'light' ? '#FFF4EA' : '#0C0F16');
   try {
     localStorage.setItem('ignis-theme', choice);
   } catch {

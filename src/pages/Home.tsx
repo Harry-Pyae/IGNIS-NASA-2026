@@ -34,7 +34,7 @@ const rise = (i: number) => ({ style: { '--i': i } as CSSProperties });
 
 function Hero() {
   return (
-    <section className="relative isolate overflow-hidden xl:flex xl:min-h-[min(86svh,760px)] xl:items-center">
+    <section className="home-hero relative isolate overflow-hidden xl:flex xl:min-h-[min(86svh,760px)] xl:items-center">
       {/*
         Wide screens (xl+): the art is a full-bleed background; a left scrim keeps the copy column on dark ground.
         Below xl the copy column covers the busy screen + console lights, so the art moves into a framed
@@ -100,7 +100,7 @@ function Hero() {
           {/* Inner vignette so the window reads as depth, not a pasted photo (hidden on xl: the scrim does that job). */}
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-0 rounded-[inherit] shadow-[inset_0_0_60px_10px_color-mix(in_srgb,var(--color-bg)_70%,transparent)] xl:hidden"
+            className="hero-image-edge pointer-events-none absolute inset-0 rounded-[inherit] shadow-[inset_0_0_60px_10px_color-mix(in_srgb,var(--color-bg)_70%,transparent)] xl:hidden"
           />
           <figcaption className="hero-caption console-label absolute right-4 bottom-3 text-dim xl:bottom-4 xl:right-6">Illustration</figcaption>
         </figure>
