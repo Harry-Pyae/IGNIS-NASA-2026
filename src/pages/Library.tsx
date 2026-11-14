@@ -3,7 +3,6 @@ import { Button, buttonClass, Page, PageHeader, Panel, Select, textLink } from '
 import { useVerifiedCatalog } from '../lib/catalog';
 import { datasetCitation, evidenceLocator, evidenceSource } from '../lib/evidenceSource';
 import { COPY } from '../lib/copy';
-import { InfoHint } from '../features/hint/InfoHint';
 import { FIELD_UNITS, PARAM_LABELS, CONTINUOUS_PARAMS, type Experiment } from '../lib/types';
 
 const missing = 'not reported';
@@ -163,7 +162,7 @@ function ExperimentDetail({ card }: { card: Experiment }) {
       <h2 className="my-2 text-2xl font-semibold">{card.test_id}</h2>
       <p className="text-sm text-dim">Verified by {card.verified_by} · {card.verified_at?.slice(0, 10) ?? missing}</p>
       <table className="mt-4 w-full table-fixed text-left text-sm [overflow-wrap:anywhere]">
-        <caption className="mb-2 text-left font-semibold">Reported conditions and observations</caption>
+        <caption className="mb-2 text-left font-semibold">Reported conditions and observations <span className="console-label ml-2 font-normal text-dim">{COPY.plain.units.normalized}</span></caption>
         <tbody>{fields.map(([label, value]) => <tr className="border-t border-border" key={label}>
           <th scope="row" className="w-2/5 py-2 pr-3 font-medium">{label}</th><td className="py-2">{value}</td>
         </tr>)}</tbody>
@@ -174,8 +173,8 @@ function ExperimentDetail({ card }: { card: Experiment }) {
       </p>)}
     </Panel>
     <Panel>
-      <h2 className="flex items-center gap-2 text-lg font-semibold">Verbatim source observation
-        <InfoHint id="units-hint" label={COPY.plain.hintLabels.units}>The table above uses normalized units. The source quote keeps the units exactly as reported.</InfoHint>
+      <h2 className="flex flex-wrap items-baseline gap-x-3 text-lg font-semibold">Verbatim source observation
+        <span className="console-label font-normal text-dim">{COPY.plain.units.asReported}</span>
       </h2>
       <blockquote className="my-3 whitespace-pre-wrap border-l-2 border-border pl-4">{card.key_observation_quote}</blockquote>
       <p>{source ? <a className={linkClass} href={source.url} {...external}>{card.source_title}</a> : card.source_title}</p>

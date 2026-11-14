@@ -5,7 +5,8 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type FormEvent } from 'react';
 import { flushSync } from 'react-dom';
-import { Badge, Button, Chip, CitationChip, Panel, PresetChip, SectionHeader, Slider, textLink } from '../components/ui';
+import { Badge, Button, Chip, CHIP_STATUS, CitationChip, Panel, PresetChip, SectionHeader, Slider, textLink } from '../components/ui';
+import { cx } from '../lib/cx';
 import { useCatalogRevisionWatch, useCatalogSummary, useVerifiedCatalog } from '../lib/catalog';
 import { COPY } from '../lib/copy';
 import { pickMaterial, presetScenario, resolveMaterial, SCENARIO_PRESETS } from '../engine/aliases';
@@ -647,6 +648,47 @@ function MissionCaption({ step, onStep, text }: { step: number | null; onStep: (
   );
 }
 
+type LegendKey = 'sustained' | 'extinguished' | 'transition' | 'partial' | 'scenario' | 'untested' | 'outside';
+
+/**
+ * The legend is the vocabulary, so it explains itself: pick an item and its meaning replaces the caption below.
+ * By default the caption is the map's standing limitation (COPY.mapScope), which therefore always stays visible.
+ * Static (no motion). The caption keeps a reserved height so choosing an item barely shifts the page.
+ * Items without approved copy (transition, partial) stay plain labels rather than inventing a definition.
+ */
+function MapLegend({ outcomeColor }: { outcomeColor: (outcome: Experiment['outcome']) => string }) {
+  const [active, setActive] = useState<LegendKey | null>(null);
+  const outcomes = (['sustained', 'extinguished', 'transition', 'partial'] as const).map((outcome) => ({
+    key: outcome as LegendKey, label: t(outcome),
+    swatch: <svg aria-hidden="true" viewBox="0 0 20 20" className="size-5"><OutcomeMark outcome={outcome} x={10} y={10} color={outcomeColor(outcome)} /></svg>,
+    caption: (COPY.plain.outcomes as Partial<Record<string, string>>)[outcome] ?? null,
+  }));
+  const items = [
+    ...outcomes,
+    { key: 'scenario' as const, label: t('scenario'), swatch: <i aria-hidden className="size-2.5 rounded-full border border-lit" />, caption: COPY.plain.map.scenario },
+    { key: 'untested' as const, label: t('untestedCell'), swatch: <i aria-hidden className="h-3 w-4 rounded-sm border border-faint/50" style={{ backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 3px, var(--color-faint) 3px 4px)' }} />, caption: COPY.plain.map.untested },
+    { key: 'outside' as const, label: t('outsideCatalogRange'), swatch: <i aria-hidden className="h-3 w-4 rounded-sm border border-dashed border-faint/60 bg-faint/10" />, caption: COPY.plain.map.outside },
+  ];
+  const caption = items.find((item) => item.key === active)?.caption ?? COPY.mapScope;
+  return (
+    <div className="mt-4">
+      <p className="console-label mb-1 text-faint">{COPY.plain.map.prompt}</p>
+      <div className="-ml-2.5 flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-dim" role="group" aria-label="Evidence map legend">
+        {items.map((item) => item.caption ? (
+          <button key={item.key} type="button" aria-pressed={active === item.key} aria-controls="map-legend-caption"
+            onClick={() => setActive((current) => current === item.key ? null : item.key)}
+            className="inline-flex min-h-9 items-center gap-2 rounded-full border border-transparent px-2.5 transition-[border-color,background-color,color] duration-150 can-hover:hover:border-border can-hover:hover:text-text aria-pressed:border-amber/50 aria-pressed:bg-amber/[0.06] aria-pressed:text-text">
+            {item.swatch}{item.label}
+          </button>
+        ) : (
+          <span key={item.key} className="inline-flex min-h-9 items-center gap-2 px-2.5">{item.swatch}{item.label}</span>
+        ))}
+      </div>
+      <p id="map-legend-caption" aria-live="polite" className={cx('mt-2 min-h-[4.5rem] border-l-2 pl-3 text-sm leading-relaxed', active ? 'border-amber/60 text-text' : 'border-border text-dim')}>{caption}</p>
+    </div>
+  );
+}
+
 function ConditionBar({ summary: { scenario, confirmed, counts }, action, onAction }: {
   summary: ReturnType<typeof investigationSummary>;
   action: string;
@@ -907,17 +949,8 @@ export function EvidenceMap({
               )}
             </svg>
           </div>
-          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-dim" aria-label="Evidence map legend">
-            {(['sustained', 'extinguished', 'transition', 'partial'] as const).map((outcome) => <span key={outcome} className="inline-flex items-center gap-2"><svg aria-hidden="true" viewBox="0 0 20 20" className="size-5"><OutcomeMark outcome={outcome} x={10} y={10} color={outcomeColor(outcome)} /></svg>{t(outcome)}</span>)}
-            <span className="inline-flex items-center gap-2"><i aria-hidden className="size-2.5 rounded-full border border-lit" />{t('scenario')}</span>
-            <span className="inline-flex items-center gap-2"><i aria-hidden className="h-3 w-4 rounded-sm border border-faint/50" style={{ backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 3px, var(--color-faint) 3px 4px)' }} />{t('untestedCell')}</span>
-            <span className="inline-flex items-center gap-2"><i aria-hidden className="h-3 w-4 rounded-sm border border-dashed border-faint/60 bg-faint/10" />{t('outsideCatalogRange')}</span>
-            <InfoHint id="map-legend-hint" label={COPY.plain.hintLabels.mapLegend} align="end">{COPY.plain.map.untested} {COPY.plain.map.outside}</InfoHint>
-          </div>
-          <p className="mt-3 flex items-center gap-2 text-[13px] text-dim">
-            {plotted.length} {t('plotted')} · {matches.length} {t('rankedMatches')}
-            <InfoHint id="map-cells-hint" label={COPY.plain.hintLabels.mapCells}>{COPY.mapScope}</InfoHint>
-          </p>
+          <MapLegend outcomeColor={outcomeColor} />
+          <p className="mt-3 text-[13px] text-dim">{plotted.length} {t('plotted')} · {matches.length} {t('rankedMatches')}</p>
           {outsideAxesCount > 0 && <p role="status" className="mt-2 text-[13px] text-dim">{outsideAxesCount} {t(outsideAxesCount === 1 ? 'outsideAxesRecord' : 'outsideAxesRecords')}</p>}
           {outsideEnvelope && <p role="status" className="mt-3 rounded-lg border border-warn/35 bg-warn/[0.05] px-3 py-2 text-sm text-warn">{COPY.outsideRange}</p>}
           {selected && (
@@ -955,6 +988,14 @@ export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }:
   return (
     <div>
     <p className="mb-3 text-sm leading-relaxed text-dim">{COPY.matchOrder} <a href="/methods" className={textLink}>How matching works and what it does not tell you</a></p>
+    <div className="mb-4 rounded-xl border border-border bg-bg/35 px-4 py-3">
+      <ul aria-label={COPY.plain.chipKeyLabel} className="flex flex-wrap gap-x-5 gap-y-1.5 text-[13px] text-dim">
+        {(Object.keys(COPY.plain.chipKey) as (keyof typeof COPY.plain.chipKey)[]).map((status) => (
+          <li key={status}><span aria-hidden className="mr-1.5 font-mono text-text">{CHIP_STATUS[status].symbol}</span>{COPY.plain.chipKey[status]}</li>
+        ))}
+      </ul>
+      <p className="mt-2 border-t border-border/60 pt-2 text-[13px] text-dim">{COPY.plain.compared}</p>
+    </div>
     <div className="match-cards grid auto-rows-fr gap-3 lg:grid-cols-3 xl:grid-cols-2">
       {matches.map((match, index) => {
         const why = whyMatched(match);
@@ -1000,20 +1041,12 @@ export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }:
                 <dd className="flex flex-col items-end gap-1 text-right">{experiment.outcome ? <Badge variant={experiment.outcome} /> : <Badge variant="neutral">{t('outcomeNotReported')}</Badge>}{outcome && <span className="text-xs text-dim">{outcome}</span>}</dd>
               </div>
             </dl>
-            <p className="mt-3 flex items-start gap-2 text-sm text-text">
-              <span className="min-w-0 flex-1">{why.summary}</span>
-              <InfoHint id={`compared-hint-${experiment.id}`} label={COPY.plain.hintLabels.compared} align="end">{COPY.plain.compared}</InfoHint>
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
+            <p className="mt-3 text-sm text-text">{why.summary}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
               {why.lines.map((line) => {
                 const [label, ...statusParts] = line.text.split(': ');
                 return <Chip key={line.key} status={line.status} label={label} statusText={statusParts.join(': ')} />;
               })}
-              <InfoHint id={`chips-hint-${experiment.id}`} label={COPY.plain.hintLabels.chips} align="end">
-                <span className="flex flex-col gap-1.5">{why.lines.map((line) => (
-                  <span key={line.key}><span className="font-medium">{line.text}.</span> {COPY.plain.chips[line.status]}</span>
-                ))}</span>
-              </InfoHint>
             </div>
             {experiment.key_observation_quote && (
               <details className="mt-3 border-t border-border/70 pt-3 text-sm">
@@ -1167,16 +1200,14 @@ function GapRadarPanel({
           <h3 className="console-label mb-3 text-dim">{t('largestUntestedRegions')}</h3>
           <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {data.regions.map((region, index) => (
-              <li key={`${region.o2_min}-${region.o2_max}-${region.flow_min}-${region.flow_max}`} className="rounded-xl border border-border bg-bg/45 p-4">
-                <p className="console-label flex items-center justify-between gap-2 text-amber">
-                  <span>{t('region')} {index + 1} · {region.cells} {t('untestedCells')}</span>
-                  <InfoHint id={`region-hint-${index}`} label={COPY.plain.hintLabels.region} align="end">{COPY.plain.regionCells}</InfoHint>
-                </p>
+              <li key={`${region.o2_min}-${region.o2_max}-${region.flow_min}-${region.flow_max}`} aria-describedby="region-footnote" className="rounded-xl border border-border bg-bg/45 p-4">
+                <p className="console-label text-amber">{t('region')} {index + 1} · {region.cells} {t('untestedCells')}<sup aria-hidden className="ml-0.5 text-dim">1</sup></p>
                 <p className="mt-2 text-sm text-text">O₂ {region.o2_min}–{region.o2_max}%</p>
                 <p className="mt-1 text-sm text-text">Airflow {region.flow_min}–{region.flow_max} cm/s</p>
               </li>
             ))}
           </ol>
+          <p id="region-footnote" className="mt-3 text-[13px] leading-relaxed text-dim"><sup aria-hidden className="mr-1">1</sup>{COPY.plain.regionCells}</p>
         </div>
       ) : (
         <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-5 text-sm text-dim">{t('noUntestedWithinRange')}</p>

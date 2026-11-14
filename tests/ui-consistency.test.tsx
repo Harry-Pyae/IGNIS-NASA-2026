@@ -54,7 +54,7 @@ describe('Compare from a detail page', () => {
   });
 });
 
-describe('the "?" pattern', () => {
+describe('explanations take the form that fits', () => {
   const src = readFileSync('src/pages/Console.tsx', 'utf8');
   /** True when some `{expr}` sits directly inside an <InfoHint …> tag (the nearest opening tag before it). */
   const behindHint = (expr: string) => {
@@ -63,12 +63,15 @@ describe('the "?" pattern', () => {
     return false;
   };
 
-  it('long explanations in 02, 03 and 05 sit behind a "?"', () => {
-    for (const e of ['COPY.mapScope', 'COPY.plain.map.untested', 'COPY.plain.compared', 'COPY.plain.regionCells'])
-      expect(behindHint(e), e).toBe(true);
+  it('"?" is only for form labels; sections use a legend, a key strip and a footnote', () => {
+    expect(src.split('<InfoHint ').length - 1).toBe(1); // the InputHint helper for the five scenario inputs
+    expect(readFileSync('src/pages/Library.tsx', 'utf8')).not.toContain('InfoHint');
+    expect(src).toContain('?? COPY.mapScope'); // interactive legend; the map caveat is its default caption (rendered: console-evidence test)
+    expect(src.split('{COPY.plain.compared}').length - 1).toBe(1); // explained once, not per card
+    expect(src).toContain('id="region-footnote"');
   });
 
-  it('disclaimers and states are never hidden behind a "?"', () => {
+  it('disclaimers and states are never hidden', () => {
     for (const e of ['COPY.gapNote', 'COPY.matchOrder', 'COPY.outsideRange', 'COPY.interpretationLimit', 'summary.notConfirmed']) {
       expect(src, e).toContain(`{${e}}`);
       expect(behindHint(e), e).toBe(false);
