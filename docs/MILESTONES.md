@@ -7,7 +7,21 @@ This is one self-contained file for checking progress without the repo. Coder A 
 [EXECUTION-STATUS.md](EXECUTION-STATUS.md) is the single Day 1 runbook (order, owner, "visible when", rollback).
 During the event, code changes are bug fixes and runbook items only.
 
-### Showcase round — local working tree, not deployed
+### Event Day 1 (2026-11-14), Coder A
+
+- **Production moved:** the repo was recreated today as `Harry-Pyae/IGNIS-NASA-2026`; the old
+  `ignisprototype01.vercel.app` returns `DEPLOYMENT_NOT_FOUND`. Live is now <https://ignis-nasa-2026.vercel.app>.
+  Read-only check at `08d4ace`: all routes 200, `/api/export` count 0 / revision `empty`, `health-llm` (once) Groq
+  `openai/gpt-oss-120b` + Gemini `gemini-3.5-flash-lite` reachable. Canonical/OG URLs and the video's live URL moved
+  to the new domain.
+- **Catalog (read-only `catalog_stats`, anon key):** 0 verified, 3 in review, revision `empty`. Steps c–f wait on R1's
+  step a.
+- **Step 0 (migration 0004)** has not been confirmed applied on production. Run it in the SQL editor before R1's first
+  publish.
+- Tier 1 split: `docs/WHO-DOES-WHAT.md`. Coder A shipped: `'/name/*'` route matching and a Methods link beside the
+  match order note.
+
+### Showcase round — in `main`, not yet verified live
 
 | Surface | Behavior and limits |
 |---|---|
@@ -28,7 +42,7 @@ The browser preview host was unavailable: actual print pagination, mobile layout
 |---|---|
 | **As of** | 2026-11-13, prep frozen (official start Sat 2026-11-14 = Day 1) |
 | **main** | `b7602ba`: unified-spec prep patch (`82c63d2`) + mission gate (`45568e3`) + map axes from the shared GRID (`b7602ba`), on the Round 6 console |
-| **Live** | <https://ignisprototype01.vercel.app>, serving `b7602ba` (pushed 2026-11-13 on the team lead's instruction) |
+| **Live** | <https://ignis-nasa-2026.vercel.app>, serving `main` (Vercel Production deploys from `main`; `08d4ace` verified 2026-11-14) |
 | **CI** | green: typecheck · lint · 219 tests passed, 19 skipped (DB tests + the optional benchmark run in their own jobs) · build · disposable-DB job 16/16 |
 | **Public catalog** | **0 verified cards**, 3 drafts in review |
 | **Overall** | Engine, API and console are built and live. The demo cannot run on real data until R1 publishes verified cards, and that happens in the event window. |
@@ -254,7 +268,7 @@ One page for the Day 1 verification sprint. **Card extraction and verification h
 under the reviewer's own name.
 
 **Before you start**
-- Open `https://ignisprototype01.vercel.app/curate` and enter the curator secret. Coder A shares it privately; never
+- Open `https://ignis-nasa-2026.vercel.app/curate` and enter the curator secret. Coder A shares it privately; never
   paste it into chat, docs or screenshots.
 - Have the source PDF open. The three seeds come from NTRS 20150008962 (Zhao, T'ien, Ferkul, Olson, 2015, "Concurrent
   flame growth, spread and extinction over composite fabric samples…").

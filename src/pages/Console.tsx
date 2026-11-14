@@ -759,7 +759,7 @@ export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }:
 
   return (
     <div>
-    <p className="mb-3 text-sm leading-relaxed text-dim">{COPY.matchOrder}</p>
+    <p className="mb-3 text-sm leading-relaxed text-dim">{COPY.matchOrder} <a href="/methods" className="text-amber underline underline-offset-4">How matching works and what it does not tell you</a></p>
     <div className="match-cards grid auto-rows-fr gap-3 lg:grid-cols-3">
       {matches.map((match, index) => {
         const why = whyMatched(match);

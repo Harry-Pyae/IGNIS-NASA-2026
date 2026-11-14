@@ -103,7 +103,7 @@ export const videoData: VideoData = {
     patchTopRibbon: 'IGNIS',
     patchBottomRibbon: 'Team AstroFlare',
     teamName: 'Team AstroFlare',
-    liveUrl: 'ignisprototype01.vercel.app',
+    liveUrl: 'ignis-nasa-2026.vercel.app',
     credits: [TODO('NASA data credits: one line per source used on screen (NTRS IDs, footage credits from the media ledger)')],
     license: 'Code: Apache-2.0 · NASA material: public domain per NASA media guidelines · Art pack: illustration',
   },
