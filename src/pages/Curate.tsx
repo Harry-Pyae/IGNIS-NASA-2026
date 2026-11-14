@@ -48,6 +48,13 @@ const SECRET_KEY = 'ignis-curator-secret';
 
 type Status = { tone: 'success' | 'warn'; text: string } | null;
 type Dropped = { field: string; reason: string }[];
+type FieldIssue = { path: string; message: string };
+
+class CurateRequestError extends Error {
+  constructor(message: string, readonly issues: FieldIssue[]) {
+    super(message);
+  }
+}
 
 function readSecret() {
   try {
@@ -68,6 +75,14 @@ export function Curate() {
   const [dropped, setDropped] = useState<Dropped>([]);
   const [cards, setCards] = useState<CurateListItem[] | null>(null);
   const [status, setStatus] = useState<Status>(null);
+  const [saveError, setSaveError] = useState<CurateRequestError | null>(null);
+  const form = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    if (!saveError) return;
+    const target = form.current?.querySelector<HTMLElement>('[aria-invalid="true"]')
+      ?? form.current?.querySelector<HTMLElement>('[data-save-error]');
+    target?.focus();
+  }, [saveError]);
   const [busy, setBusy] = useState(false);
   // Item 4: responses only land on the form session that requested them.
   const sessions = useRef(createFormSessions()).current;
@@ -91,21 +106,21 @@ export function Curate() {
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const issues = json?.error?.issues?.map((i: { path: string; message: string }) => `${i.path}: ${i.message}`);
-        throw new Error([json?.error?.message ?? `HTTP ${res.status}`, ...(issues ?? [])].join('\n'));
+        throw new CurateRequestError(json?.error?.message ?? `HTTP ${res.status}`, json?.error?.issues ?? []);
       }
       return json;
     },
     [secret],
   );
 
-  const run = async (fn: () => Promise<void>) => {
+  const run = async (fn: () => Promise<void>, onError = (e: unknown) => setStatus({ tone: 'warn', text: (e as Error).message })) => {
     setBusy(true);
     setStatus(null);
+    setSaveError(null);
     try {
       await fn();
     } catch (e) {
-      setStatus({ tone: 'warn', text: (e as Error).message });
+      onError(e);
     } finally {
       setBusy(false);
     }
@@ -135,6 +150,7 @@ export function Curate() {
     setDropped([]);
     setVerifiedBy('');
     setStatus(null);
+    setSaveError(null);
   };
 
   const reopen = (id: string) => {
@@ -176,10 +192,13 @@ export function Curate() {
     const live = sessions.begin();
     return run(async () => {
       const result = valuesToRecord(values);
-      if ('errors' in result) throw new Error(result.errors.join('\n'));
+      if ('errors' in result) throw new CurateRequestError('Check the highlighted fields.', result.errors.map(line => {
+        const separator = line.indexOf(': ');
+        return { path: line.slice(0, separator), message: line.slice(separator + 2) };
+      }));
       if (publish) {
         const problem = verifierNameProblem(verifiedBy);
-        if (problem) throw new Error(problem);
+        if (problem) throw new CurateRequestError('Check the verifier name.', [{ path: 'verified_by', message: problem }]);
       }
       const { experiment } = (await call('/api/curate-write', writeBody(result.record, editing, publish, verifiedBy))) as {
         experiment: Experiment;
@@ -198,6 +217,9 @@ export function Curate() {
           ? `Published ${experiment.test_id}, verified by ${experiment.verified_by}. It is now visible to the public.`
           : `Saved draft ${experiment.test_id} (${experiment.id}). Drafts are private until a curator verifies them.`,
       });
+    }, error => {
+      if (!live()) return;
+      setSaveError(error instanceof CurateRequestError ? error : new CurateRequestError(String(error), []));
     });
   };
 
@@ -205,6 +227,16 @@ export function Curate() {
     e.preventDefault();
     save(false);
   };
+
+  function fieldError(name: string) {
+    const messages = saveError?.issues.filter(({ path }) => path.replace(/^record\./, '').split('.')[0] === name)
+      .map(({ message }) => message);
+    const id = `curate-error-${name}`;
+    return {
+      attrs: { 'aria-invalid': messages?.length ? true : undefined, 'aria-describedby': messages?.length ? id : undefined },
+      text: messages?.length ? <span id={id} className="text-sm text-warn">{messages.join(' · ')}</span> : null,
+    };
+  }
 
   const input = 'w-full rounded-lg border border-border bg-bg/70 px-3 py-2 text-[15px] text-text sm:text-sm';
 
@@ -315,7 +347,7 @@ export function Curate() {
           )}
         </Panel>
 
-        <form onSubmit={onSubmit}>
+        <form ref={form} onSubmit={onSubmit}>
           <Panel className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
               <Badge variant={editing ? (editing.status === 'published' ? 'success' : 'warn') : 'neutral'}>
@@ -326,22 +358,27 @@ export function Curate() {
             {Object.entries(FIELD_KINDS).map(([name, kind]) => {
               const label = `${name}${REQUIRED.has(name) ? ' *' : ''}`;
               const wide = kind === 'long' || kind === 'json';
+              const error = fieldError(name);
               if (kind === 'enum')
                 return (
+                  <div key={name}>
                   <Select
-                    key={name}
+                    {...error.attrs}
                     label={label}
                     value={values[name] ?? ''}
                     placeholder="—"
                     options={ENUMS[name]!.map((o) => ({ value: o, label: o }))}
                     onChange={(e) => set(name, e.target.value)}
                   />
+                  {error.text}
+                  </div>
                 );
               return (
                 <label key={name} className={cx('flex flex-col gap-1.5', wide && 'sm:col-span-2')}>
                   <span className="console-label text-dim">{label}</span>
                   {wide ? (
                     <textarea
+                      {...error.attrs}
                       rows={kind === 'json' ? 3 : 2}
                       value={values[name] ?? ''}
                       onChange={(e) => set(name, e.target.value)}
@@ -350,17 +387,24 @@ export function Curate() {
                     />
                   ) : (
                     <input
+                      {...error.attrs}
                       inputMode={kind === 'number' ? 'decimal' : kind === 'int' ? 'numeric' : undefined}
                       value={values[name] ?? ''}
                       onChange={(e) => set(name, e.target.value)}
                       className={input}
                     />
                   )}
+                  {error.text}
                   {quotes[name] && <span className="font-mono text-[11px] text-warn">“{quotes[name]}”</span>}
                 </label>
               );
             })}
 
+            {saveError && <div role="alert" tabIndex={-1} data-save-error className="rounded-lg border border-warn/35 p-3 text-sm text-warn sm:col-span-2">
+              {saveError.message}
+              {saveError.issues.length > 0 && <ul className="mt-1 list-disc pl-5">{saveError.issues.map(({ path, message }, index) =>
+                <li key={index}>{path ? `${path}: ` : ''}{message}</li>)}</ul>}
+            </div>}
             <div className="flex flex-wrap items-end gap-3 border-t border-border pt-4 sm:col-span-2">
               <Button type="submit" disabled={busy}>
                 Save draft
@@ -368,7 +412,8 @@ export function Curate() {
               <span className="mx-1 hidden h-8 w-px bg-border sm:block" aria-hidden />
               <label className="flex flex-col gap-1">
                 <span className="console-label text-dim">Verified by (your full name)</span>
-                <input value={verifiedBy} onChange={(e) => setVerifiedBy(e.target.value)} className={`${input} w-56`} />
+                <input {...fieldError('verified_by').attrs} value={verifiedBy} onChange={(e) => setVerifiedBy(e.target.value)} className={`${input} w-56`} />
+                {fieldError('verified_by').text}
               </label>
               <Button variant="primary" icon="verify" disabled={busy} onClick={() => save(true)}>
                 Verify &amp; publish
