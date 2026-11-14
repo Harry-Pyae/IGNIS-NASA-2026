@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { LIBRARY_QUERY_KEY, readSession, writeSession } from '../lib/consoleDraft';
 import { Button, buttonClass, Icon, Page, PageHeader, Panel, Select, textLink } from '../components/ui';
 import { useVerifiedCatalog } from '../lib/catalog';
 import { datasetCitation, evidenceLocator, evidenceSource } from '../lib/evidenceSource';
@@ -25,8 +26,16 @@ const external = { target: '_blank', rel: 'noopener noreferrer' } as const;
 
 export function Library() {
   const { catalog, reload } = useVerifiedCatalog();
-  const [query, setQuery] = useState(() => window.location.search);
   const detail = window.location.pathname.replace(/\/$/, '').slice('/library/'.length);
+  // Coming back via the nav keeps the last search and filters from this tab.
+  const [query, setQuery] = useState(() => {
+    const kept = !detail && !window.location.search ? readSession(LIBRARY_QUERY_KEY) : null;
+    if (kept) window.history.replaceState(null, '', window.location.pathname + kept);
+    return window.location.search;
+  });
+  useEffect(() => {
+    if (!detail) writeSession(LIBRARY_QUERY_KEY, query);
+  }, [detail, query]);
   useEffect(() => {
     const update = () => setQuery(window.location.search);
     window.addEventListener('popstate', update);

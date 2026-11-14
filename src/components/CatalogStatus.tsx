@@ -62,7 +62,7 @@ export function CatalogBlock({ summary, retry }: { summary: CatalogSummary; retr
           <h2 id="catalog-title" className="display text-lit mt-3 text-[clamp(26px,3vw,34px)] leading-[1.1]">
             Verified NASA experiments, nothing else.
           </h2>
-          <p className="mt-2 max-w-xl text-[15px] text-dim">
+          <p className="mt-2 max-w-3xl text-[15px] text-dim">
             A card becomes public only after a named curator checks every field against its NASA source.
           </p>
         </div>

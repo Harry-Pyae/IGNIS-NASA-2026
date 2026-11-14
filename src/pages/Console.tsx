@@ -23,6 +23,7 @@ import { CopyShareLink, ShareBanner } from '../features/share/ScenarioShare';
 import { useScenarioShare } from '../features/share/useScenarioShare';
 import { missionEntry } from '../engine/mission';
 import { contextSection } from '../lib/context-content';
+import { CONSOLE_DRAFT_KEY, parseConsoleDraft, readSession, writeSession } from '../lib/consoleDraft';
 import { GUIDED_MISSION_REQUEST, takePendingMission } from './consoleLoader';
 
 function experimentLabel(experiment: Experiment): string {
@@ -74,8 +75,11 @@ export function Console() {
   const hasCatalogSnapshot = catalog.state === 'ready' || catalog.state === 'empty';
   const revision = hasCatalogSnapshot ? catalog.revision : 'pending';
   const dataStatus = hasCatalogSnapshot ? 'connected' : catalog.state === 'unavailable' ? 'unavailable' : 'loading';
-  const [presetId, setPresetId] = useState<string | null>(SCENARIO_PRESETS[0]?.id ?? null);
-  const [scenario, setScenario] = useState<ParsedScenario>(() => ({
+  // The visitor's draft from earlier in this tab (another page, a reload). A share link still wins: it applies later.
+  const [saved] = useState(() => parseConsoleDraft(readSession(CONSOLE_DRAFT_KEY)));
+  const [presetId, setPresetId] = useState<string | null>(() =>
+    saved ? (SCENARIO_PRESETS.some((preset) => preset.id === saved.presetId) ? saved.presetId : null) : SCENARIO_PRESETS[0]?.id ?? null);
+  const [scenario, setScenario] = useState<ParsedScenario>(() => saved?.scenario ?? ({
     domain: 'solid_flammability',
     fuel_material_raw: SCENARIO_PRESETS[0]?.material?.fuel_material ?? null,
     fuel_form: SCENARIO_PRESETS[0]?.fuel_form ?? null,
@@ -84,9 +88,9 @@ export function Console() {
     flow_cm_s: SCENARIO_PRESETS[0]?.flow_cm_s ?? null,
     pressure_kpa: SCENARIO_PRESETS[0]?.pressure_kpa ?? null,
   }));
-  const [materialChoice, setMaterialChoice] = useState<string | null>(null);
-  const [confirmed, setConfirmed] = useState<ResolvedScenario | null>(null);
-  const [description, setDescription] = useState('');
+  const [materialChoice, setMaterialChoice] = useState<string | null>(saved?.materialChoice ?? null);
+  const [confirmed, setConfirmed] = useState<ResolvedScenario | null>(saved?.confirmed ?? null);
+  const [description, setDescription] = useState(saved?.description ?? '');
   const [parsing, setParsing] = useState(false);
   // Round 8 · A5: a parse applies only if nothing changed since it was sent (edit, preset, slider, environment,
   // material choice, share restore or a newer parse). Superseded requests are aborted and their result, error and
@@ -100,8 +104,11 @@ export function Console() {
   const [message, setMessage] = useState('');
   const [guidedStep, setGuidedStep] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [inputsChanged, setInputsChanged] = useState(false);
-  const [appliedEnvironmentId, setAppliedEnvironmentId] = useState<string | null>(null);
+  const [inputsChanged, setInputsChanged] = useState(saved?.inputsChanged ?? false);
+  const [appliedEnvironmentId, setAppliedEnvironmentId] = useState<string | null>(saved?.appliedEnvironmentId ?? null);
+  useEffect(() => {
+    writeSession(CONSOLE_DRAFT_KEY, JSON.stringify({ presetId, scenario, materialChoice, description, appliedEnvironmentId, confirmed, inputsChanged }));
+  }, [presetId, scenario, materialChoice, description, appliedEnvironmentId, confirmed, inputsChanged]);
   const scenarioEditor = useRef<HTMLDetailsElement>(null);
   const share = useScenarioShare(catalog, ({ material, ...conditions }) => {
     invalidateParse();
@@ -784,7 +791,7 @@ export function InvestigationSummary({
         <p className="console-label text-dim">{summary.conditions}</p>
         <p className="mt-1 break-words text-sm text-text">{conditions}</p>
       </div>
-      <div className="min-w-0 sm:col-span-2">
+      <div className="col-span-2 min-w-0">
         <p className="console-label text-dim">{summary.evidence}</p>
         <p className="mt-1 break-words text-sm text-text">{evidence.join(' · ')}</p>
         {counts && (confirmed

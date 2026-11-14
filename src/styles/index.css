@@ -2,7 +2,13 @@
 @import './tokens.css';
 
 .brief-print-only, .map-radar, .map-pulse { display: none; }
+/* Focused fields and #anchors land clear of the sticky header. The header's own controls are exempt: they're always on
+   screen, and inside the padding band, so focusing one (a theme toggle click, Tab into the nav) used to scroll the page up. */
 html { scroll-padding-top: 6.5rem; }
+.app-header * { scroll-margin-top: -6.5rem; }
+/* Theme switch: one crossfade of the whole page (AppHeader, View Transitions), gradients included. Instant under reduced motion. */
+html::view-transition-old(root),
+html::view-transition-new(root) { animation-duration: 240ms; animation-timing-function: ease; }
 @media (prefers-reduced-motion: no-preference) {
   .map-dot, .map-pulse { transform-box: fill-box; transform-origin: center; }
   .map-pulse { display: inline; }
@@ -65,8 +71,12 @@ html { scroll-padding-top: 6.5rem; }
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;
   }
-  h1, h2, h3 {
+  /* Balance only display type: on a wide card, a balanced title just over one line splits into two half-width lines. */
+  h1, .display {
     text-wrap: balance;
+  }
+  h2, h3, h4 {
+    text-wrap: pretty;
   }
   p {
     text-wrap: pretty;

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useCatalogSummary } from '../lib/catalog';
 import { ExportButton, ProvenancePill } from './CatalogStatus';
 import { Icon } from './ui/Icon';
@@ -38,8 +39,15 @@ function ThemeControl() {
             value={choice}
             checked={theme === choice}
             onChange={() => {
-              applyTheme(choice);
-              setTheme(choice);
+              const apply = () => {
+                applyTheme(choice);
+                flushSync(() => setTheme(choice));
+              };
+              // Crossfade light ↔ dark (240ms, index.css); instant without View Transitions or under reduced motion.
+              const doc = document as Document & { startViewTransition?: (update: () => void) => unknown };
+              if (doc.startViewTransition && window.matchMedia('(prefers-reduced-motion: no-preference)').matches)
+                doc.startViewTransition(apply);
+              else apply();
             }}
           />
           <span className="flex w-16 items-center justify-center gap-1 rounded-md py-1 text-xs leading-4">
