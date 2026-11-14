@@ -52,3 +52,17 @@ inexact; a sentence you can't source gets cut, not softened.
   queue and don't card them under an existing outcome (decision in `DECISIONS-ROUND6.md`, event addendum).
 - The three seed cards, plus the GMT45-T4 changing-flow decision (in the event window, `docs/MILESTONES.md` §12).
 - A real wire/cable insulation card and a cargo packaging card, to activate those two material presets (AGENTS.md → Open handoffs).
+
+## D. The 60-second case, Beat 1: the green flash (`src/lib/caseContent.ts`)
+
+`/case/green-flash` is live with Beat 2 (the claim check). Beat 1 is built but **hidden**: it renders only when both
+of these arrive, and the page simply opens at Beat 2 until then. Send them to Coder A; nothing goes in on a
+placeholder or a paraphrase.
+
+| Who | What to send | Rule |
+|---|---|---|
+| **R2** | One still of the green flash from Saffire-I flight footage, the file, and its `docs/media-ledger.md` row id | Real NASA public-domain material only; the ledger row carries origin, URL and credit line |
+| **R1** | NASA's explanation of the green flash **verbatim**, the exact source URL (https), its title, the locator (page / timestamp / section), and your full name | Checked word for word against NASA's own page; signed with your own name, never a role or placeholder |
+
+Coder A then fills `GREEN_FLASH` (still path, alt text, credit, ledger id, quote, source, locator, `verified_by`);
+`renderableGreenFlash()` refuses the entry if any part is missing.
