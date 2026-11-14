@@ -106,8 +106,13 @@ export function Console() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [inputsChanged, setInputsChanged] = useState(saved?.inputsChanged ?? false);
   const [appliedEnvironmentId, setAppliedEnvironmentId] = useState<string | null>(saved?.appliedEnvironmentId ?? null);
+  // Saved from the visitor's first change on (untouched defaults are not a draft: Home lands drafts on the console).
+  const draftSave = useRef<{ initial: string | null; saving: boolean }>({ initial: null, saving: saved != null });
   useEffect(() => {
-    writeSession(CONSOLE_DRAFT_KEY, JSON.stringify({ presetId, scenario, materialChoice, description, appliedEnvironmentId, confirmed, inputsChanged }));
+    const value = JSON.stringify({ presetId, scenario, materialChoice, description, appliedEnvironmentId, confirmed, inputsChanged });
+    draftSave.current.initial ??= value;
+    if (value !== draftSave.current.initial) draftSave.current.saving = true; // once started, keep saving (a revert too)
+    if (draftSave.current.saving) writeSession(CONSOLE_DRAFT_KEY, value);
   }, [presetId, scenario, materialChoice, description, appliedEnvironmentId, confirmed, inputsChanged]);
   const scenarioEditor = useRef<HTMLDetailsElement>(null);
   const share = useScenarioShare(catalog, ({ material, ...conditions }) => {
