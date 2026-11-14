@@ -3,6 +3,7 @@ import { Button, buttonClass, Page, PageHeader, Panel, Select, textLink } from '
 import { useVerifiedCatalog } from '../lib/catalog';
 import { datasetCitation, evidenceLocator, evidenceSource } from '../lib/evidenceSource';
 import { COPY } from '../lib/copy';
+import { InfoHint } from '../features/hint/InfoHint';
 import { FIELD_UNITS, PARAM_LABELS, CONTINUOUS_PARAMS, type Experiment } from '../lib/types';
 
 const missing = 'not reported';
@@ -173,9 +174,10 @@ function ExperimentDetail({ card }: { card: Experiment }) {
       </p>)}
     </Panel>
     <Panel>
-      <h2 className="text-lg font-semibold">Verbatim source observation</h2>
+      <h2 className="flex items-center gap-2 text-lg font-semibold">Verbatim source observation
+        <InfoHint id="units-hint" label={COPY.plain.hintLabels.units}>The table above uses normalized units. The source quote keeps the units exactly as reported.</InfoHint>
+      </h2>
       <blockquote className="my-3 whitespace-pre-wrap border-l-2 border-border pl-4">{card.key_observation_quote}</blockquote>
-      <p className="mb-3 text-sm text-dim">The table uses normalized units. The source quote preserves units as reported.</p>
       <p>{source ? <a className={linkClass} href={source.url} {...external}>{card.source_title}</a> : card.source_title}</p>
       <p className="text-sm text-dim">Locator · {locator || missing}</p>
       {card.ntrs_id && <p>{/^\d+$/.test(card.ntrs_id)

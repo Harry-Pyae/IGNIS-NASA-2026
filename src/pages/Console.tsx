@@ -912,10 +912,12 @@ export function EvidenceMap({
             <span className="inline-flex items-center gap-2"><i aria-hidden className="size-2.5 rounded-full border border-lit" />{t('scenario')}</span>
             <span className="inline-flex items-center gap-2"><i aria-hidden className="h-3 w-4 rounded-sm border border-faint/50" style={{ backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 3px, var(--color-faint) 3px 4px)' }} />{t('untestedCell')}</span>
             <span className="inline-flex items-center gap-2"><i aria-hidden className="h-3 w-4 rounded-sm border border-dashed border-faint/60 bg-faint/10" />{t('outsideCatalogRange')}</span>
+            <InfoHint id="map-legend-hint" label={COPY.plain.hintLabels.mapLegend} align="end">{COPY.plain.map.untested} {COPY.plain.map.outside}</InfoHint>
           </div>
-          <p className="mt-3 text-sm leading-relaxed text-dim">{COPY.plain.map.untested} {COPY.plain.map.outside}</p>
-          <p className="mt-3 text-sm leading-relaxed text-dim">{COPY.mapScope}</p>
-          <p className="mt-3 text-[13px] text-dim">{plotted.length} {t('plotted')} · {matches.length} {t('rankedMatches')}</p>
+          <p className="mt-3 flex items-center gap-2 text-[13px] text-dim">
+            {plotted.length} {t('plotted')} · {matches.length} {t('rankedMatches')}
+            <InfoHint id="map-cells-hint" label={COPY.plain.hintLabels.mapCells}>{COPY.mapScope}</InfoHint>
+          </p>
           {outsideAxesCount > 0 && <p role="status" className="mt-2 text-[13px] text-dim">{outsideAxesCount} {t(outsideAxesCount === 1 ? 'outsideAxesRecord' : 'outsideAxesRecords')}</p>}
           {outsideEnvelope && <p role="status" className="mt-3 rounded-lg border border-warn/35 bg-warn/[0.05] px-3 py-2 text-sm text-warn">{COPY.outsideRange}</p>}
           {selected && (
@@ -998,21 +1000,21 @@ export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }:
                 <dd className="flex flex-col items-end gap-1 text-right">{experiment.outcome ? <Badge variant={experiment.outcome} /> : <Badge variant="neutral">{t('outcomeNotReported')}</Badge>}{outcome && <span className="text-xs text-dim">{outcome}</span>}</dd>
               </div>
             </dl>
-            <p className="mt-3 text-sm text-text">{why.summary}</p>
-            <p className="mt-1 text-xs text-dim">{COPY.plain.compared}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <p className="mt-3 flex items-start gap-2 text-sm text-text">
+              <span className="min-w-0 flex-1">{why.summary}</span>
+              <InfoHint id={`compared-hint-${experiment.id}`} label={COPY.plain.hintLabels.compared} align="end">{COPY.plain.compared}</InfoHint>
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
               {why.lines.map((line) => {
                 const [label, ...statusParts] = line.text.split(': ');
                 return <Chip key={line.key} status={line.status} label={label} statusText={statusParts.join(': ')} />;
               })}
+              <InfoHint id={`chips-hint-${experiment.id}`} label={COPY.plain.hintLabels.chips} align="end">
+                <span className="flex flex-col gap-1.5">{why.lines.map((line) => (
+                  <span key={line.key}><span className="font-medium">{line.text}.</span> {COPY.plain.chips[line.status]}</span>
+                ))}</span>
+              </InfoHint>
             </div>
-            <details className="mt-2 text-xs text-dim">
-              <summary className="cursor-pointer">What match chips mean</summary>
-              <dl className="mt-2 space-y-1">{why.lines.map(line => (
-                <div key={line.key}><dt className="inline font-medium">{line.text}</dt>{' '}
-                  <dd className="inline">{COPY.plain.chips[line.status]}</dd></div>
-              ))}</dl>
-            </details>
             {experiment.key_observation_quote && (
               <details className="mt-3 border-t border-border/70 pt-3 text-sm">
                 <summary className="cursor-pointer text-dim can-hover:hover:text-text">{t('sourceExcerpt')}</summary>
@@ -1166,10 +1168,12 @@ function GapRadarPanel({
           <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {data.regions.map((region, index) => (
               <li key={`${region.o2_min}-${region.o2_max}-${region.flow_min}-${region.flow_max}`} className="rounded-xl border border-border bg-bg/45 p-4">
-                <p className="console-label text-amber">{t('region')} {index + 1} · {region.cells} {t('untestedCells')}</p>
+                <p className="console-label flex items-center justify-between gap-2 text-amber">
+                  <span>{t('region')} {index + 1} · {region.cells} {t('untestedCells')}</span>
+                  <InfoHint id={`region-hint-${index}`} label={COPY.plain.hintLabels.region} align="end">{COPY.plain.regionCells}</InfoHint>
+                </p>
                 <p className="mt-2 text-sm text-text">O₂ {region.o2_min}–{region.o2_max}%</p>
                 <p className="mt-1 text-sm text-text">Airflow {region.flow_min}–{region.flow_max} cm/s</p>
-                <p className="mt-2 text-[13px] leading-snug text-dim">{COPY.plain.regionCells}</p>
               </li>
             ))}
           </ol>
