@@ -2,7 +2,21 @@
 @import './tokens.css';
 
 .brief-print-only, .map-radar, .map-pulse { display: none; }
-html { scroll-padding-top: 6.5rem; }
+html {
+  /* Scroll target offset: dynamically driven by actual sticky header height */
+  scroll-padding-top: calc(var(--header-h, 7rem) + 1.25rem);
+}
+
+html[lang='my'],
+.locale-my {
+  overflow-wrap: break-word;
+}
+html[lang='my'] p,
+html[lang='my'] dt,
+html[lang='my'] dd,
+html[lang='my'] li {
+  line-height: 1.75;
+}
 @media (prefers-reduced-motion: no-preference) {
   .map-dot, .map-pulse { transform-box: fill-box; transform-origin: center; }
   .map-pulse { display: inline; }

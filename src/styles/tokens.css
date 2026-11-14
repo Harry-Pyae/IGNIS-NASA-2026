@@ -109,6 +109,7 @@
 }
 
 :root {
+  --header-h: 7.5rem; /* Dynamic fallback until ResizeObserver measures actual header height */
   /* ---- Motion durations (§8.3 motion inventory — exact mockup timings) ---- */
   --dur-radar: 8s; /* radar sweep, linear */
   --dur-pulse: 2.4s; /* scenario-marker pulse rings, two rings staggered -1.2s */

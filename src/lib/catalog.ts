@@ -182,7 +182,19 @@ export function reconcileRevisions(
 reconcileRevisions(summaryStore, verifiedStore);
 
 /** Short status text. `compact` is the mobile form. */
-export function catalogLine(summary: CatalogSummary, compact = false): string {
+export function catalogLine(summary: CatalogSummary, compact = false, locale: 'en' | 'my' = 'en'): string {
+  if (locale === 'my') {
+    if (summary.state === 'loading') return compact ? 'ဖွင့်နေသည်…' : 'အတည်ပြုမှတ်တမ်းများ ဖွင့်နေသည်…';
+    if (summary.state === 'unavailable')
+      return summary.reason === 'not_configured' ? 'မှတ်တမ်းစာရင်းကို ချိတ်ဆက်၍ မရပါ' : 'မှတ်တမ်းစာရင်း မရနိုင်ပါ';
+    const { verified, in_review, campaigns } = summary.stats;
+    if (verified > 0)
+      return compact
+        ? `${verified} ခု အတည်ပြု · ${campaigns.length} ကမ်ပိန်း`
+        : `${verified} ခု အတည်ပြုပြီး · NASA ကမ်ပိန်း ${campaigns.length} ခု · NTRS / PSI`;
+    if (in_review > 0) return compact ? `စိစစ်ဆဲ · ${in_review}` : `မှတ်တမ်း စိစစ်ဆဲ — ကတ် ${in_review} ခု စိစစ်နေပါသည်`;
+    return 'မှတ်တမ်းစာရင်း အလွတ်ဖြစ်နေပါသည် — အတည်ပြု စမ်းသပ်ချက် မရှိသေးပါ';
+  }
   if (summary.state === 'loading') return compact ? 'Loading…' : 'Loading verified catalog…';
   if (summary.state === 'unavailable')
     return summary.reason === 'not_configured' ? 'Catalog not connected' : 'Catalog unavailable';

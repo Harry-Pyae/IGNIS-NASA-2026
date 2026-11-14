@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { AppHeader } from './components/AppHeader';
 import { NotFound } from './pages/NotFound';
 import { Home } from './pages/Home';
+import { LocaleProvider } from './context/LocaleContext';
 import './styles/index.css';
 
 // Internal pages load on demand so the landing bundle stays small (LCP).
@@ -37,11 +38,13 @@ if (path.startsWith('/library/')) document.title = 'Experiment detail · IGNIS';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {/* App ambient background (bg-glow art) — replaces CSS aurora/starfield layers. */}
-    <div className="ambient" aria-hidden />
-    <AppHeader />
-    <Suspense fallback={<main role="status" aria-busy="true" className="mx-auto max-w-4xl px-4 py-12 text-dim">Loading page…</main>}>
-      <Page />
-    </Suspense>
+    <LocaleProvider>
+      {/* App ambient background (bg-glow art) — replaces CSS aurora/starfield layers. */}
+      <div className="ambient" aria-hidden />
+      <AppHeader />
+      <Suspense fallback={<main role="status" aria-busy="true" className="mx-auto max-w-4xl px-4 py-12 text-dim">Loading page…</main>}>
+        <Page />
+      </Suspense>
+    </LocaleProvider>
   </StrictMode>,
 );

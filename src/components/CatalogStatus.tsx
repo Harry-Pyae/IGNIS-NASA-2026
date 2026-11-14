@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { type CatalogSummary, catalogLine } from '../lib/catalog';
 import { cx } from '../lib/cx';
 import { downloadCatalogExport } from '../lib/exportDownload';
+import { useLocale } from '../context/LocaleContext';
 import { Badge, Button, Icon, Panel } from './ui';
 
 const date = (iso: string | null) =>
@@ -13,6 +14,7 @@ const date = (iso: string | null) =>
 
 /** Header provenance pill (§8.1 item 0) — visible at every width; compact below sm. */
 export function ProvenancePill({ summary, retry }: { summary: CatalogSummary; retry?: () => void }) {
+  const { locale } = useLocale();
   const failed = summary.state === 'unavailable' && summary.reason === 'error';
   return (
     <span
@@ -20,15 +22,15 @@ export function ProvenancePill({ summary, retry }: { summary: CatalogSummary; re
       aria-live="polite"
     >
       <Icon name={failed ? 'withheld' : 'provenance'} size={14} className={failed ? 'text-warn' : 'text-amber'} />
-      <span key={catalogLine(summary, true)} className="swap-in truncate sm:hidden">
-        {catalogLine(summary, true)}
+      <span key={catalogLine(summary, true, locale)} className="swap-in truncate sm:hidden">
+        {catalogLine(summary, true, locale)}
       </span>
-      <span key={catalogLine(summary)} className="swap-in hidden truncate sm:inline">
-        {catalogLine(summary)}
+      <span key={catalogLine(summary, false, locale)} className="swap-in hidden truncate sm:inline">
+        {catalogLine(summary, false, locale)}
       </span>
       {failed && retry && (
         <button type="button" onClick={retry} className="text-amber underline-offset-4 transition-[text-decoration-color] duration-200 can-hover:hover:underline">
-          Retry
+          {locale === 'my' ? 'ထပ်ကြိုးစားမည်' : 'Retry'}
         </button>
       )}
     </span>
@@ -51,18 +53,22 @@ function Stat({ value, label, muted }: { value: string; label: string; muted?: b
 
 /** Landing "Catalog" block: real counts, honest zero state, distinct unavailable state. */
 export function CatalogBlock({ summary, retry }: { summary: CatalogSummary; retry?: () => void }) {
+  const { locale } = useLocale();
+  const isMy = locale === 'my';
   const stats = summary.state === 'ready' ? summary.stats : null;
   const verified = stats?.verified ?? 0;
   return (
     <Panel as="section" aria-labelledby="catalog-title" className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <span className="console-label text-amber">The catalog</span>
+          <span className="console-label text-amber">{isMy ? 'စမ်းသပ်မှတ်တမ်းစာရင်း' : 'The catalog'}</span>
           <h2 id="catalog-title" className="display text-lit mt-3 text-[clamp(26px,3vw,34px)] leading-[1.1]">
-            Verified NASA experiments, nothing else.
+            {isMy ? 'အတည်ပြုထားသော NASA စမ်းသပ်ချက်များသာ။' : 'Verified NASA experiments, nothing else.'}
           </h2>
           <p className="mt-2 max-w-xl text-[15px] text-dim">
-            A card becomes public only after a named curator checks every field against its NASA source.
+            {isMy
+              ? 'အမည်ဖော်ပြထားသော စိစစ်သူက အချက်တိုင်းကို NASA မူရင်းရင်းမြစ်နှင့် တိုက်စစ်ပြီးမှသာ ကတ်တစ်ခုကို လူထုထံ ထုတ်ပြန်သည်။'
+              : 'A card becomes public only after a named curator checks every field against its NASA source.'}
           </p>
         </div>
         {summary.state === 'ready' && verified === 0 && stats!.in_review > 0 && (
@@ -73,8 +79,8 @@ export function CatalogBlock({ summary, retry }: { summary: CatalogSummary; retr
           >
             <span aria-hidden className="mt-[5px] size-2 shrink-0 rounded-full bg-warn shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-warn)_18%,transparent)]" />
             <span>
-              <span className="font-medium">Catalog in verification</span>
-              <span className="text-dim"> — {stats!.in_review} card{stats!.in_review === 1 ? '' : 's'} in review</span>
+              <span className="font-medium">{isMy ? 'မှတ်တမ်းစာရင်း စိစစ်ဆဲ' : 'Catalog in verification'}</span>
+              <span className="text-dim"> — {isMy ? `ကတ် ${stats!.in_review} ခု စိစစ်နေပါသည်` : `${stats!.in_review} card${stats!.in_review === 1 ? '' : 's'} in review`}</span>
             </span>
           </p>
         )}
@@ -84,19 +90,19 @@ export function CatalogBlock({ summary, retry }: { summary: CatalogSummary; retr
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-bg/50 p-4 text-sm text-dim">
           <Icon name="withheld" size={18} className="text-warn" />
           {summary.reason === 'not_configured'
-            ? 'The catalog database is not connected in this environment.'
-            : 'The catalog could not be loaded right now. This is a connection problem, not an empty catalog.'}
+            ? (isMy ? 'ဤစနစ်တွင် စမ်းသပ်မှု မှတ်တမ်းဒေတာဘေ့စ် ချိတ်ဆက်ထားခြင်း မရှိပါ။' : 'The catalog database is not connected in this environment.')
+            : (isMy ? 'လတ်တလောတွင် မှတ်တမ်းစာရင်းကို ဖွင့်၍ မရပါ။ ဤသည်မှာ ချိတ်ဆက်မှု ပြဿနာဖြစ်ပြီး မှတ်တမ်း ကင်းမဲ့နေခြင်း မဟုတ်ပါ။' : 'The catalog could not be loaded right now. This is a connection problem, not an empty catalog.')}
           {summary.reason === 'error' && retry && (
             <Button size="sm" className="ml-auto" onClick={retry}>
-              Retry
+              {isMy ? 'ထပ်ကြိုးစားမည်' : 'Retry'}
             </Button>
           )}
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-busy={summary.state === 'loading'}>
-          <Stat value={stats ? String(stats.verified) : '—'} label="Verified experiments" muted={!stats || verified === 0} />
-          <Stat value={stats ? String(stats.in_review) : '—'} label="Cards in review" muted={!stats} />
-          <Stat value={stats ? String(stats.campaigns.length) : '—'} label="NASA campaigns" muted={!stats || verified === 0} />
+          <Stat value={stats ? String(stats.verified) : '—'} label={isMy ? 'အတည်ပြု စမ်းသပ်ချက်များ' : 'Verified experiments'} muted={!stats || verified === 0} />
+          <Stat value={stats ? String(stats.in_review) : '—'} label={isMy ? 'စိစစ်ဆဲ ကတ်များ' : 'Cards in review'} muted={!stats} />
+          <Stat value={stats ? String(stats.campaigns.length) : '—'} label={isMy ? 'NASA ကမ်ပိန်းများ' : 'NASA campaigns'} muted={!stats || verified === 0} />
           <div className="surface-inset flex flex-col justify-between gap-3 rounded-2xl border border-border/70 p-4">
             <span
               key={stats?.last_updated ?? 'none'}
@@ -142,19 +148,26 @@ export function ExportButton({
   compact?: boolean;
   variant?: 'primary' | 'secondary' | 'ghost';
 }) {
+  const { locale } = useLocale();
+  const isMy = locale === 'my';
   const [state, setState] = useState<'idle' | 'busy' | 'failed' | 'rate_limited'>('idle');
   const notConnected = summary.state === 'unavailable' && summary.reason === 'not_configured';
   const verified = summary.state === 'ready' ? summary.stats.verified : null;
   const title = notConnected
-    ? 'The catalog database is not connected in this environment'
+    ? (isMy ? 'ဤစနစ်တွင် စမ်းသပ်မှု မှတ်တမ်းဒေတာဘေ့စ် ချိတ်ဆက်ထားခြင်း မရှိပါ' : 'The catalog database is not connected in this environment')
     : state === 'rate_limited'
-      ? 'Too many downloads — try again in a minute'
+      ? (isMy ? 'ဒေါင်းလုဒ် အကြိမ်ရေများလွန်းသည် — ခေတ္တစောင့်ပြီး ထပ်ကြိုးစားပါ' : 'Too many downloads — try again in a minute')
       : state === 'failed'
-        ? 'The export could not be downloaded — try again'
+        ? (isMy ? 'ဒေတာ ထုတ်ယူမရပါ — ထပ်ကြိုးစားပါ' : 'The export could not be downloaded — try again')
         : verified === 0
-          ? 'Downloads the schema README with 0 verified experiments — the catalog is still in verification'
-          : 'Download every verified card with its NASA source provenance (.json)';
-  const text = state === 'busy' ? 'Preparing…' : state === 'failed' || state === 'rate_limited' ? 'Export failed — retry' : label;
+          ? (isMy ? 'အတည်ပြု စမ်းသပ်ချက် ၀ ခုဖြင့် စနစ်ပုံစံ README ကို ဒေါင်းလုဒ်လုပ်ပါ — မှတ်တမ်းစာရင်း စိစစ်ဆဲ ဖြစ်သည်' : 'Downloads the schema README with 0 verified experiments — the catalog is still in verification')
+          : (isMy ? 'NASA မူရင်း ရင်းမြစ်အထောက်အထား ပါဝင်သော အတည်ပြုကတ်အားလုံးကို ဒေါင်းလုဒ်လုပ်ပါ (.json)' : 'Download every verified card with its NASA source provenance (.json)');
+  const defaultLabel = isMy && label === 'Export dataset' ? 'ဒေတာ ထုတ်ယူရန်' : label;
+  const text = state === 'busy'
+    ? (isMy ? 'ပြင်ဆင်နေသည်…' : 'Preparing…')
+    : state === 'failed' || state === 'rate_limited'
+      ? (isMy ? 'ထုတ်ယူမှု မအောင်မြင်ပါ — ထပ်ကြိုးစားပါ' : 'Export failed — retry')
+      : defaultLabel;
   const run = async () => {
     setState('busy');
     const r = await downloadCatalogExport();
