@@ -11,6 +11,7 @@ const Kit = lazy(() => import('./pages/Kit').then((m) => ({ default: m.Kit })));
 const Methods = lazy(() => import('./pages/Methods').then(m => ({default:m.Methods})));
 const Sources = lazy(() => import('./pages/Sources').then(m => ({default:m.Sources})));
 const Compare = lazy(() => import('./pages/Compare').then((m) => ({ default: m.Compare })));
+const Library = lazy(() => import('./pages/Library').then((m) => ({ default: m.Library })));
 
 // ponytail: pathname switch, no router — add react-router if Coder B needs nested routes.
 // A '/name/*' key matches '/name/<one segment>' (e.g. '/library/*' for detail pages); the page reads the id from the path.
@@ -20,6 +21,8 @@ const ROUTES: Record<string, () => React.JSX.Element> = {
   '/methods': () => <Methods />,
   '/sources': () => <Sources />,
   '/compare': () => <Compare />,
+  '/library': () => <Library />,
+  '/library/*': () => <Library />,
   '/curate': () => <Curate />,
   '/kit': () => <Kit />,
 };
@@ -27,6 +30,8 @@ const path = window.location.pathname.replace(/\/$/, '') || '/';
 const Page = ROUTES[path] ?? ROUTES[path.replace(/^(\/[^/]+)\/[^/]+$/, '$1/*')] ?? NotFound;
 const title = path === '/methods' ? 'Methods' : path === '/sources' ? 'Source bibliography' : path === '/compare' ? 'Compare experiments' : Page === NotFound ? 'Page not found' : null;
 if (title) document.title = title + ' · IGNIS';
+if (path === '/library') document.title = 'Evidence Library · IGNIS';
+if (path.startsWith('/library/')) document.title = 'Experiment detail · IGNIS';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

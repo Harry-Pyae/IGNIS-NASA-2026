@@ -281,6 +281,13 @@ export function Console() {
 
   return (
     <div id="console" className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-24 sm:px-6">
+      <nav aria-label="Scenario sections" className="flex flex-wrap gap-x-5 gap-y-3 text-sm text-amber">
+        <a className="underline" href="#s1">Scenario</a>
+        <a className="underline" href="#s2">Evidence map</a>
+        <a className="underline" href="#s3">Matches</a>
+        <a className="underline" href="#s4">Mission Brief</a>
+        <a className="underline" href="#s5">Evidence gaps</a>
+      </nav>
       {views && views.eligible.length > 0 && <div className="experiment-ticker min-w-0 overflow-hidden border-y border-border py-2 text-xs text-dim" aria-label="Verified experiment IDs">
         {confirmed && <p className="console-label mb-1 text-dim"><span aria-hidden="true" className="anim-blink mr-2 inline-block size-1.5 rounded-full bg-amber"/>Live retrieval</p>}
         <div className="anim-ticker flex w-max font-mono">{[0,1].map(copy => <div aria-hidden={copy === 1} key={copy} className="flex shrink-0">{views.eligible.map(c => <span key={c.id} className="pr-8">{experimentLabel(c)}</span>)}</div>)}</div>
