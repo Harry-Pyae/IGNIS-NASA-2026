@@ -17,7 +17,7 @@ jobs:
       - run: npm test
       - run: npm run build
 
-  # RLS access matrix + draft→publish lifecycle on a throwaway Postgres + PostgREST (no secrets involved).
+  # RLS access matrix + draft→publish lifecycle on a throwaway Postgres + PostgREST (no secrets involved)
   db:
     runs-on: ubuntu-latest
     steps:
