@@ -82,7 +82,7 @@
   /* ---- Text ---- */
   --color-text: #e8eaf0;
   --color-dim: #9aa3b5;
-  --color-faint: #6e7891;
+  --color-faint: #79839c; /* ≥4.5:1 on bg and panel (was #6e7891: 4.34 / 4.02) */
 
   /* ---- Accents & outcomes ---- */
   --color-amber: #f5a623; /* accent */

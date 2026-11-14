@@ -119,7 +119,8 @@ describe('Round 6 #1: mission entry shows the availability state until a reviewe
 
 describe('Round 6 copy', () => {
   it('approved strings, with no prediction, safety, certification or confidence language', () => {
-    expect(COPY.landingCta).toEqual({ mission: 'Start the guided mission', explore: 'Explore the evidence' });
+    // Round 9 adds the 60-second case as the hero's first action.
+    expect(COPY.landingCta).toEqual({ mission: 'Start the guided mission', case: 'Try the 60-second case', explore: 'Explore the evidence' });
     expect(COPY.environmentExplanation).toBe('Sets oxygen and pressure only.');
     expect(COPY.contextBanner).toBe('Research context — not matched evidence.');
     expect(COPY.campaignContext).toBe('Campaign context');

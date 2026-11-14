@@ -13,6 +13,7 @@ const Methods = lazy(() => import('./pages/Methods').then(m => ({default:m.Metho
 const Sources = lazy(() => import('./pages/Sources').then(m => ({default:m.Sources})));
 const Library = lazy(() => import('./pages/Library').then((m) => ({ default: m.Library })));
 const Case = lazy(() => import('./pages/Case').then((m) => ({ default: m.Case })));
+const Help = lazy(() => import('./pages/Help').then((m) => ({ default: m.Help })));
 const Compare = lazy(() => import('./pages/Compare').then((m) => ({ default: m.Compare })));
 
 // ponytail: pathname switch, no router — add react-router if Coder B needs nested routes.
@@ -27,12 +28,26 @@ const ROUTES: Record<string, () => React.JSX.Element> = {
   '/compare': () => <Compare />,
   '/curate': () => <Curate />,
   '/kit': () => <Kit />,
+  '/case': () => <Case />,
+  '/help': () => <Help />,
   '/case/green-flash': () => <Case />,
 };
 const path = window.location.pathname.replace(/\/$/, '') || '/';
 const Page = ROUTES[path] ?? ROUTES[path.replace(/^(\/[^/]+)\/[^/]+$/, '$1/*')] ?? NotFound;
-const title = path === '/case/green-flash' ? 'The 60-second case' : path === '/methods' ? 'Methods' : path === '/sources' ? 'Source bibliography' : path === '/compare' ? 'Compare experiments' : path.startsWith('/library') ? 'Evidence library' : Page === NotFound ? 'Page not found' : null;
+const title = path === '/help' ? 'Help' : path === '/case' || path === '/case/green-flash' ? 'The 60-second case' : path === '/methods' ? 'Methods' : path === '/sources' ? 'Source bibliography' : path === '/compare' ? 'Compare experiments' : path.startsWith('/library') ? 'Evidence library' : Page === NotFound ? 'Page not found' : null;
 if (title) document.title = title + ' · IGNIS';
+// One index.html serves every route: point canonical / og:url (and og:title) at this route on the production origin
+// already declared in index.html, so /case or /help shared or crawled isn't described as the homepage.
+{
+  const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+  if (canonical && Page !== NotFound) {
+    const url = new URL(path === '/' ? '/' : path, canonical.href).href;
+    canonical.href = url;
+    document.querySelector('meta[property="og:url"]')?.setAttribute('content', url);
+    if (title) for (const sel of ['meta[property="og:title"]', 'meta[name="twitter:title"]'])
+      document.querySelector(sel)?.setAttribute('content', `${title} · IGNIS`);
+  }
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

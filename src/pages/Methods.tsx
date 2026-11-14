@@ -46,6 +46,7 @@ export function Methods() {
         <div key={term} className="grid gap-2 py-4 sm:grid-cols-[1fr_2fr]"><dt className="font-semibold">{term}</dt><dd className="text-dim">{plain}</dd></div>
       )}</dl>
     </section>
-    <a className={`mt-8 inline-block ${textLink}`} href="/sources">{t('methodsSources')}</a>
+    <p className="mt-8 border-l-2 border-raised pl-4 text-dim">{t('methodsLanguages')}</p>
+    <a className={`mt-6 inline-block ${textLink}`} href="/sources">{t('methodsSources')}</a>
   </Page>;
 }

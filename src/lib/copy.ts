@@ -37,7 +37,7 @@ export const COPY = {
   inReview: (n: number) => `Catalog in verification — ${n} card${n === 1 ? '' : 's'} in review`,
 
   // Round 6 (docs/DECISIONS-ROUND6.md). Two paths through one product: the mission is primary only once it is ready.
-  landingCta: { mission: 'Start the guided mission', explore: 'Explore the evidence' },
+  landingCta: { mission: 'Start the guided mission', case: 'Try the 60-second case', explore: 'Explore the evidence' },
   missionAvailability:
     'The guided mission opens once its case of verified NASA cards is reviewed. Until then, explore on your own.',
   // Current-investigation summary: these counts mean different things, so each keeps its own label.
