@@ -412,7 +412,7 @@ export function Console() {
       <Panel as="section" aria-labelledby="s1" className="reveal xl:sticky xl:top-[calc(var(--header-h,0px)+1rem)] xl:flex xl:max-h-[calc(100dvh-var(--header-h,0px)-2rem)] xl:flex-col">
         <SectionHeader id="s1" step={t('describeStep')} title={t('missionScenario')} />
         <MissionCaption step={guidedStep === 0 ? 0 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[0].caption)} />
-        <div className="grid gap-8 lg:grid-cols-2 xl:-mr-2 xl:min-h-0 xl:grid-cols-1 xl:gap-5 xl:overflow-y-auto xl:pr-2">
+        <div className="grid gap-8 lg:grid-cols-2 xl:-mr-2 xl:min-h-0 xl:grid-cols-1 xl:gap-5 xl:overflow-y-auto xl:overflow-x-hidden xl:pr-2">
           <div className="flex min-w-0 flex-col gap-4">
             <div>
               <p className="console-label mb-3 text-dim">{t('scenarioPresetsStart')}</p>
@@ -854,7 +854,15 @@ export function EvidenceMap({
     (scenario.o2_pct != null && (scenario.o2_pct < envelope.o2_min || scenario.o2_pct > envelope.o2_max)) ||
     (scenario.flow_cm_s != null && (scenario.flow_cm_s < envelope.flow_min || scenario.flow_cm_s > envelope.flow_max))
   );
-  const width = 760;
+  // Drawn at the box's own pixel width (≤ 760), so labels stay 11px and the map never scrolls sideways on a phone.
+  const [width, setWidth] = useState(760);
+  const resize = useRef<ResizeObserver | null>(null);
+  const mapBox = useCallback((box: HTMLDivElement | null) => {
+    resize.current?.disconnect();
+    if (!box) return;
+    resize.current = new ResizeObserver(() => setWidth(Math.round(Math.min(760, Math.max(260, box.clientWidth - parseFloat(getComputedStyle(box).paddingLeft) * 2)))));
+    resize.current.observe(box);
+  }, []);
   const height = 330;
   const left = 54;
   const right = 18;
@@ -884,8 +892,8 @@ export function EvidenceMap({
         <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-6 text-center text-sm text-dim">{t('mapNoPoints')}</p>
       ) : (
         <>
-          <div className="overflow-x-auto rounded-xl border border-border bg-bg/45 p-2 sm:p-4">
-            <svg viewBox={`0 0 ${width} ${height}`} role="group" aria-label={t('mapAccessibility')} className="block h-auto max-h-[70vh] min-w-[520px] w-full">
+          <div ref={mapBox} className="rounded-xl border border-border bg-bg/45 p-2 sm:p-4">
+            <svg viewBox={`0 0 ${width} ${height}`} role="group" aria-label={t('mapAccessibility')} className="block h-auto max-h-[70vh] w-full">
               <title>{t('mapVerifiedTitle')}</title>
               <defs>
                 <pattern id="ignis-untested-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
