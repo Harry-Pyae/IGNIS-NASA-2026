@@ -103,6 +103,12 @@ export const ExperimentInsertSchema = z.object({
   source_section: nullableText,
   ntrs_id: nullableText,
   doi: nullableText,
+  /** Dataset provenance (0005), only when recorded. Defaults keep rows read before 0005 valid. */
+  psi_investigation_id: nullableText.default(null),
+  dataset_doi: nullableText.default(null),
+  dataset_version: nullableText.default(null),
+  dataset_file: nullableText.default(null),
+  dataset_row_or_time: nullableText.default(null),
   media_url: z.url().nullable(),
   telemetry: TelemetrySchema.nullable(),
   /** Changing conditions during the run (0002). null = conditions reported as constant. */
