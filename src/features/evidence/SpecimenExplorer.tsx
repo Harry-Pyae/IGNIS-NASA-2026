@@ -1,5 +1,6 @@
 import { Panel, textLink } from '../../components/ui';
 import type { Experiment } from '../../lib/types';
+import { t } from '../../i18n';
 
 // R1-published sample set recorded in docs/MILESTONES.md. Resolve against the
 // current verified catalog so a withdrawn run disappears from the explorer.
@@ -12,8 +13,8 @@ export function SpecimenExplorer({ cards }: { cards: Experiment[] }) {
   if (specimens.length === 0) return null;
 
   return <Panel as="section" aria-labelledby="specimen-explorer" className="mb-5">
-    <h2 id="specimen-explorer" className="mb-2 text-lg font-semibold">Specimen Explorer</h2>
-    <p className="mb-3 text-sm text-dim">Open a verified fabric run to inspect its reported conditions, quotation, and source locator.</p>
+    <h2 id="specimen-explorer" className="mb-2 text-lg font-semibold">{t('specimenExplorer')}</h2>
+    <p className="mb-3 text-sm text-dim">{t('specimenIntro')}</p>
     <ul className="flex flex-wrap gap-x-5 gap-y-2">
       {specimens.map(card => <li key={card.id}>
         <a className={textLink} href={`/library/${encodeURIComponent(card.id)}?specimen=1`}>{card.test_id}</a>

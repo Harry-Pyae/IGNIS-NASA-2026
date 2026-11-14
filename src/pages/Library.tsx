@@ -180,7 +180,7 @@ function ExperimentDetail({ card, specimen }: { card: Experiment; specimen: bool
       <p className="console-label text-amber">{card.campaign}</p>
       <h2 className="my-2 text-2xl font-semibold">{card.test_id}</h2>
       <p className="text-sm text-dim">{t('libraryVerifiedBy')} {card.verified_by} · {card.verified_at?.slice(0, 10) ?? missing}</p>
-      {specimen && <a className={linkClass} href={`/?specimen=${encodeURIComponent(card.id)}#evidence-map`}>Locate this specimen on the Evidence Map</a>}
+      {specimen && <a className={linkClass} href={`/?specimen=${encodeURIComponent(card.id)}#evidence-map`}>{t('specimenLocate')}</a>}
       <table className="mt-4 w-full table-fixed text-left text-sm [overflow-wrap:anywhere]">
         <caption className="mb-2 text-left font-semibold">{t('libraryConditions')} <span className="console-label ml-2 font-normal text-dim">{COPY.plain.units.normalized}</span></caption>
         <tbody>{fields.map(([label, value]) => <tr className="border-t border-border" key={label}>

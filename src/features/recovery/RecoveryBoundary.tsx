@@ -1,9 +1,12 @@
 import { Component, Fragment, type ReactNode } from 'react';
 import { Button, Panel } from '../../components/ui';
+import { format, t } from '../../i18n';
 
 interface Props {
   children: ReactNode;
   scope?: 'app' | 'header' | 'page' | 'section';
+  /** Section name for the message ("Evidence map failed to display…"); generic wording without it. */
+  label?: string;
 }
 
 export class RecoveryBoundary extends Component<Props, { failed: boolean; attempt: number }> {
@@ -14,18 +17,18 @@ export class RecoveryBoundary extends Component<Props, { failed: boolean; attemp
   }
 
   render() {
-    const { scope = 'section', children } = this.props;
+    const { scope = 'section', label, children } = this.props;
     if (!this.state.failed) return <Fragment key={this.state.attempt}>{children}</Fragment>;
 
     return (
-      <Panel className="motion-still" role="region" aria-label="Display error">
+      <Panel className="motion-still" role="region" aria-label={t('recoveryRegion')}>
         <p role="alert" className="mb-3 text-dim">
-          {scope === 'app' ? 'IGNIS could not display this page.'
-            : scope === 'header' ? 'Navigation could not be displayed. The page is still available.'
-              : scope === 'page' ? 'This page failed to display. You can still use navigation.'
-                : 'This section failed to display. The other sections are still available.'}
+          {scope === 'app' ? t('recoveryApp')
+            : scope === 'header' ? t('recoveryHeader')
+              : scope === 'page' ? t('recoveryPage')
+                : label ? format('recoveryNamedSection', { section: label }) : t('recoverySection')}
         </p>
-        <Button onClick={() => this.setState(({ attempt }) => ({ failed: false, attempt: attempt + 1 }))}>Retry</Button>
+        <Button onClick={() => this.setState(({ attempt }) => ({ failed: false, attempt: attempt + 1 }))}>{t('retry')}</Button>
       </Panel>
     );
   }

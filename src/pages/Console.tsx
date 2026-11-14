@@ -490,7 +490,7 @@ export function Console() {
         onAction={showMap}
       />}
       <div className="console-panels flex flex-col gap-6 xl:grid xl:grid-cols-[400px_minmax(0,1fr)] xl:items-start">
-      <RecoveryBoundary><Panel as="section" aria-labelledby="s1" className="reveal self-start xl:sticky xl:top-[calc(var(--header-h,0px)+1rem)] xl:max-h-[calc(100dvh-var(--header-h,0px)-2rem)] xl:overflow-y-auto xl:overflow-x-hidden xl:scroll-py-4">
+      <RecoveryBoundary label={t('missionScenario')}><Panel as="section" aria-labelledby="s1" className="reveal self-start xl:sticky xl:top-[calc(var(--header-h,0px)+1rem)] xl:max-h-[calc(100dvh-var(--header-h,0px)-2rem)] xl:overflow-y-auto xl:overflow-x-hidden xl:scroll-py-4">
         {restoredDraft && <div className="mb-3 flex flex-wrap items-center gap-2 text-sm" role="status">
           <span>{COPY.plain.draft.restored}</span>
           <Button size="sm" onClick={() => {
@@ -686,7 +686,7 @@ export function Console() {
       <div className="flex min-w-0 flex-col gap-6">
 
       {inputsChanged && !confirmed && <p role="status" className="rounded-lg border border-warn/35 p-3 text-sm text-warn">{COPY.staleScenario}</p>}
-      <RecoveryBoundary><Panel as="section" aria-labelledby="s2" className="reveal scroll-mt-[calc(var(--header-h,0px)+1rem)]">
+      <RecoveryBoundary label={t('evidenceMap')}><Panel as="section" aria-labelledby="s2" className="reveal scroll-mt-[calc(var(--header-h,0px)+1rem)]">
         <SectionHeader
           help="helpMap" id="s2"
           step={t('retrieveStep')}
@@ -706,7 +706,7 @@ export function Console() {
 
       <div className="grid gap-6">
         {confirmed ? <>
-        <RecoveryBoundary><Panel as="section" aria-labelledby="s3" className="reveal">
+        <RecoveryBoundary label={t('matchPanel')}><Panel as="section" aria-labelledby="s3" className="reveal">
         <SectionHeader help="helpMatches" id="s3" step={t('matchesStep')} title={t('matchPanel')} />
         <ShareBanner share={share} />
         {confirmed && views && <CopyShareLink
@@ -721,11 +721,11 @@ export function Console() {
             <NoMatchInspection scenario={confirmed} cards={experiments} />}
           {confirmed && views && <CardComparison cards={views.top_k.map(m => m.experiment)}/>}
         </Panel></RecoveryBoundary>
-        <RecoveryBoundary><Panel as="section" aria-labelledby="s4" className="mission-brief motion-still">
+        <RecoveryBoundary label={t('missionBrief')}><Panel as="section" aria-labelledby="s4" className="mission-brief motion-still">
           <SectionHeader help="helpBrief" id="s4" step={t('briefStep')} title={t('missionBrief')} />
           <MissionCaption step={guidedStep === 3 ? 3 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[3].caption)} />
           {confirmed && views && dataStatus === 'connected' && <>
-            <Button className="mb-3 print:hidden" onClick={() => window.print()}>Print evidence handoff</Button>
+            <Button className="mb-3 print:hidden" onClick={() => window.print()}>{t('handoffPrint')}</Button>
             <EvidenceHandoff scenario={confirmed} revision={views.revision} matches={views.top_k}
               briefing={activeBriefing} status={activeBriefStatus} />
           </>}
@@ -738,7 +738,7 @@ export function Console() {
           />
         </Panel></RecoveryBoundary>
         </> : <>
-        <RecoveryBoundary><Panel as="section" aria-labelledby="s3" className="!py-4">
+        <RecoveryBoundary label={t('matchPanel')}><Panel as="section" aria-labelledby="s3" className="!py-4">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
             <SectionHeader help="helpMatches" id="s3" step={t('matchesStep')} title={t('matchPanel')} className="!mb-0 !border-0 !pb-0" />
             <p className="min-w-0 flex-1 text-sm text-dim">{COPY.plain.collapsed.matches}</p>
@@ -747,7 +747,7 @@ export function Console() {
           <ShareBanner share={share} />
           <MissionCaption step={guidedStep === 2 ? 2 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[2].caption)} />
         </Panel></RecoveryBoundary>
-        <RecoveryBoundary><Panel as="section" aria-labelledby="s4" className="mission-brief motion-still !py-4">
+        <RecoveryBoundary label={t('missionBrief')}><Panel as="section" aria-labelledby="s4" className="mission-brief motion-still !py-4">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
             <SectionHeader help="helpBrief" id="s4" step={t('briefStep')} title={t('missionBrief')} className="!mb-0 !border-0 !pb-0" />
             <p className="min-w-0 flex-1 text-sm text-dim">{COPY.plain.collapsed.brief}</p>
@@ -757,7 +757,7 @@ export function Console() {
         </>}
       </div>
 
-      <RecoveryBoundary><Panel as="section" aria-labelledby="s5" className="motion-still">
+      <RecoveryBoundary label={t('evidenceGapRadar')}><Panel as="section" aria-labelledby="s5" className="motion-still">
         <SectionHeader help="helpGaps" id="s5" step={t('gapStep')} title={t('evidenceGapRadar')} />
         <MissionCaption step={guidedStep === 4 ? 4 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[4].caption)} />
         <GapRadarPanel data={radar} status={dataStatus} scenarioActive={confirmed !== null} />
@@ -1112,7 +1112,7 @@ export function EvidenceMap({
           </div>
           <MapLegend outcomeColor={outcomeColor} />
           {plotted.length > 0 && <details className="mt-3 text-sm">
-            <summary className="cursor-pointer">Select a run by name</summary>
+            <summary className="cursor-pointer">{t('specimenSelectByName')}</summary>
             <ul className="mt-2 flex flex-wrap gap-2">
               {plotted.map(card => <li key={card.id}>
                 <Button size="sm" aria-pressed={selectedId === card.id} onClick={() => onSelect(card.id)}>{experimentLabel(card)}</Button>
@@ -1135,7 +1135,7 @@ export function EvidenceMap({
               {selected.key_observation_quote && <blockquote className="mt-3 break-words border-l-2 border-raised pl-3 text-sm leading-relaxed text-dim [overflow-wrap:anywhere]">“{selected.key_observation_quote}”</blockquote>}
               <p className="mt-2 break-words text-sm text-dim [overflow-wrap:anywhere]">{selected.source_title}</p>
               {evidenceLocator(selected) && <p className="mt-1 break-words text-xs text-dim [overflow-wrap:anywhere]">{evidenceLocator(selected)}</p>}
-              <a className={`mt-3 block text-sm ${textLink}`} href={`/library/${encodeURIComponent(selected.id)}?specimen=1`}>Inspect this run in the Library</a>
+              <a className={`mt-3 block text-sm ${textLink}`} href={`/library/${encodeURIComponent(selected.id)}?specimen=1`}>{t('specimenInspect')}</a>
               {/* Selection stays on the map; opening the match card is the visitor's choice (no jump on every click). */}
               {matches.some((match) => match.experiment.id === selected.id) && (
                 <button type="button" onClick={() => focusExperiment(selected.id)} className={`mt-3 text-sm ${textLink}`}>{t('openMatchCard')}</button>
