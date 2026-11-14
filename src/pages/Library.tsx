@@ -3,6 +3,7 @@ import { Button, buttonClass, Icon, Page, PageHeader, Panel, Select, textLink } 
 import { useVerifiedCatalog } from '../lib/catalog';
 import { datasetCitation, evidenceLocator, evidenceSource } from '../lib/evidenceSource';
 import { COPY } from '../lib/copy';
+import { SpecimenExplorer } from '../features/evidence/SpecimenExplorer';
 import { FIELD_UNITS, PARAM_LABELS, CONTINUOUS_PARAMS, type Experiment } from '../lib/types';
 
 const missing = 'not reported';
@@ -58,8 +59,8 @@ export function Library() {
       </Panel>}
       {settled && catalog.invalid > 0 && <p role="status" className="mb-4 text-warn">Some catalog records could not be validated and are omitted.</p>}
       {settled && (detail
-        ? card ? <ExperimentDetail card={card} /> : <Panel>Not in the current IGNIS catalog</Panel>
-        : <LibraryResults cards={cards} params={params} update={update} />)}
+        ? card ? <ExperimentDetail card={card} specimen={params.has('specimen')} /> : <Panel>Not in the current IGNIS catalog</Panel>
+        : <><SpecimenExplorer cards={cards} /><LibraryResults cards={cards} params={params} update={update} /></>)}
     </div>
   </Page>;
 }
@@ -135,7 +136,7 @@ function LibraryResults({ cards, params, update }: {
   </>;
 }
 
-function ExperimentDetail({ card }: { card: Experiment }) {
+function ExperimentDetail({ card, specimen }: { card: Experiment; specimen: boolean }) {
   const [copyStatus, setCopyStatus] = useState('');
   const source = evidenceSource(card);
   const locator = evidenceLocator(card);
@@ -152,8 +153,8 @@ function ExperimentDetail({ card }: { card: Experiment }) {
   ];
 
   return <div className="space-y-5">
-    <Panel>
-      {card.media_url && <figure className="mb-4">
+    <Panel className={specimen ? 'ring-2 ring-amber' : undefined}>
+      {!specimen && card.media_url && <figure className="mb-4">
         <img src={card.media_url} alt={`${COPY.campaignContext}: ${card.campaign} ${card.test_id}`}
           loading="lazy" className="max-h-96 max-w-full rounded-xl object-contain" />
         <figcaption className="text-sm text-dim">{COPY.campaignContext}</figcaption>
@@ -161,6 +162,7 @@ function ExperimentDetail({ card }: { card: Experiment }) {
       <p className="console-label text-amber">{card.campaign}</p>
       <h2 className="my-2 text-2xl font-semibold">{card.test_id}</h2>
       <p className="text-sm text-dim">Verified by {card.verified_by} · {card.verified_at?.slice(0, 10) ?? missing}</p>
+      {specimen && <a className={linkClass} href={`/?specimen=${encodeURIComponent(card.id)}#evidence-map`}>Locate this specimen on the Evidence Map</a>}
       <table className="mt-4 w-full table-fixed text-left text-sm [overflow-wrap:anywhere]">
         <caption className="mb-2 text-left font-semibold">Reported conditions and observations <span className="console-label ml-2 font-normal text-dim">{COPY.plain.units.normalized}</span></caption>
         <tbody>{fields.map(([label, value]) => <tr className="border-t border-border" key={label}>

@@ -5,7 +5,7 @@
  *   a scrollToId() call targets a console anchor (deep links keep working).
  * Plain DOM, no React, so tests can drive it with fakes.
  */
-const CONSOLE_ANCHOR = /^(console|s[1-5]|experiment-.+)$/;
+const CONSOLE_ANCHOR = /^(console|evidence-map|s[1-5]|experiment-.+)$/;
 const MOUNT_MARGIN = '800px 0px';
 const IDLE_FALLBACK_MS = 2000; // Safari has no requestIdleCallback
 export const CONSOLE_REQUEST = 'ignis:console';
