@@ -29,12 +29,12 @@ export function CardComparison({cards, standalone = false}: {cards: Experiment[]
   return <details open={standalone || undefined} className="motion-still mt-5 rounded-xl border border-border p-4">
     <summary className="cursor-pointer font-semibold">{standalone ? 'Compare two verified experiments' : 'Compare two matched experiments'}</summary>
     <p className="my-3 text-sm text-dim">Compare the reported conditions side by side. A difference between records does not explain a difference in outcomes.</p>
-    <div className="mb-4 grid gap-3 sm:grid-cols-2">{two.map((c,i) =>
+    {!standalone && <div className="mb-4 grid gap-3 sm:grid-cols-2">{two.map((c,i) =>
       <label key={i} className="min-w-0 text-sm">Experiment {i+1}
         <select className="mt-1 block w-full rounded border border-border bg-bg p-2" value={c.id} onChange={e => setPair(i === 0 ? [e.target.value,right.id] : [left.id,e.target.value])}>
           {(i === 0 ? eligible : others).map(item => <option key={item.id} value={item.id}>{label(item)}</option>)}
         </select>
-      </label>)}</div>
+      </label>)}</div>}
     {!standalone && <a className={buttonClass('secondary', 'sm', 'mb-4')} href={`/compare?ids=${two.map((card) => encodeURIComponent(card.id)).join(',')}`}>Open comparison page</a>}
     <table className="w-full table-fixed border-collapse text-left text-sm break-words">
       <caption className="sr-only">Recorded conditions and observations of two {standalone ? 'verified' : 'matched'} experiments</caption>
