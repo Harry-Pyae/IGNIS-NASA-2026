@@ -41,12 +41,12 @@ function Hero() {
       */}
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 max-xl:hidden bg-[linear-gradient(90deg,color-mix(in_srgb,var(--color-bg)_92%,transparent)_0%,color-mix(in_srgb,var(--color-bg)_86%,transparent)_40%,color-mix(in_srgb,var(--color-bg)_58%,transparent)_56%,color-mix(in_srgb,var(--color-bg)_18%,transparent)_70%,transparent_82%)]"
+        className="hero-scrim absolute inset-0 -z-10 max-xl:hidden"
       />
       <div aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-b from-transparent to-bg max-xl:hidden" />
 
       <div className="mx-auto w-full max-w-6xl px-4 pt-14 pb-16 sm:px-6 sm:pt-20 xl:py-20">
-        <div className="max-w-2xl">
+        <div className="hero-glass-slab max-w-2xl rounded-3xl p-6 sm:p-8 xl:p-10 transition-all">
           <p {...rise(0)} className="anim-rise">
             <span className="console-label inline-flex items-center gap-2 text-amber">
               <span aria-hidden className="h-px w-6 bg-amber max-sm:hidden" />
