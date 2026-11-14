@@ -4,7 +4,7 @@ import { cx } from '../../lib/cx';
 export type PanelTone = 'default' | 'raised' | 'observed' | 'interpretation' | 'untested';
 
 const TONES: Record<PanelTone, string> = {
-  default: 'surface border-border',
+  default: 'surface content-surface border-border',
   raised: 'surface surface-raised border-raised',
   observed: 'bg-observed-bg surface-tinted border-observed-border',
   interpretation: 'bg-interp-bg surface-tinted border-interp-border',

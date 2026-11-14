@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, buttonClass, Page, PageHeader, Panel, Select, textLink } from '../components/ui';
+import { Button, buttonClass, Icon, Page, PageHeader, Panel, Select, textLink } from '../components/ui';
 import { useVerifiedCatalog } from '../lib/catalog';
 import { datasetCitation, evidenceLocator, evidenceSource } from '../lib/evidenceSource';
 import { COPY } from '../lib/copy';
@@ -195,7 +195,7 @@ function ExperimentDetail({ card }: { card: Experiment }) {
           setCopyStatus(citation);
         }
       }}>Cite this</Button>
-      <a className={buttonClass('secondary', 'md')} href={'/compare?ids=' + encodeURIComponent(card.id)}>Compare</a>
+      <a className={buttonClass('secondary', 'md')} href={'/compare?ids=' + encodeURIComponent(card.id)}><Icon name="match" />Compare</a>
       </div>
       <p role="status" className="mt-2 break-words text-sm">{copyStatus}</p>
     </Panel>

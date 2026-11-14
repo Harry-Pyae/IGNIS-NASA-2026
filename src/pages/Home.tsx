@@ -47,7 +47,7 @@ function Hero() {
       <div aria-hidden className="hero-bottom-fade absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-b from-transparent to-bg max-xl:hidden" />
 
       <div className="mx-auto w-full max-w-6xl px-4 pt-14 pb-16 sm:px-6 sm:pt-20 xl:py-20">
-        <div className="max-w-2xl">
+        <div className="route-intro max-w-2xl">
           <p {...rise(0)} className="anim-rise">
             <span className="console-label inline-flex items-center gap-2 text-amber">
               <span aria-hidden className="h-px w-6 bg-amber max-sm:hidden" />
@@ -211,7 +211,7 @@ const STEPS: { icon: IconName; tag: string; title: string; lines: [string, strin
 function HowItWorks() {
   return (
     <section id="how-it-works" aria-labelledby="how-title" className="scroll-mt-20 px-4 py-20 sm:px-6">
-      <div className="surface reveal relative isolate mx-auto max-w-6xl overflow-hidden rounded-panel border border-border">
+      <div className="surface content-surface reveal relative isolate mx-auto max-w-6xl overflow-hidden rounded-panel border border-border">
         {/* Decorative constellation (kept off the Evidence Map: its dots read as data). Desktop only, masked to the
             top-right corner so no dot sits behind a word; the step cards are near-opaque on top. */}
         <img
@@ -222,7 +222,7 @@ function HowItWorks() {
           aria-hidden
           loading="lazy"
           decoding="async"
-          className="absolute inset-0 -z-10 size-full object-cover object-right opacity-80 max-lg:hidden [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent_35%,black_80%),linear-gradient(to_bottom,black_0%,black_28%,transparent_48%)]"
+          className="content-surface-art absolute inset-0 -z-10 size-full object-cover object-right opacity-80 max-lg:hidden [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent_35%,black_80%),linear-gradient(to_bottom,black_0%,black_28%,transparent_48%)]"
         />
         <div className="p-6 sm:p-10">
           <span className="console-label text-amber">How IGNIS works</span>

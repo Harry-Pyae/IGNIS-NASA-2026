@@ -5,7 +5,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type FormEvent } from 'react';
 import { flushSync } from 'react-dom';
-import { Badge, Button, Chip, CHIP_STATUS, CitationChip, Panel, PresetChip, SectionHeader, Slider, textLink } from '../components/ui';
+import { Badge, Button, Chip, CHIP_STATUS, CitationChip, Icon, Panel, PresetChip, SectionHeader, Slider, textLink } from '../components/ui';
 import { cx } from '../lib/cx';
 import { useCatalogRevisionWatch, useCatalogSummary, useVerifiedCatalog } from '../lib/catalog';
 import { COPY } from '../lib/copy';
@@ -54,6 +54,14 @@ const subscribeWide = (onChange: () => void) => {
 };
 const useWide = () => useSyncExternalStore(subscribeWide, () => window.matchMedia(WIDE).matches, () => false);
 const reducedMotion = () => !window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
+
+function highlightResults(heading: HTMLElement) {
+  if (reducedMotion()) return;
+  heading.animate(
+    [{ backgroundColor: 'color-mix(in srgb, var(--color-action) 22%, transparent)' }, { backgroundColor: 'transparent' }],
+    { duration: 240, easing: 'ease-out' },
+  );
+}
 
 export function Console() {
   const { catalog, reload } = useVerifiedCatalog();
@@ -119,6 +127,7 @@ export function Console() {
     if (!heading) return;
     heading.tabIndex = -1;
     heading.focus({ preventScroll: true });
+    highlightResults(heading);
     const target = document.getElementById('evidence-map') ?? heading.closest('section');
     target?.scrollIntoView({ behavior: reducedMotion() ? 'instant' : 'smooth', block: 'start' });
   }, []);
@@ -132,6 +141,7 @@ export function Console() {
     heading.tabIndex = -1;
     heading.focus({ preventScroll: true });
     const header = document.querySelector<HTMLElement>('.app-header')?.offsetHeight ?? 0;
+    highlightResults(heading);
     const plot = document.querySelector('#evidence-map svg') ?? map;
     const plotTop = plot.getBoundingClientRect().top + window.scrollY - header - 12;
     const matchesTop = matches.getBoundingClientRect().top + window.scrollY;
@@ -408,7 +418,7 @@ export function Console() {
         action={confirmed ? COPY.plain.viewEvidenceAction : COPY.plain.jumpToMap}
         onAction={showMap}
       />}
-      <div className="flex flex-col gap-6 xl:grid xl:grid-cols-[400px_minmax(0,1fr)] xl:items-start">
+      <div className="console-panels flex flex-col gap-6 xl:grid xl:grid-cols-[400px_minmax(0,1fr)] xl:items-start">
       <Panel as="section" aria-labelledby="s1" className="reveal xl:sticky xl:top-[calc(var(--header-h,0px)+1rem)] xl:flex xl:max-h-[calc(100dvh-var(--header-h,0px)-2rem)] xl:flex-col">
         <SectionHeader id="s1" step={t('describeStep')} title={t('missionScenario')} />
         <MissionCaption step={guidedStep === 0 ? 0 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[0].caption)} />
@@ -667,7 +677,7 @@ function MissionCaption({ step, onStep, text }: { step: number | null; onStep: (
                 aria-label={`${t('goToMissionStep')} ${index + 1}: ${t(item.title)}`}
                 aria-current={index === step ? 'step' : undefined}
                 onClick={() => onStep(index)}
-                className="grid size-10 place-items-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber"
+                className="bubble-control pressable grid size-10 place-items-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber"
               ><span aria-hidden className={`size-3 rounded-full border ${index === step ? 'border-amber bg-amber' : 'border-faint bg-transparent'}`} /></button>
             ))}
           </div>
@@ -709,7 +719,7 @@ function MapLegend({ outcomeColor }: { outcomeColor: (outcome: Experiment['outco
         {items.map((item) => item.caption ? (
           <button key={item.key} type="button" aria-pressed={active === item.key} aria-controls="map-legend-caption"
             onClick={() => setActive((current) => current === item.key ? null : item.key)}
-            className="inline-flex min-h-9 items-center gap-2 rounded-full border border-transparent px-2.5 transition-[border-color,background-color,color] duration-150 can-hover:hover:border-border can-hover:hover:text-text aria-pressed:border-amber/50 aria-pressed:bg-amber/[0.06] aria-pressed:text-text">
+            className="bubble-control pressable inline-flex min-h-9 items-center gap-2 rounded-full border border-transparent px-2.5 can-hover:hover:border-border can-hover:hover:text-text aria-pressed:border-amber/50 aria-pressed:bg-amber/[0.06] aria-pressed:text-text">
             {item.swatch}{item.label}
           </button>
         ) : (
@@ -1026,7 +1036,7 @@ export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }:
           <li key={status}><span aria-hidden className="mr-1.5 font-mono text-text">{CHIP_STATUS[status].symbol}</span>{COPY.plain.chipKey[status]}</li>
         ))}
       </ul>
-      <p className="mt-2 border-t border-border/60 pt-2 text-[13px] text-dim">{COPY.plain.compared}</p>
+      <p className="mt-2 flex items-start gap-2 border-t border-border/60 pt-2 text-[13px] text-dim"><Icon name="info" size={15} className="mt-0.5 shrink-0" /><span>{COPY.plain.compared}</span></p>
     </div>
     <div className="match-cards grid auto-rows-fr gap-3 lg:grid-cols-3 xl:grid-cols-2">
       {matches.map((match, index) => {

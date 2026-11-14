@@ -23,7 +23,7 @@ export function Button({
   type = 'button',
   ...rest
 }: ButtonProps) {
-  const iconSize = size === 'sm' ? 15 : 17;
+  const iconSize = 18;
   return (
     <button type={type} className={buttonClass(variant, size, cx(glow && 'anim-glow', className))} {...rest}>
       {icon && <Icon name={icon} size={iconSize} />}

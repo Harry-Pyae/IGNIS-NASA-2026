@@ -2,8 +2,8 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from '../../components/ui';
 
 /**
- * The "?" pattern: a short explanation one tap away, so dense sections show results first. Static (no motion), so it
- * is safe inside the Brief and map. It opens towards the roomier side of the screen (`align` is only the initial guess).
+ * The "?" pattern: a short explanation one tap away, so dense sections show results first.
+ * It opens towards the roomier side of the screen (`align` is only the initial guess).
  * Never put a disclaimer behind it: state and limitation lines stay visible.
  */
 export function InfoHint({ id, label, children, align = 'start' }: {
@@ -28,7 +28,7 @@ export function InfoHint({ id, label, children, align = 'start' }: {
   }, [open, side]);
 
   return <span className="relative inline-flex">
-    <Button type="button" size="sm" className="!size-6 !rounded-full !px-0 !text-[11px] !transition-none !transform-none"
+    <Button type="button" size="sm" className="!size-6 !rounded-full !px-0 !text-[11px]"
       aria-label={label} aria-expanded={open} aria-controls={id}
       onBlur={() => setOpen(false)}
       onClick={(event) => {
@@ -43,7 +43,7 @@ export function InfoHint({ id, label, children, align = 'start' }: {
         }
       }}>?</Button>
     <span id={id} ref={panel} hidden={!open} style={nudge ? { translate: `${nudge}px 0` } : undefined}
-      className={`absolute top-full z-30 mt-2 w-max max-w-[min(20rem,calc(100vw-3rem))] rounded-lg border border-border bg-bg p-3 text-left text-sm font-normal normal-case leading-relaxed tracking-normal text-text shadow-lg ${side === 'end' ? 'right-0' : 'left-0'}`}>
+      className={`hint-content absolute top-full z-30 mt-2 w-max max-w-[min(20rem,calc(100vw-3rem))] rounded-lg border border-border bg-bg p-3 text-left text-sm font-normal normal-case leading-relaxed tracking-normal text-text shadow-lg ${side === 'end' ? 'right-0' : 'left-0'}`}>
       {children}
     </span>
   </span>;
