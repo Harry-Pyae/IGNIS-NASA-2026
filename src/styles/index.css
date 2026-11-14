@@ -626,16 +626,10 @@ html { scroll-padding-top: 6.5rem; }
   .route-intro, .bubble-control[aria-pressed='true'] {
     animation: interface-reveal var(--dur-interface) ease-out;
   }
-  .hint-content:not([hidden]) {
-    animation: hint-reveal var(--dur-interface) ease-out;
-  }
   details[open]:not(.motion-still, .motion-still *) > :not(summary) {
     animation: interface-reveal var(--dur-interface) ease-out;
   }
   @keyframes interface-reveal {
     from { opacity: 0.82; translate: 0 3px; }
-  }
-  @keyframes hint-reveal {
-    from { opacity: 0.78; }
   }
 }
