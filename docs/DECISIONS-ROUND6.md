@@ -137,3 +137,20 @@ Color always has a text or shape counterpart.
   harder yet to interpret". IGNIS finds, compares and interprets it, with citations. Present detection and suppression
   investigations as context only, per the challenge's scope note. For export, write "export gives modelers traceable,
   cited inputs". IGNIS's own copy never uses "predict"; quote the challenge text with attribution if you need its wording.
+- **UI consistency pass (2026-11-14).** Buttons come in three tiers, defined once in `buttonStyles.ts` and shown with
+  do/don't in `/kit`: primary (filled), secondary (outlined) and tertiary (text link). `ghost` stays for the curation
+  tool only. Every button has a ≥44 px hit area and the token focus ring; no input suppresses its outline. There is one
+  "Edit scenario" control. Cite this and Compare share one row. A single ID on `/compare` opens a comparison instead of
+  a dead end. External links open in a new tab. The console re-checks the catalog revision, like `/sources`.
+- **Investigation workbench (2026-11-14), Coder A on Coder B's surface.** At ≥1280 px, section 01 is a sticky control
+  rail (Confirm pinned at its bottom) and 02–05 form the evidence column, so a slider change shows on the map with no
+  scrolling. Confirm lands on 03 with the plot still on screen. Below 1280 px a condensed condition bar (fixed, so no
+  layout shift) offers "Jump to map" / "View evidence"; there's no auto-scroll after Confirm there. Before Confirm,
+  03/04 are slim one-row steps; 05 labels its scope in both modes. Deviations from the request, with reasons:
+  1. The preset chips moved out of the collapsible editor, which now starts closed. With the editor open, the sliders
+     sat below the rail's fold at 900 px.
+  2. The closest-match chips sit below the sliders in the rail, for the same reason. The match cards repeat them.
+  3. The investigation summary is no longer sticky on desktop. It covered the top of the plot, and the rail carries the
+     context there.
+  4. The region-card line is worded about the region's *cells*. A region's range can contain tested runs: the current
+     18–22 % × 2–12 cm/s outline contains all 3 verified runs.

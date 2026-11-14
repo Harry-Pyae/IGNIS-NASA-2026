@@ -13,7 +13,7 @@ const sources = (catalog: VerifiedCatalog) => render(<SourceList catalog={catalo
 
 it('methods and the unknown-route recovery page work without a catalog', () => {
   const html = render(<Methods/>);
-  expect(html.match(/<dt\b/g)).toHaveLength(5);
+  expect(html.match(/<dt\b/g)).toHaveLength(18);
   expect(html).toContain('role="img"');
   expect(html).toContain('Invalid statements are withheld');
   expect(html).toContain('href="/sources"');
@@ -42,15 +42,18 @@ it('bibliography distinguishes an empty revision, a failed load, and an unfinish
   expect(failed).not.toContain('3 cards in review');
   expect(sources({state:'empty',invalid:1,revision:'different'})).toContain('could not be validated');
 });
-it('groups overlapping paper identifiers across campaigns without counting private drafts', () => {
-  const a = card(), b = t4({doi:'10.1234/abc', ntrs_id:null, source_url:'https://example.org/paper.pdf'});
+it('groups papers within each campaign and includes the official challenge resources', () => {
+  const a = card({dataset_doi:'https://doi.org/10.1234/dataset'}), b = t4({doi:'10.1234/abc', ntrs_id:null, source_url:'https://example.org/paper.pdf'});
   const bridge = card({doi:'https://doi.org/10.1234/abc', ntrs_id:a.ntrs_id});
   const other = card({source_title:'Another source',source_url:'javascript:alert(1)',ntrs_id:null});
   const html = sources({state:'ready',revision:'r1',invalid:0,experiments:[a,b,bridge,other,card({verified_by:null,source_title:'Private draft'})]});
-  expect(html.match(/<h2\b/g)).toHaveLength(2);
-  expect(html).toContain('3 verified cards');
-  expect(html).toContain('BASS · BASS-II');
-  expect(html).toContain('href="https://doi.org/10.1234/abc"');
+  expect(html).toContain('2 verified cards');
+  expect(html).toContain('<section aria-label="BASS">');
+  expect(html).toContain('<section aria-label="BASS-II">');
+  expect(html).toContain('href="https://doi.org/10.1234/abc" target="_blank"');
+  expect(html).toContain('Official challenge resources');
+  expect(html).toContain('href="https://doi.org/10.1234/dataset" target="_blank"');
+  expect(html).toContain('PSI dataset DOI');
   expect(html).toContain('href="https://ntrs.nasa.gov/citations/20150008962"');
   expect(html).not.toContain('javascript:');
   expect(html).not.toContain('Private draft');

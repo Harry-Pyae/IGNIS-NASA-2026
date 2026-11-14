@@ -3,19 +3,21 @@
  * Code-split out of the landing chunk: Home.tsx lazy-loads it (src/pages/consoleLoader.ts decides when),
  * so the engine, Zod schemas and console UI stay off the first paint. Owner: Coder B (console sections).
  */
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type FormEvent } from 'react';
 import { flushSync } from 'react-dom';
-import { Badge, Button, Chip, CitationChip, Panel, PresetChip, SectionHeader, Slider } from '../components/ui';
-import { useVerifiedCatalog } from '../lib/catalog';
+import { Badge, Button, Chip, CHIP_STATUS, CitationChip, Panel, PresetChip, SectionHeader, Slider, textLink } from '../components/ui';
+import { cx } from '../lib/cx';
+import { useCatalogRevisionWatch, useCatalogSummary, useVerifiedCatalog } from '../lib/catalog';
 import { COPY } from '../lib/copy';
 import { pickMaterial, presetScenario, resolveMaterial, SCENARIO_PRESETS } from '../engine/aliases';
 import { applyEnvironment, isElevatedO2, visibleEnvironmentPresets, type EnvironmentPreset } from '../engine/environments';
 import { briefingKey, currentBriefing, evidenceViews, investigationSummary, mapCoordinates, onMapAxes } from '../engine/views';
-import { evidenceLocator, evidenceSource } from '../lib/evidenceSource';
+import { datasetCitation, evidenceLocator, evidenceSource } from '../lib/evidenceSource';
 import { FIELD_UNITS, PARAM_LABELS, ParseScenarioResponseSchema, SynthesizeResponseSchema, type Briefing, type ContinuousParam, type Experiment, type MatchResult, type ParsedScenario, type ResolvedScenario } from '../lib/types';
 import { gapGrid, gapRadar, GRID, type GapRadar as GapRadarData } from '../engine/gaps';
 import { whyMatched } from '../engine/match';
 import { t } from '../i18n';
+import { InfoHint } from '../features/hint/InfoHint';
 import { CardComparison } from '../components/CardComparison';
 import { CopyShareLink, ShareBanner } from '../features/share/ScenarioShare';
 import { useScenarioShare } from '../features/share/useScenarioShare';
@@ -39,8 +41,24 @@ const MISSION_STEPS = [
   { target: 's5', title: 'missionStepGaps', caption: 'missionCaptionGaps' },
 ] as const;
 
+function InputHint({ field, label }: { field: keyof typeof COPY.plain.hints; label: string }) {
+  return <InfoHint id={`scenario-hint-${field}`} label={COPY.plain.hintButton(label)}>{COPY.plain.hints[field]}</InfoHint>;
+}
+
+/** ≥1280px: the two-column workbench (sticky control rail + evidence column). */
+const WIDE = '(min-width: 1280px)';
+const subscribeWide = (onChange: () => void) => {
+  const query = window.matchMedia(WIDE);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+};
+const useWide = () => useSyncExternalStore(subscribeWide, () => window.matchMedia(WIDE).matches, () => false);
+const reducedMotion = () => !window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
+
 export function Console() {
   const { catalog, reload } = useVerifiedCatalog();
+  const { summary: catalogSummary } = useCatalogSummary();
+  useCatalogRevisionWatch();
   const catalogExperiments = catalog.state === 'ready' ? catalog.experiments : [];
   const experiments = catalogExperiments;
   const mission = missionEntry(experiments);
@@ -76,7 +94,6 @@ export function Console() {
     setAppliedEnvironmentId(null);
     setInputsChanged(true);
   });
-  const resultsSummary = useRef<HTMLParagraphElement>(null);
   const focusAfterConfirm = useRef(false);
   const [firstVisit, setFirstVisit] = useState(() => {
     try {
@@ -85,15 +102,63 @@ export function Console() {
       return true;
     }
   });
+  // Results must be visible when they change: Confirm (and "View") move to the Evidence Map and focus its heading.
+  // Smooth only under prefers-reduced-motion: no-preference; otherwise an instant jump.
+  const showMap = useCallback(() => {
+    const heading = document.getElementById('s2');
+    if (!heading) return;
+    heading.tabIndex = -1;
+    heading.focus({ preventScroll: true });
+    const target = document.getElementById('evidence-map') ?? heading.closest('section');
+    target?.scrollIntoView({ behavior: reducedMotion() ? 'instant' : 'smooth', block: 'start' });
+  }, []);
+  const wide = useWide();
+  // Desktop workbench: after Confirm the page settles on the ranked matches while the map stays visible above them.
+  const showMatches = useCallback(() => {
+    const heading = document.getElementById('s3');
+    const matches = heading?.closest('section');
+    const map = document.getElementById('s2')?.closest('section');
+    if (!heading || !matches || !map) return;
+    heading.tabIndex = -1;
+    heading.focus({ preventScroll: true });
+    const header = document.querySelector<HTMLElement>('.app-header')?.offsetHeight ?? 0;
+    const plot = document.querySelector('#evidence-map svg') ?? map;
+    const plotTop = plot.getBoundingClientRect().top + window.scrollY - header - 12;
+    const matchesTop = matches.getBoundingClientRect().top + window.scrollY;
+    // Show ~160px of the matches; never scroll past the top of the plot (it must stay in view above them).
+    window.scrollTo({ top: Math.min(plotTop, matchesTop - window.innerHeight + 160), behavior: reducedMotion() ? 'instant' : 'smooth' });
+  }, []);
   useEffect(() => {
     if (!confirmed || !focusAfterConfirm.current) return;
     focusAfterConfirm.current = false;
-    resultsSummary.current?.focus({ preventScroll: true });
-    resultsSummary.current?.scrollIntoView({
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
-      block: 'center',
-    });
-  }, [confirmed]);
+    // Below 1280px the condensed bar appears instead ("View evidence"), one tap from the evidence.
+    if (wide) showMatches();
+  }, [confirmed, wide, showMatches]);
+  // Below xl: a condensed condition bar while the controls are off screen, or after Confirm, until the map is in view.
+  const [railInView, setRailInView] = useState(true);
+  useEffect(() => {
+    const section = document.getElementById('s1')?.closest('section');
+    if (!section) return;
+    const observer = new IntersectionObserver(([entry]) => setRailInView(entry!.isIntersecting), { threshold: 0 });
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+  // One "Evidence updated · View" chip, shown only while the map is off screen and live retrieval changed.
+  const [mapInView, setMapInView] = useState(false);
+  const [evidenceUpdated, setEvidenceUpdated] = useState(false);
+  useEffect(() => {
+    const section = document.getElementById('s2')?.closest('section');
+    if (!section) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      setMapInView(entry!.isIntersecting);
+      if (entry!.isIntersecting) setEvidenceUpdated(false);
+    }, { threshold: 0.15 });
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+  // The header count and the map move together: while the rows catch up with a new revision, say so.
+  const catalogRefreshing = catalogSummary.state === 'ready' && (catalog.state === 'ready' || catalog.state === 'empty')
+    && catalog.revision !== catalogSummary.stats.revision;
   const sourceMaterials = useMemo(() => experiments.map(({ domain, fuel_material, material_class }) => ({ domain, fuel_material, material_class })), [experiments]);
   const activePreset = SCENARIO_PRESETS.find((preset) => preset.id === presetId);
   const material = materialChoice
@@ -209,6 +274,7 @@ export function Console() {
       if ('o2_pct' in update) setAppliedEnvironmentId(null);
       setConfirmed((current) => current ? { ...current, ...update } : null);
       setMessage('');
+      if (confirmed && !mapInView) setEvidenceUpdated(true);
     };
     const panel = document.querySelector<HTMLElement & {startViewTransition?: (update: () => void) => ViewTransition}>('.match-cards');
     if (confirmed && panel?.startViewTransition && window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
@@ -226,6 +292,7 @@ export function Console() {
     setScenario((current) => applyEnvironment(current, env));
     setConfirmed((current) => current ? applyEnvironment(current, env) : null);
     setMessage('');
+    if (confirmed && !mapInView) setEvidenceUpdated(true);
   }
 
   const choosePreset = useCallback((id: string) => {
@@ -298,7 +365,7 @@ export function Console() {
   }
 
   return (
-    <div id="console" className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-24 sm:px-6">
+    <div id="console" className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-24 sm:px-6 xl:max-w-7xl">
       <nav aria-label="Scenario sections" className="flex flex-wrap gap-x-5 gap-y-3 text-sm text-amber">
         <a className="underline" href="#s1">Scenario</a>
         <a className="underline" href="#s2">Evidence map</a>
@@ -310,20 +377,122 @@ export function Console() {
         {confirmed && <p className="console-label mb-1 text-dim"><span aria-hidden="true" className="anim-blink mr-2 inline-block size-1.5 rounded-full bg-amber"/>Live retrieval</p>}
         <div className="anim-ticker flex w-max font-mono">{[0,1].map(copy => <div aria-hidden={copy === 1} key={copy} className="flex shrink-0">{views.eligible.map(c => <span key={c.id} className="pr-8">{experimentLabel(c)}</span>)}</div>)}</div>
       </div>}
-      <Panel as="section" aria-labelledby="s1" className="reveal">
-        {firstVisit && <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-border p-3 text-sm text-dim">
-          {missionCase
-            ? <Button size="sm" onClick={() => startMission(missionCase.preset_id)}>{COPY.landingCta.mission}</Button>
-            : <p className="min-w-0 flex-1">{COPY.missionAvailability}</p>}
-          <Button size="sm" onClick={() => {
-            setFirstVisit(false);
-            try { localStorage.setItem('ignis-scenario-intro-dismissed', '1'); } catch { /* Dismiss for this visit. */ }
-          }}>Dismiss</Button>
-        </div>}
+      {firstVisit && <div className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-xl border border-border bg-bg/45 p-4 text-sm text-dim">
+        <p className="min-w-0 flex-1">{missionCase ? COPY.plain.firstVisit.mission : `${COPY.plain.firstVisit.explore} ${COPY.missionAvailability}`}</p>
+        {missionCase && <Button variant="primary" onClick={() => startMission(missionCase.preset_id)}>{COPY.landingCta.mission}</Button>}
+        <Button variant="tertiary" onClick={() => {
+          setFirstVisit(false);
+          try { localStorage.setItem('ignis-scenario-intro-dismissed', '1'); } catch { /* Dismiss for this visit. */ }
+        }}>{COPY.plain.firstVisit.dismiss}</Button>
+      </div>}
+      {!wide && (confirmed !== null || (!railInView && !mapInView)) && <ConditionBar
+        summary={investigationSummary(draft, confirmed, views)}
+        action={confirmed ? COPY.plain.viewEvidenceAction : COPY.plain.jumpToMap}
+        onAction={showMap}
+      />}
+      <div className="flex flex-col gap-6 xl:grid xl:grid-cols-[400px_minmax(0,1fr)] xl:items-start">
+      <Panel as="section" aria-labelledby="s1" className="reveal xl:sticky xl:top-[calc(var(--header-h,0px)+1rem)] xl:flex xl:max-h-[calc(100dvh-var(--header-h,0px)-2rem)] xl:flex-col">
         <SectionHeader id="s1" step={t('describeStep')} title={t('missionScenario')} />
         <MissionCaption step={guidedStep === 0 ? 0 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[0].caption)} />
-        <div className="grid gap-8 lg:grid-cols-2">
+        <div className="grid gap-8 lg:grid-cols-2 xl:-mr-2 xl:min-h-0 xl:grid-cols-1 xl:gap-5 xl:overflow-y-auto xl:pr-2">
           <div className="flex min-w-0 flex-col gap-4">
+            <div>
+              <p className="console-label mb-3 text-dim">{t('scenarioPresetsStart')}</p>
+              <div className="flex flex-wrap gap-2" role="group" aria-label={t('scenarioPresets')}>
+                {SCENARIO_PRESETS.map((preset) => (
+                  <PresetChip key={preset.id} active={preset.id === presetId} onClick={() => choosePreset(preset.id)}>{preset.label}</PresetChip>
+                ))}
+                <PresetChip active={presetId === null} onClick={() => {
+                  setPresetId(null);
+                  editScenario({ fuel_material_raw: null, fuel_form: null, thickness_mm: null, o2_pct: null, flow_cm_s: null, pressure_kpa: null }, true);
+                }}>{t('custom')}</PresetChip>
+              </div>
+            </div>
+            <details ref={scenarioEditor} className="rounded-xl border border-border bg-bg/35 p-3">
+              <summary className="cursor-pointer console-label text-dim">{t('editScenario')} · {scenario.fuel_material_raw ?? t('selectMaterial')}</summary>
+              <div className="mt-4 flex flex-col gap-4">
+                <form onSubmit={parseDescription} className="flex flex-col gap-2">
+                  <label htmlFor="scenario-description" className="console-label text-dim">{t('orDescribeScenario')}</label>
+                  <textarea id="scenario-description" value={description} onChange={(event) => { setDescription(event.target.value); setMessage(''); }} maxLength={2000} rows={2} placeholder={t('scenarioExample')} className="w-full resize-y rounded-xl border border-border bg-bg/70 px-3 py-2.5 text-sm text-text placeholder:text-faint focus:border-amber" />
+                  <Button type="submit" size="sm" disabled={parsing || !description.trim()} className="self-start">{parsing ? t('parsing') : t('parseScenario')}</Button>
+                </form>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="scenario-material" aria-describedby="scenario-hint-material" className="console-label text-dim">{t('material')}</label>
+                      <InputHint field="material" label={t('material')} />
+                    </div>
+                    <input id="scenario-material" aria-describedby="scenario-hint-material" value={scenario.fuel_material_raw ?? ''} onChange={(event) => editScenario({ fuel_material_raw: event.target.value || null }, true)} placeholder={t('enterMaterial')} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text placeholder:text-faint focus:border-amber" />
+                  </div>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="console-label text-dim">{t('form')}</span>
+                    <select aria-describedby="scenario-hint-material" value={scenario.fuel_form ?? ''} onChange={(event) => editScenario({ fuel_form: (event.target.value || null) as ParsedScenario['fuel_form'] })} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text focus:border-amber">
+                      <option value="">{t('notSpecified')}</option>
+                      {['flat_sheet', 'rod', 'fabric', 'thick_slab'].map((form) => <option key={form} value={form}>{form.replace('_', ' ')}</option>)}
+                    </select>
+                  </label>
+                </div>
+                {material.status === 'resolved' ? (
+                  <p className="text-sm text-success">{material.raw ? `Resolved “${material.raw}” to ${material.fuel_material.replace(/_/g, ' ')} (${material.material_class.replace(/_/g, ' ')}).` : `Material: ${material.fuel_material.replace(/_/g, ' ')}.`}</p>
+                ) : (
+                  <div className="flex flex-col gap-2 rounded-xl border border-warn/30 bg-warn/[0.05] p-3 text-sm text-dim">
+                    <p>{material.reason === 'ambiguous' ? t('chooseAmbiguousMaterial') : t('chooseCatalogMaterial')}</p>
+                    {material.candidates.length > 0 ? (
+                      <select value="" onChange={(event) => { setMaterialChoice(event.target.value); setConfirmed(null); }} className="h-10 rounded-xl border border-border bg-bg px-3 text-sm text-text">
+                        <option value="" disabled>{t('selectMaterial')}</option>
+                        {material.candidates.map((candidate) => <option key={candidate} value={candidate}>{candidate.replace(/_/g, ' ')}</option>)}
+                      </select>
+                    ) : catalog.state === 'unavailable' ? (
+                      <div className="flex items-center gap-2"><span>{t('catalogUnavailableForMaterials')}</span><Button size="sm" onClick={reload}>{t('retry')}</Button></div>
+                    ) : <p>{COPY.absence}</p>}
+                  </div>
+                )}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="scenario-thickness" aria-describedby="scenario-hint-thickness" className="console-label text-dim">{t('thicknessMm')}</label>
+                      <InputHint field="thickness" label={t('thicknessMm')} />
+                    </div>
+                    <input id="scenario-thickness" aria-describedby="scenario-hint-thickness" type="number" min="0" step="any" value={scenario.thickness_mm ?? ''} onChange={(event) => editScenario({ thickness_mm: event.target.value === '' ? null : Number(event.target.value) })} placeholder={t('notSpecified')} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text placeholder:text-faint focus:border-amber" />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="scenario-pressure" aria-describedby="scenario-hint-pressure" className="console-label text-dim">{t('pressureKpa')}</label>
+                      <InputHint field="pressure" label={t('pressureKpa')} />
+                    </div>
+                    <input id="scenario-pressure" aria-describedby="scenario-hint-pressure" type="number" min="0" step="any" value={scenario.pressure_kpa ?? ''} onChange={(event) => editScenario({ pressure_kpa: event.target.value === '' ? null : Number(event.target.value) })} placeholder={t('notSpecified')} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text placeholder:text-faint focus:border-amber" />
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+          <div className="flex flex-col gap-5">
+            {ENVIRONMENTS.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <p className="console-label text-dim">{t('environments')}</p>
+                <div className="flex flex-wrap gap-2" role="group" aria-label={t('environments')}>
+                  {ENVIRONMENTS.map((env) => (
+                    <PresetChip key={env.id} active={activeEnvironment?.id === env.id} onClick={() => chooseEnvironment(env)}>{env.label}</PresetChip>
+                  ))}
+                </div>
+                <p className="text-[13px] text-dim">{COPY.environmentCaption}</p>
+                {activeEnvironment && (
+                  <p className="text-[13px] text-text">
+                    {COPY.environmentExplanation} {activeEnvironment.context}{' '}
+                    {activeEnvironment.verification.source_url && <a href={activeEnvironment.verification.source_url} target="_blank" rel="noreferrer" className={textLink}>{t('source')}</a>}
+                  </p>
+                )}
+                {activeEnvironment && <p role="status" className="text-[13px] text-dim">{COPY.environmentApplied}</p>}
+                {activeEnvironment && <p className="text-[13px] text-dim">{COPY.environmentLimit}</p>}
+                {activeEnvironment && isElevatedO2(activeEnvironment) && <p className="text-[13px] text-warn">{COPY.elevatedO2(activeEnvironment.o2_pct)}</p>}
+              </div>
+            )}
+            <Slider label="O₂" describedBy="scenario-hint-o2" hint={<InputHint field="o2" label="O₂" />} unit="%" min={14} max={30} value={scenario.o2_pct} onChange={(value) => moveSlider({ o2_pct: value })} onClear={() => moveSlider({ o2_pct: null })} allowUnspecified unspecifiedValue={21} unspecifiedLabel={t('notSpecified')} setValueLabel={t('setOxygen')} clearValueLabel={t('clearOxygen')} />
+            <Slider label="Airflow" describedBy="scenario-hint-airflow" hint={<InputHint field="airflow" label="Airflow" />} unit="cm/s" min={0} max={30} value={scenario.flow_cm_s} onChange={(value) => moveSlider({ flow_cm_s: value })} onClear={() => moveSlider({ flow_cm_s: null })} allowUnspecified unspecifiedLabel={t('notSpecified')} setValueLabel={t('setAirflow')} clearValueLabel={t('clearAirflow')} />
+            <p className="text-[13px] text-dim">{COPY.sliderCaption}</p>
+            {evidenceUpdated && !mapInView && confirmed && <p role="status" className="flex flex-wrap items-center gap-x-2 self-start rounded-full border border-raised bg-bg/60 px-3 py-1 text-[13px] text-text">
+              {COPY.plain.evidenceUpdated} · <Button variant="tertiary" onClick={showMap}>{COPY.plain.viewEvidence}</Button>
+            </p>}
             <div className="rounded-xl border border-border bg-bg/45 p-3" aria-live="polite">
               {confirmed && closestMatch ? (
                 <>
@@ -347,70 +516,13 @@ export function Console() {
                 </p>
               ))}
             </div>
-            <details ref={scenarioEditor} className="rounded-xl border border-border bg-bg/35 p-3">
-              <summary className="cursor-pointer console-label text-dim">{t('editScenario')} · {scenario.fuel_material_raw ?? t('selectMaterial')}</summary>
-              <div className="mt-4 flex flex-col gap-4">
-                <div>
-                  <p className="console-label mb-3 text-dim">{t('scenarioPresetsStart')}</p>
-                  <div className="flex flex-wrap gap-2" role="group" aria-label={t('scenarioPresets')}>
-                    {SCENARIO_PRESETS.map((preset) => (
-                      <PresetChip key={preset.id} active={preset.id === presetId} onClick={() => choosePreset(preset.id)}>{preset.label}</PresetChip>
-                    ))}
-                    <PresetChip active={presetId === null} onClick={() => {
-                      setPresetId(null);
-                      editScenario({ fuel_material_raw: null, fuel_form: null, thickness_mm: null, o2_pct: null, flow_cm_s: null, pressure_kpa: null }, true);
-                    }}>{t('custom')}</PresetChip>
-                  </div>
-                </div>
-                <form onSubmit={parseDescription} className="flex flex-col gap-2">
-                  <label htmlFor="scenario-description" className="console-label text-dim">{t('orDescribeScenario')}</label>
-                  <textarea id="scenario-description" value={description} onChange={(event) => { setDescription(event.target.value); setMessage(''); }} maxLength={2000} rows={2} placeholder={t('scenarioExample')} className="w-full resize-y rounded-xl border border-border bg-bg/70 px-3 py-2.5 text-sm text-text placeholder:text-faint focus:border-amber focus:outline-none" />
-                  <Button type="submit" size="sm" disabled={parsing || !description.trim()} className="self-start">{parsing ? t('parsing') : t('parseScenario')}</Button>
-                </form>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <label className="flex flex-col gap-1.5">
-                    <span className="console-label text-dim">{t('material')}</span>
-                    <input value={scenario.fuel_material_raw ?? ''} onChange={(event) => editScenario({ fuel_material_raw: event.target.value || null }, true)} placeholder={t('enterMaterial')} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text placeholder:text-faint focus:border-amber focus:outline-none" />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="console-label text-dim">{t('form')}</span>
-                    <select value={scenario.fuel_form ?? ''} onChange={(event) => editScenario({ fuel_form: (event.target.value || null) as ParsedScenario['fuel_form'] })} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text focus:border-amber focus:outline-none">
-                      <option value="">{t('notSpecified')}</option>
-                      {['flat_sheet', 'rod', 'fabric', 'thick_slab'].map((form) => <option key={form} value={form}>{form.replace('_', ' ')}</option>)}
-                    </select>
-                  </label>
-                </div>
-                {material.status === 'resolved' ? (
-                  <p className="text-sm text-success">{material.raw ? `Resolved “${material.raw}” to ${material.fuel_material.replace(/_/g, ' ')} (${material.material_class.replace(/_/g, ' ')}).` : `Material: ${material.fuel_material.replace(/_/g, ' ')}.`}</p>
-                ) : (
-                  <div className="flex flex-col gap-2 rounded-xl border border-warn/30 bg-warn/[0.05] p-3 text-sm text-dim">
-                    <p>{material.reason === 'ambiguous' ? t('chooseAmbiguousMaterial') : t('chooseCatalogMaterial')}</p>
-                    {material.candidates.length > 0 ? (
-                      <select value="" onChange={(event) => { setMaterialChoice(event.target.value); setConfirmed(null); }} className="h-10 rounded-xl border border-border bg-bg px-3 text-sm text-text">
-                        <option value="" disabled>{t('selectMaterial')}</option>
-                        {material.candidates.map((candidate) => <option key={candidate} value={candidate}>{candidate.replace(/_/g, ' ')}</option>)}
-                      </select>
-                    ) : catalog.state === 'unavailable' ? (
-                      <div className="flex items-center gap-2"><span>{t('catalogUnavailableForMaterials')}</span><Button size="sm" onClick={reload}>{t('retry')}</Button></div>
-                    ) : <p>{COPY.absence}</p>}
-                  </div>
-                )}
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <label className="flex flex-col gap-1.5">
-                    <span className="console-label text-dim">{t('thicknessMm')}</span>
-                    <input type="number" min="0" step="any" value={scenario.thickness_mm ?? ''} onChange={(event) => editScenario({ thickness_mm: event.target.value === '' ? null : Number(event.target.value) })} placeholder={t('notSpecified')} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text placeholder:text-faint focus:border-amber focus:outline-none" />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="console-label text-dim">{t('pressureKpa')}</span>
-                    <input type="number" min="0" step="any" value={scenario.pressure_kpa ?? ''} onChange={(event) => editScenario({ pressure_kpa: event.target.value === '' ? null : Number(event.target.value) })} placeholder={t('notSpecified')} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text placeholder:text-faint focus:border-amber focus:outline-none" />
-                  </label>
-                </div>
-              </div>
-            </details>
+          </div>
+        </div>
+        <div className="mt-5 flex flex-col gap-2 xl:border-t xl:border-border xl:pt-4">
             <div className="flex flex-wrap items-center gap-3">
-              <Button variant="primary" disabled={material.status !== 'resolved'} aria-describedby={material.status !== 'resolved' ? 'confirm-blocked' : undefined} onClick={() => {
+              <Button id="confirm-scenario" variant="primary" disabled={material.status !== 'resolved'} aria-describedby={material.status !== 'resolved' ? 'confirm-blocked' : undefined} onClick={() => {
                 if (confirmed === draft) {
-                  resultsSummary.current?.focus();
+                  if (wide) showMatches(); else showMap();
                   return;
                 }
                 focusAfterConfirm.current = true;
@@ -423,64 +535,32 @@ export function Console() {
               {confirmed && <span role="status" className="text-sm text-success">{t('confirmed')} · {views?.top_k.length ?? 0} {t('confirmedMatches')}</span>}
             </div>
             {message && <p role="status" className="text-sm text-dim">{message}</p>}
-          </div>
-          <div className="flex flex-col gap-5">
-            {ENVIRONMENTS.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <p className="console-label text-dim">{t('environments')}</p>
-                <div className="flex flex-wrap gap-2" role="group" aria-label={t('environments')}>
-                  {ENVIRONMENTS.map((env) => (
-                    <PresetChip key={env.id} active={activeEnvironment?.id === env.id} onClick={() => chooseEnvironment(env)}>{env.label}</PresetChip>
-                  ))}
-                </div>
-                <p className="text-[13px] text-dim">{COPY.environmentCaption}</p>
-                {activeEnvironment && (
-                  <p className="text-[13px] text-text">
-                    {COPY.environmentExplanation} {activeEnvironment.context}{' '}
-                    {activeEnvironment.verification.source_url && <a href={activeEnvironment.verification.source_url} target="_blank" rel="noreferrer" className="text-amber underline underline-offset-4">{t('source')}</a>}
-                  </p>
-                )}
-                {activeEnvironment && <p role="status" className="text-[13px] text-dim">{COPY.environmentApplied}</p>}
-                {activeEnvironment && <p className="text-[13px] text-dim">{COPY.environmentLimit}</p>}
-                {activeEnvironment && isElevatedO2(activeEnvironment) && <p className="text-[13px] text-warn">{COPY.elevatedO2(activeEnvironment.o2_pct)}</p>}
-              </div>
-            )}
-            <Slider label="O₂" unit="%" min={14} max={30} value={scenario.o2_pct} onChange={(value) => moveSlider({ o2_pct: value })} onClear={() => moveSlider({ o2_pct: null })} allowUnspecified unspecifiedValue={21} unspecifiedLabel={t('notSpecified')} setValueLabel={t('setOxygen')} clearValueLabel={t('clearOxygen')} />
-            <Slider label="Airflow" unit="cm/s" min={0} max={30} value={scenario.flow_cm_s} onChange={(value) => moveSlider({ flow_cm_s: value })} onClear={() => moveSlider({ flow_cm_s: null })} allowUnspecified unspecifiedLabel={t('notSpecified')} setValueLabel={t('setAirflow')} clearValueLabel={t('clearAirflow')} />
-            <p className="text-[13px] text-dim">{COPY.sliderCaption}</p>
-          </div>
         </div>
       </Panel>
 
+      <div className="flex min-w-0 flex-col gap-6">
+
       {inputsChanged && !confirmed && <p role="status" className="rounded-lg border border-warn/35 p-3 text-sm text-warn">{COPY.staleScenario}</p>}
-      <Panel as="section" aria-labelledby="s2" className="reveal">
+      <Panel as="section" aria-labelledby="s2" className="reveal scroll-mt-[calc(var(--header-h,0px)+1rem)]">
         <SectionHeader
           id="s2"
           step={t('retrieveStep')}
           title={t('evidenceMap')}
         />
         <MissionCaption step={guidedStep === 1 ? 1 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[1].caption)} />
-        {confirmed && <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-border p-3 text-sm">
-          <div className="min-w-0 flex-1">
-            <p ref={resultsSummary} tabIndex={-1}>
-              {closestMatch ? `${t('closestMatch')}: ${experimentLabel(closestMatch.experiment)}`
-                : t(dataStatus === 'loading' ? 'loading' : dataStatus === 'unavailable' ? 'noMatchCatalog' : 'noEligibleMatchesForScenario')}
-              {closestMatch && <> · <a href="#s4" className="text-amber underline">{t('missionBrief')}</a></>}
-            </p>
-            <p className="text-dim">{COPY.summary.o2(confirmed.o2_pct)} · {COPY.summary.flow(confirmed.flow_cm_s)}</p>
-          </div>
-          <Button size="sm" onClick={focusScenarioEditor}>{t('editScenario')}</Button>
-        </div>}
         <InvestigationSummary
           summary={investigationSummary(draft, confirmed, views)}
           status={dataStatus}
+          closest={closestMatch ? experimentLabel(closestMatch.experiment) : null}
           onEdit={focusScenarioEditor}
         />
+        {catalogRefreshing && <p role="status" className="mb-4 text-sm text-dim">{COPY.plain.catalogRefreshing}</p>}
         {dataStatus === 'unavailable' && <Button size="sm" className="mb-4" onClick={reload}>{t('retry')}</Button>}
         <EvidenceMap key={revision} experiments={views?.eligible ?? experiments} scenario={confirmed} matches={views?.top_k ?? []} status={dataStatus} selectedId={selectedId} onSelect={setSelectedId} />
       </Panel>
 
       <div className="grid gap-6">
+        {confirmed ? <>
         <Panel as="section" aria-labelledby="s3" className="reveal">
         <SectionHeader id="s3" step={t('matchesStep')} title={t('matchPanel')} />
         <ShareBanner share={share} />
@@ -505,6 +585,30 @@ export function Console() {
             onCitation={(id) => { setSelectedId(id); focusExperiment(id); }}
           />
         </Panel>
+        </> : <>
+        <Panel as="section" aria-labelledby="s3" className="!py-4">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+            <SectionHeader id="s3" step={t('matchesStep')} title={t('matchPanel')} className="!mb-0 !border-0 !pb-0" />
+            <p className="min-w-0 flex-1 text-sm text-dim">{COPY.plain.collapsed.matches}</p>
+            {missionCase
+              ? <Button variant="primary" onClick={() => startMission(missionCase.preset_id)}>{COPY.landingCta.mission}</Button>
+              : <Button onClick={() => {
+                const confirm = document.getElementById('confirm-scenario');
+                confirm?.scrollIntoView({ behavior: reducedMotion() ? 'instant' : 'smooth', block: 'center' });
+                confirm?.focus({ preventScroll: true });
+              }}>{COPY.plain.collapsed.matchesAction}</Button>}
+          </div>
+          <ShareBanner share={share} />
+          <MissionCaption step={guidedStep === 2 ? 2 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[2].caption)} />
+        </Panel>
+        <Panel as="section" aria-labelledby="s4" className="mission-brief motion-still !py-4">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+            <SectionHeader id="s4" step={t('briefStep')} title={t('missionBrief')} className="!mb-0 !border-0 !pb-0" />
+            <p className="min-w-0 flex-1 text-sm text-dim">{COPY.plain.collapsed.brief}</p>
+          </div>
+          <MissionCaption step={guidedStep === 3 ? 3 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[3].caption)} />
+        </Panel>
+        </>}
       </div>
 
       <Panel as="section" aria-labelledby="s5" className="motion-still">
@@ -512,6 +616,8 @@ export function Console() {
         <MissionCaption step={guidedStep === 4 ? 4 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[4].caption)} />
         <GapRadarPanel data={radar} status={dataStatus} scenarioActive={confirmed !== null} />
       </Panel>
+      </div>
+      </div>
       {research && <ResearchContext section={research} />}
     </div>
   );
@@ -540,22 +646,86 @@ function MissionCaption({ step, onStep, text }: { step: number | null; onStep: (
               ><span aria-hidden className={`size-3 rounded-full border ${index === step ? 'border-amber bg-amber' : 'border-faint bg-transparent'}`} /></button>
             ))}
           </div>
-          <Button size="sm" variant="ghost" disabled={step === 0} onClick={() => onStep(step - 1)}>{t('missionBack')}</Button>
+          <Button size="sm" disabled={step === 0} onClick={() => onStep(step - 1)}>{t('missionBack')}</Button>
           <Button size="sm" onClick={() => onStep(step === MISSION_STEPS.length - 1 ? null : step + 1)}>{t(step === MISSION_STEPS.length - 1 ? 'missionDone' : 'missionNext')}</Button>
-          <Button size="sm" variant="ghost" onClick={() => onStep(null)}>{t('exploreFreely')}</Button>
+          <Button variant="tertiary" onClick={() => onStep(null)}>{t('exploreFreely')}</Button>
         </div>
       </div>
     </aside>
   );
 }
 
+type LegendKey = 'sustained' | 'extinguished' | 'transition' | 'partial' | 'scenario' | 'untested' | 'outside';
+
+/**
+ * The legend is the vocabulary, so it explains itself: pick an item and its meaning replaces the caption below.
+ * By default the caption is the map's standing limitation (COPY.mapScope), which therefore always stays visible.
+ * Static (no motion). The caption keeps a reserved height so choosing an item barely shifts the page.
+ * Items without approved copy (transition, partial) stay plain labels rather than inventing a definition.
+ */
+function MapLegend({ outcomeColor }: { outcomeColor: (outcome: Experiment['outcome']) => string }) {
+  const [active, setActive] = useState<LegendKey | null>(null);
+  const outcomes = (['sustained', 'extinguished', 'transition', 'partial'] as const).map((outcome) => ({
+    key: outcome as LegendKey, label: t(outcome),
+    swatch: <svg aria-hidden="true" viewBox="0 0 20 20" className="size-5"><OutcomeMark outcome={outcome} x={10} y={10} color={outcomeColor(outcome)} /></svg>,
+    caption: (COPY.plain.outcomes as Partial<Record<string, string>>)[outcome] ?? null,
+  }));
+  const items = [
+    ...outcomes,
+    { key: 'scenario' as const, label: t('scenario'), swatch: <i aria-hidden className="size-2.5 rounded-full border border-lit" />, caption: COPY.plain.map.scenario },
+    { key: 'untested' as const, label: t('untestedCell'), swatch: <i aria-hidden className="h-3 w-4 rounded-sm border border-faint/50" style={{ backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 3px, var(--color-faint) 3px 4px)' }} />, caption: COPY.plain.map.untested },
+    { key: 'outside' as const, label: t('outsideCatalogRange'), swatch: <i aria-hidden className="h-3 w-4 rounded-sm border border-dashed border-faint/60 bg-faint/10" />, caption: COPY.plain.map.outside },
+  ];
+  const caption = items.find((item) => item.key === active)?.caption ?? COPY.mapScope;
+  return (
+    <div className="mt-4">
+      <p className="console-label mb-1 text-faint">{COPY.plain.map.prompt}</p>
+      <div className="-ml-2.5 flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-dim" role="group" aria-label="Evidence map legend">
+        {items.map((item) => item.caption ? (
+          <button key={item.key} type="button" aria-pressed={active === item.key} aria-controls="map-legend-caption"
+            onClick={() => setActive((current) => current === item.key ? null : item.key)}
+            className="inline-flex min-h-9 items-center gap-2 rounded-full border border-transparent px-2.5 transition-[border-color,background-color,color] duration-150 can-hover:hover:border-border can-hover:hover:text-text aria-pressed:border-amber/50 aria-pressed:bg-amber/[0.06] aria-pressed:text-text">
+            {item.swatch}{item.label}
+          </button>
+        ) : (
+          <span key={item.key} className="inline-flex min-h-9 items-center gap-2 px-2.5">{item.swatch}{item.label}</span>
+        ))}
+      </div>
+      <p id="map-legend-caption" aria-live="polite" className={cx('mt-2 min-h-[4.5rem] border-l-2 pl-3 text-sm leading-relaxed', active ? 'border-amber/60 text-text' : 'border-border text-dim')}>{caption}</p>
+    </div>
+  );
+}
+
+function ConditionBar({ summary: { scenario, confirmed, counts }, action, onAction }: {
+  summary: ReturnType<typeof investigationSummary>;
+  action: string;
+  onAction: () => void;
+}) {
+  const { material } = scenario;
+  const name = material.status === 'resolved' ? material.fuel_material.replace(/_/g, ' ') : material.raw ?? t('notSpecified');
+  return (
+    <div role="region" aria-label={COPY.summary.scenario} className="fixed inset-x-0 top-[var(--header-h,0px)] z-30 border-b border-border bg-bg/95 backdrop-blur-sm xl:hidden">
+      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2 text-[13px] sm:px-6">
+        <p className="min-w-0 flex-1 truncate text-text">
+          {name} · {COPY.summary.o2(scenario.o2_pct)} · {COPY.summary.flow(scenario.flow_cm_s)}
+          {confirmed && counts && <span className="text-dim"> · {COPY.summary.topMatches(counts.top_k ?? 0)}</span>}
+        </p>
+        <Button size="sm" onClick={onAction}>{action}</Button>
+      </div>
+    </div>
+  );
+}
+
 export function InvestigationSummary({
   summary: { scenario, confirmed, counts },
   status,
+  closest = null,
   onEdit,
 }: {
   summary: ReturnType<typeof investigationSummary>;
   status: 'connected' | 'loading' | 'unavailable';
+  /** Label of the closest verified match once confirmed. */
+  closest?: string | null;
   onEdit: () => void;
 }) {
   const summary = COPY.summary;
@@ -568,11 +738,12 @@ export function InvestigationSummary({
     : [t(status === 'unavailable' ? 'evidenceUnavailable' : 'loading')];
 
   return (
+    // Desktop: the sticky control rail beside the plot carries the scenario context. Below xl: the condensed bar.
     <div role="group" aria-label={`${summary.scenario}, ${summary.conditions}, ${summary.evidence}`} className="mb-4 grid grid-cols-2 gap-3 rounded-xl border border-border bg-bg/35 p-3 sm:grid-cols-4">
+      {closest && <p className="col-span-2 text-sm text-text sm:col-span-4">{t('closestMatch')}: {closest} · <a href="#s4" className={textLink}>{t('missionBrief')}</a></p>}
       <div className="min-w-0">
         <p className="console-label text-dim">{summary.scenario}</p>
         <p className="mt-1 break-words text-sm text-text">{materialName} · {form}</p>
-        <button type="button" onClick={onEdit} className="mt-1 text-xs text-amber underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber">{t('edit')}</button>
       </div>
       <div className="min-w-0">
         <p className="console-label text-dim">{summary.conditions}</p>
@@ -584,6 +755,9 @@ export function InvestigationSummary({
         {counts && (confirmed
           ? <p className="mt-1 text-xs text-dim">{summary.topMatches(counts.top_k ?? 0)}</p>
           : <p role="status" className="mt-1 text-xs text-warn">{summary.notConfirmed}</p>)}
+      </div>
+      <div className="col-span-2 sm:col-span-4 xl:hidden">
+        <Button size="sm" onClick={onEdit}>{t('editScenario')}</Button>
       </div>
     </div>
   );
@@ -610,7 +784,7 @@ function ResearchContext({ section }: { section: NonNullable<ReturnType<typeof c
               <li key={entry.id} className="rounded-xl border border-border/70 bg-bg/30 p-4">
                 <h4 className="text-sm font-medium text-text">{entry.title}</h4>
                 <p className="mt-2 text-sm leading-relaxed text-dim">{entry.text}</p>
-                <a href={entry.source_url!} target="_blank" rel="noreferrer" className="mt-3 inline-block text-sm text-amber underline underline-offset-4">{t('source')}</a>
+                <a href={entry.source_url!} target="_blank" rel="noreferrer" className={`mt-3 inline-block text-sm ${textLink}`}>{t('source')}</a>
               </li>
             ))}
           </ul>
@@ -676,7 +850,7 @@ export function EvidenceMap({
   };
 
   return (
-    <div id="evidence-map" tabIndex={-1} className="min-w-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber">
+    <div id="evidence-map" tabIndex={-1} className="min-w-0 scroll-mt-[calc(var(--header-h,0px)+3.5rem)] xl:scroll-mt-[calc(var(--header-h,0px)+1rem)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber">
       {status === 'loading' ? (
         <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-6 text-center text-sm text-dim">{t('catalogConnecting')}</p>
       ) : status === 'unavailable' ? (
@@ -686,7 +860,7 @@ export function EvidenceMap({
       ) : (
         <>
           <div className="overflow-x-auto rounded-xl border border-border bg-bg/45 p-2 sm:p-4">
-            <svg viewBox={`0 0 ${width} ${height}`} role="group" aria-label={t('mapAccessibility')} className="block h-auto min-w-[520px] w-full">
+            <svg viewBox={`0 0 ${width} ${height}`} role="group" aria-label={t('mapAccessibility')} className="block h-auto max-h-[70vh] min-w-[520px] w-full">
               <title>{t('mapVerifiedTitle')}</title>
               <defs>
                 <pattern id="ignis-untested-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
@@ -782,13 +956,7 @@ export function EvidenceMap({
               )}
             </svg>
           </div>
-          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-dim" aria-label="Evidence map legend">
-            {(['sustained', 'extinguished', 'transition', 'partial'] as const).map((outcome) => <span key={outcome} className="inline-flex items-center gap-2"><svg aria-hidden="true" viewBox="0 0 20 20" className="size-5"><OutcomeMark outcome={outcome} x={10} y={10} color={outcomeColor(outcome)} /></svg>{t(outcome)}</span>)}
-            <span className="inline-flex items-center gap-2"><i aria-hidden className="size-2.5 rounded-full border border-lit" />{t('scenario')}</span>
-            <span className="inline-flex items-center gap-2"><i aria-hidden className="h-3 w-4 rounded-sm border border-faint/50" style={{ backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 3px, var(--color-faint) 3px 4px)' }} />{t('untestedCell')}</span>
-            <span className="inline-flex items-center gap-2"><i aria-hidden className="h-3 w-4 rounded-sm border border-dashed border-faint/60 bg-faint/10" />{t('outsideCatalogRange')}</span>
-          </div>
-          <p className="mt-3 text-sm leading-relaxed text-dim">{COPY.mapScope}</p>
+          <MapLegend outcomeColor={outcomeColor} />
           <p className="mt-3 text-[13px] text-dim">{plotted.length} {t('plotted')} · {matches.length} {t('rankedMatches')}</p>
           {outsideAxesCount > 0 && <p role="status" className="mt-2 text-[13px] text-dim">{outsideAxesCount} {t(outsideAxesCount === 1 ? 'outsideAxesRecord' : 'outsideAxesRecords')}</p>}
           {outsideEnvelope && <p role="status" className="mt-3 rounded-lg border border-warn/35 bg-warn/[0.05] px-3 py-2 text-sm text-warn">{COPY.outsideRange}</p>}
@@ -799,7 +967,7 @@ export function EvidenceMap({
                 <p className="console-label break-words text-amber [overflow-wrap:anywhere]">{selected.campaign} · {selected.test_id}</p>
                 <p className="mt-1 text-sm text-text">{selected.outcome ?? 'Outcome not reported'} · {selected.o2_pct}% O₂ · {selected.flow_cm_s} cm/s</p>
                 </div>
-                {source && <a href={source.url} target="_blank" rel="noreferrer" className="text-sm text-amber underline underline-offset-4">{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}
+                {source && <a href={source.url} target="_blank" rel="noreferrer" className={`text-sm ${textLink}`}>{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}
               </div>
               {selected.condition_changes?.map((change, index) => <p key={index} className="mt-2 text-sm text-warn">{COPY.changingConditions}: {change.note}</p>)}
               {selected.key_observation_quote && <blockquote className="mt-3 break-words border-l-2 border-raised pl-3 text-sm leading-relaxed text-dim [overflow-wrap:anywhere]">“{selected.key_observation_quote}”</blockquote>}
@@ -807,7 +975,7 @@ export function EvidenceMap({
               {evidenceLocator(selected) && <p className="mt-1 break-words text-xs text-dim [overflow-wrap:anywhere]">{evidenceLocator(selected)}</p>}
               {/* Selection stays on the map; opening the match card is the visitor's choice (no jump on every click). */}
               {matches.some((match) => match.experiment.id === selected.id) && (
-                <button type="button" onClick={() => focusExperiment(selected.id)} className="mt-3 text-sm text-amber underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber">{t('openMatchCard')}</button>
+                <button type="button" onClick={() => focusExperiment(selected.id)} className={`mt-3 text-sm ${textLink}`}>{t('openMatchCard')}</button>
               )}
             </div>
           )}
@@ -826,13 +994,23 @@ export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }:
 
   return (
     <div>
-    <p className="mb-3 text-sm leading-relaxed text-dim">{COPY.matchOrder} <a href="/methods" className="text-amber underline underline-offset-4">How matching works and what it does not tell you</a></p>
-    <div className="match-cards grid auto-rows-fr gap-3 lg:grid-cols-3">
+    <p className="mb-3 text-sm leading-relaxed text-dim">{COPY.matchOrder} <a href="/methods" className={textLink}>How matching works and what it does not tell you</a></p>
+    <div className="mb-4 rounded-xl border border-border bg-bg/35 px-4 py-3">
+      <ul aria-label={COPY.plain.chipKeyLabel} className="flex flex-wrap gap-x-5 gap-y-1.5 text-[13px] text-dim">
+        {(Object.keys(COPY.plain.chipKey) as (keyof typeof COPY.plain.chipKey)[]).map((status) => (
+          <li key={status}><span aria-hidden className="mr-1.5 font-mono text-text">{CHIP_STATUS[status].symbol}</span>{COPY.plain.chipKey[status]}</li>
+        ))}
+      </ul>
+      <p className="mt-2 border-t border-border/60 pt-2 text-[13px] text-dim">{COPY.plain.compared}</p>
+    </div>
+    <div className="match-cards grid auto-rows-fr gap-3 lg:grid-cols-3 xl:grid-cols-2">
       {matches.map((match, index) => {
         const why = whyMatched(match);
         const { experiment } = match;
         const source = evidenceSource(experiment);
         const provenance = evidenceLocator(experiment);
+        const dataset = datasetCitation(experiment);
+        const outcome = COPY.plain.outcomes[experiment.outcome as keyof typeof COPY.plain.outcomes];
         const field = (label: string, value: string, parameter?: ContinuousParam) => {
           const qualifier = parameter ? experiment.condition_changes?.filter((change) => change.parameter === parameter).map((change) => change.note) : [];
           return (
@@ -867,7 +1045,7 @@ export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }:
               {field(PARAM_LABELS.pressure_kpa, experiment.pressure_kpa == null ? t('notReported') : `${experiment.pressure_kpa} kPa`, 'pressure_kpa')}
               <div className="grid grid-cols-[minmax(5.5rem,.7fr)_minmax(0,1.3fr)] items-center gap-3 py-2">
                 <dt className="text-xs text-dim">{t('outcome')}</dt>
-                <dd className="flex justify-end">{experiment.outcome ? <Badge variant={experiment.outcome} /> : <Badge variant="neutral">{t('outcomeNotReported')}</Badge>}</dd>
+                <dd className="flex flex-col items-end gap-1 text-right">{experiment.outcome ? <Badge variant={experiment.outcome} /> : <Badge variant="neutral">{t('outcomeNotReported')}</Badge>}{outcome && <span className="text-xs text-dim">{outcome}</span>}</dd>
               </div>
             </dl>
             <p className="mt-3 text-sm text-text">{why.summary}</p>
@@ -881,13 +1059,14 @@ export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }:
               <details className="mt-3 border-t border-border/70 pt-3 text-sm">
                 <summary className="cursor-pointer text-dim can-hover:hover:text-text">{t('sourceExcerpt')}</summary>
                 <blockquote className="mt-2 break-words border-l-2 border-raised pl-3 leading-relaxed text-dim [overflow-wrap:anywhere]">“{experiment.key_observation_quote}”</blockquote>
-                  <button type="button" onClick={() => { onSelect(experiment.id); const point = document.getElementById(`map-point-${experiment.id}`) ?? document.getElementById('evidence-map'); point?.focus({ preventScroll: true }); point?.scrollIntoView({ block: 'center' }); }} className="mt-3 inline-block min-h-10 text-sm text-amber underline underline-offset-4">{t('backToMap')}</button>
+                  <button type="button" onClick={() => { onSelect(experiment.id); const point = document.getElementById(`map-point-${experiment.id}`) ?? document.getElementById('evidence-map'); point?.focus({ preventScroll: true }); point?.scrollIntoView({ block: 'center' }); }} className={`mt-3 inline-block min-h-10 text-sm ${textLink}`}>{t('backToMap')}</button>
               </details>
             )}
             <p className="mt-3 mb-2 break-words text-sm text-dim [overflow-wrap:anywhere]">{experiment.source_title}</p>
+            {dataset && <p className="mb-2 text-sm text-dim [overflow-wrap:anywhere]">{dataset}</p>}
             <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border/70 pt-3 text-[13px]">
               {provenance && <span className="min-w-0 break-words text-dim [overflow-wrap:anywhere]">{provenance}</span>}
-              {source && <a href={source.url} target="_blank" rel="noreferrer" className="min-h-10 text-amber underline underline-offset-4">{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}
+              {source && <a href={source.url} target="_blank" rel="noreferrer" className={`min-h-10 ${textLink}`}>{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}
             </div>
           </article>
         );
@@ -929,7 +1108,7 @@ function MissionBrief({
     { classification: 'OBSERVED', title: t('observed'), tone: 'observed' as const },
     { classification: 'SUPPORTED', title: t('supportedInterpretation'), tone: 'interpretation' as const },
     { classification: 'UNTESTED', title: t('untested'), tone: 'untested' as const },
-  ];
+  ] as const;
   const experimentByEvidence = new Map(briefing.evidence.map(({ evidence_id, experiment_id }) => [evidence_id, experiment_id]));
 
   return (
@@ -942,6 +1121,7 @@ function MissionBrief({
         return (
           <Panel key={group.classification} tone={group.tone} className="!p-4">
             <h3 className="console-label text-text">{group.title}</h3>
+            <p className="mt-1 text-sm text-dim">{COPY.plain.brief[group.classification]}</p>
             {group.classification === 'SUPPORTED' && <p className="mt-2 text-sm leading-relaxed text-dim">{COPY.interpretationLimit}</p>}
             <ul className="mt-2 flex flex-col gap-3">
               {claims.map((claim, index) => (
@@ -992,7 +1172,7 @@ export function EvidenceOnlyFallback({ matches }: { matches: MatchResult[] }) {
           {evidenceLocator(experiment) && <p className="mt-1 text-xs text-dim">{evidenceLocator(experiment)}</p>}
           {experiment.condition_changes?.map((change, index) => <p key={index} className="mt-2 text-sm text-warn">{COPY.changingConditions}: {change.note}</p>)}
           {experiment.key_observation_quote && <p className="mt-2 break-words text-sm leading-relaxed text-dim [overflow-wrap:anywhere]">“{experiment.key_observation_quote}”</p>}
-          {source && <a href={source.url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-amber underline underline-offset-4">{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}
+          {source && <a href={source.url} target="_blank" rel="noreferrer" className={`mt-2 inline-block text-sm ${textLink}`}>{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}
         </article>
       ); })}
     </div>
@@ -1014,6 +1194,7 @@ function GapRadarPanel({
 
   return (
     <div className="flex flex-col gap-4">
+      <p className="console-label text-text">{scenarioActive ? COPY.plain.gapScope.scenario : COPY.plain.gapScope.catalog}</p>
       <p className="text-sm leading-relaxed text-dim">{COPY.gapNote}</p>
       {data.availability === 'no_plottable_evidence' ? (
         <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-5 text-sm text-dim">
@@ -1026,13 +1207,14 @@ function GapRadarPanel({
           <h3 className="console-label mb-3 text-dim">{t('largestUntestedRegions')}</h3>
           <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {data.regions.map((region, index) => (
-              <li key={`${region.o2_min}-${region.o2_max}-${region.flow_min}-${region.flow_max}`} className="rounded-xl border border-border bg-bg/45 p-4">
-                <p className="console-label text-amber">{t('region')} {index + 1} · {region.cells} {t('untestedCells')}</p>
+              <li key={`${region.o2_min}-${region.o2_max}-${region.flow_min}-${region.flow_max}`} aria-describedby="region-footnote" className="rounded-xl border border-border bg-bg/45 p-4">
+                <p className="console-label text-amber">{t('region')} {index + 1} · {region.cells} {t('untestedCells')}<sup aria-hidden className="ml-0.5 text-dim">1</sup></p>
                 <p className="mt-2 text-sm text-text">O₂ {region.o2_min}–{region.o2_max}%</p>
                 <p className="mt-1 text-sm text-text">Airflow {region.flow_min}–{region.flow_max} cm/s</p>
               </li>
             ))}
           </ol>
+          <p id="region-footnote" className="mt-3 text-[13px] leading-relaxed text-dim"><sup aria-hidden className="mr-1">1</sup>{COPY.plain.regionCells}</p>
         </div>
       ) : (
         <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-5 text-sm text-dim">{t('noUntestedWithinRange')}</p>
