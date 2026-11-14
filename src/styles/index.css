@@ -1,6 +1,40 @@
 @import 'tailwindcss';
 @import './tokens.css';
 
+.brief-print-only, .map-radar, .map-pulse { display: none; }
+html { scroll-padding-top: 6.5rem; }
+@media (prefers-reduced-motion: no-preference) {
+  .map-dot, .map-pulse { transform-box: fill-box; transform-origin: center; }
+  .map-pulse { display: inline; }
+  .map-radar { display: block; width: 100%; height: 100%; background: conic-gradient(from 0deg, transparent 310deg, color-mix(in srgb,var(--color-amber) 11%,transparent) 360deg); }
+  .scenario-glide { transition: transform var(--dur-glide) var(--ease-out); }
+  .map-hatching { animation: hatch-in 180ms ease-out backwards; animation-delay: calc(400ms + var(--dots) * var(--stagger-dot)); }
+  @keyframes hatch-in { from { opacity: 0; } }
+  .match-cards article { transition: transform var(--dur-hover) var(--ease-out), border-color var(--dur-hover); }
+  @media (hover: hover) and (pointer: fine) {
+    .match-cards article:hover { transform: translateY(-2px); border-color: var(--color-amber); }
+  }
+  .ambient { animation: ambient-drift 20s ease-in-out infinite; }
+  @keyframes ambient-drift { 50% { transform: scale(1.025) translateY(-0.5%); } }
+}
+@media (prefers-reduced-motion: reduce) {
+  .experiment-ticker { overflow-x: auto; }
+  .experiment-ticker [aria-hidden="true"] { display: none; }
+}
+@media print {
+  body:has(.mission-brief) :is(.ambient, .app-header),
+  #top:has(.mission-brief) > :not(:has(.mission-brief)),
+  #console > :not(:has(.mission-brief)),
+  #console .mission-brief ~ *, #console :has(> .mission-brief) > :not(.mission-brief),
+  .mission-brief aside, .mission-brief .step-tag { display: none !important; }
+  body:has(.mission-brief), body:has(.mission-brief) #root, #console:has(.mission-brief),
+  .mission-brief, .mission-brief * { background: white !important; color: black !important; box-shadow: none !important; text-shadow: none !important; }
+  #console:has(.mission-brief), #console :has(> .mission-brief) { display: block; padding: 0; }
+  .mission-brief li, .mission-brief h3 { break-inside: avoid; }
+  .brief-print-only { display: block; margin-block: 1em; overflow-wrap: anywhere; }
+  .mission-brief a[href]::after { content: " (" attr(href) ")"; overflow-wrap: anywhere; }
+}
+
 /* `can-hover:hover:…` — hover styles only on real pointers (no sticky hover on touch). */
 @custom-variant can-hover (@media (hover: hover) and (pointer: fine));
 

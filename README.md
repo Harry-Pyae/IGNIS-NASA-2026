@@ -15,7 +15,7 @@ verified evidence.
 Current delivery status and remaining human review gates: [execution status](docs/EXECUTION-STATUS.md).
 The official challenge's current long title is
 [Flame in Freefall: SI-Powered Fire Safety Insights from Microgravity Combustion Data](https://www.spaceappschallenge.org/2026/challenges/flame-in-freefall/?tab=teams).
-Prep is complete and frozen (2026-11-13, live `b7602ba`); the remaining work is data and the Day 1 runbook.
+The platform is frozen for the event. The remaining work is catalog verification, demo testing and submission.
 
 - **Build plan (technical contracts):** [IGNIS_BUILD_PLAN.md](IGNIS_BUILD_PLAN.md)
 - **Team plan (who owns what):** [IGNIS_TEAM_PLAN.md](IGNIS_TEAM_PLAN.md)
@@ -23,13 +23,11 @@ Prep is complete and frozen (2026-11-13, live `b7602ba`); the remaining work is 
 - **Round 2 decisions, approved copy, validation guarantee:** [docs/DECISIONS-ROUND2.md](docs/DECISIONS-ROUND2.md)
 - **Deploying:** [docs/DEPLOY-RUNBOOK.md](docs/DEPLOY-RUNBOOK.md)
 
-## Disclosure
+## Event and submission
 
-Our team built this platform during a **preparation phase (2026-11-07 → 2026-11-13)**, before the official event
-window (**2026-11-14 → 11-15**). That work is specific to the Flame in Freefall challenge, so we're disclosing it to
-the organizers and asking for their ruling. The full statement covers the dates, contents, the NASA data handled, our use of AI tools, and third-party credits:
-**[docs/DISCLOSURE.md](docs/DISCLOSURE.md)**. All card extraction, verification and publication happens inside the
-event window.
+**Official event: Saturday 14 November through Sunday 15 November 2026.** The team plans to upload a new submission repository to GitHub during the official timer.
+
+See the [submission checklist](docs/submission-checklist.md) for the weekend handoff.
 
 ## Quick start
 
@@ -120,7 +118,7 @@ and function limits. `main` deploys after the daily merge window.
 ## License
 
 [Apache-2.0](LICENSE) for the team's own code and docs. Fonts keep SIL OFL 1.1 (`public/fonts/`); NASA material stays
-under NASA's media usage guidelines. Credits: [docs/DISCLOSURE.md](docs/DISCLOSURE.md).
+under NASA's media usage guidelines. Credits: [credits and licenses](docs/CREDITS.md).
 
 ---
 

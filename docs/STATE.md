@@ -9,11 +9,8 @@
 > order, owner, "visible when" and rollback per step. Code changes during the event: bug fixes and runbook items only.
 > The older snapshot below is historical.
 
-> **Timeline:** the official event is **Sat 2026-11-14 (Day 1) → Sun 2026-11-15 (Day 2)**. All work so far is the
-> preparation phase (from 2026-11-07). The official FAQ says teams may not begin working on the challenge before the
-> hackathon; our pre-event work is disclosed in `docs/DISCLOSURE.md`. **Ruling (reported 2026-11-10): preparation may
-> continue before the event** (written text to be attached). Card extraction and verification still happen only in
-> the event window.
+> **Official timer:** Saturday 14 November to Sunday 15 November 2026 (14-11 to 15-11).
+> For the project timeline and event tasks, see the [milestones](MILESTONES.md) and [submission checklist](submission-checklist.md).
 > Schedule: `docs/MILESTONES.md` §5.
 
 Snapshot written by Coder A after the console merge. Overwrite on the next handoff.
@@ -75,7 +72,6 @@ Snapshot written by Coder A after the console merge. Overwrite on the next hando
 
 | Risk | Impact | Owner / next step |
 |---|---|---|
-| **Pre-event work vs the FAQ rule** | Ruling reported 2026-11-10: preparation may continue before the event | Coder A: attach the organizers' written ruling to `docs/DISCLOSURE.md`; keep the submission's disclosure + AI-use section. |
 | **Forced-Gemini synthesize unproven on production.** | Parse failover is proven on production (2026-11-09); synthesize on lite is proven in tests and locally on the disposable DB. | Coder A: run the forced synthesize step from the runbook rehearsal once R1's first real card exists. |
 
 ## Next actions

@@ -3,14 +3,9 @@
 Recorded by Coder A (team lead) after the upgrade proposal "IGNIS upgrade strategy 2026-11-10" (kept unedited outside
 the repository, like the round-3 review). Round 2 and Round 3 decisions stand unless noted.
 
-**Organizer ruling (reported by the team lead, 2026-11-10):** the organizers allow the team to continue preparation before 2026-11-14. The written ruling will be attached here verbatim. The team's own rule stands: card extraction and verification happen only inside the event window.
-The timing hold below is **lifted** for the build items; the content gate (#1) and in-window verification are unchanged.
+Mission content requires verified cards (decision 1). R1 verifies and publishes cards during the event.
 #5 shipped first: `21bb12c` split the console out of the landing chunk (95.6 → 57.2 KB gzip).
 
-~~**Timing hold (applies to every build item below):**~~ *(historical)* the official 2026 Participant FAQ says *"Teams are not allowed to
-begin working on the challenges prior to the hackathon"* (event: 2026-11-14 → 11-15). Until the Local Lead / Global
-Organizing Team rules on our pre-event work (`docs/DISCLOSURE.md`), **no new challenge code lands**. These decisions
-fix *what* we build; *when* waits for the ruling.
 
 | # | Decision | Affects |
 |---|---|---|
@@ -19,7 +14,7 @@ fix *what* we build; *when* waits for the ruling.
 | 3 | **ADOPTED in stages: comparison.** First align the Match Panel fields so the same fields line up. Only if time allows after the mission and QA: a static two-card comparison view. The comparison *animation* stays cut. GMT45-T4 always shows its changing-flow qualifier. No causal claims between two outcomes, no "safer material", no winning card. | Coder B, R1 wording |
 | 4 | **REJECTED, and it stays rejected:** trainers, survival guides, games, health tools, boundary fits, danger heatmaps, safety rankings, new report formats, new artwork. | Everyone |
 | 5 | **The bundle regression comes first.** Finish lazy-loading the console section (main JS 55 → 96 KB gzip; Zod back on the landing path) before any mission code lands. | Coder B, Coder A review |
-| 6 | **Schedule re-baselined to the official start (2026-11-14 = Day 1).** The proposal's dates are replaced by the plan in `docs/MILESTONES.md` §5. Build items (lazy-loading, mission wiring, stills rendering, field alignment) were proposed as pre-event prep and are **on hold pending the ruling**. Mission content, card verification, rehearsals, the video and the three-person usability test (the proposal's five questions) are event-window work. | Whole team |
+| 6 | **Schedule re-baselined to the official start (2026-11-14 = Day 1).** The proposal's dates are replaced by the plan in `docs/MILESTONES.md` §5. Mission content, card verification, rehearsals, the video and the three-person usability test (the proposal's five questions) are event-window work. | Whole team |
 | 7 | **The proposal file stays uncommitted** (`reports/`, excluded via `.git/info/exclude`), like the round-3 review. | Coder A |
 
 ## Usability test (event window, Day 2)

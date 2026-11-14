@@ -21,6 +21,12 @@ export function AppHeader() {
           <ExportButton summary={summary} label="Export dataset" compact />
         </div>
       </div>
+      <nav aria-label="Project navigation" className="mx-auto flex max-w-6xl gap-5 px-4 pb-2 text-sm sm:px-6">
+        {([['/', 'Console'], ['/methods', 'Methods'], ['/sources', 'Sources']] as const).map(([url,label]) => {
+          const current = (window.location.pathname.replace(/\/$/, '') || '/') === url;
+          return <a key={url} href={url} aria-current={current ? 'page' : undefined} className={current ? 'text-amber underline underline-offset-4' : 'text-dim hover:text-text'}>{label}</a>;
+        })}
+      </nav>
     </header>
   );
 }

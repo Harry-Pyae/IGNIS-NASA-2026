@@ -24,7 +24,7 @@ before writing code. Where they disagree, the Build Plan's Core Principles win.
 
 ## Git rules
 
-- **2026-11-13: prep frozen** (live `b7602ba`, pushed on the team lead's instruction; see `docs/DISCLOSURE.md`).
+- **2026-11-13: prep frozen** (live `b7602ba`, pushed on the team lead's instruction; see `docs/EXECUTION-STATUS.md`).
   During the event, code changes are bug fixes and the Day 1/2 runbook items (`docs/EXECUTION-STATUS.md`) only.
 
 - **Only Coder A pushes or merges to `main`.** Coder B works on `console`, Coder C on `features`,

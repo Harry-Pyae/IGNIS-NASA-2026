@@ -1,0 +1,13 @@
+# Dummy preview: placeholder data, placeholder media and preview renders stay on this machine. Never commit.
+dummy/
+
+# Synced from the app's public/ by scripts/run.mjs (single source: ../public/art, ../public/fonts).
+public/art/
+public/fonts/
+
+# Real media files are large and travel via the team drive (R2's ledger), not git. Only the README is tracked.
+public/real/*
+!public/real/README.md
+
+out/
+node_modules/

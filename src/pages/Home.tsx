@@ -7,11 +7,12 @@ import {
   type IconName,
 } from '../components/ui';
 import { CatalogBlock, ExportButton } from '../components/CatalogStatus';
-import { preloadVerifiedCatalog, useCatalogSummary, useVerifiedCatalog } from '../lib/catalog';
-import { MISSION_CASE, missionEntry } from '../engine/mission';
+import { preloadVerifiedCatalog, useCatalogSummary } from '../lib/catalog';
 import { COPY } from '../lib/copy';
 import { t } from '../i18n';
-import { isConsoleAnchor, requestConsole, requestGuidedMission, takePendingAnchor, watchConsole } from './consoleLoader';
+import { isConsoleAnchor, requestConsole, takePendingAnchor, watchConsole } from './consoleLoader';
+
+const MissionActions = lazy(() => import('./MissionActions').then(m => ({ default: m.MissionActions })));
 
 export function Home() {
   return (
@@ -62,14 +63,11 @@ function Hero() {
             microgravity combustion experiments, explains what they actually observed — and marks where the current
             catalog has no matching evidence.
           </p>
-          <div {...rise(3)} className="anim-rise mt-9 flex flex-wrap items-center gap-3">
-            {MISSION_CASE && <MissionStartControl />}
-            {/* Explore is the primary action until a reviewed mission case exists (DECISIONS-ROUND6 #1). */}
-            <Button variant={MISSION_CASE ? 'ghost' : 'primary'} size="lg" iconRight="arrow-right" glow={!MISSION_CASE} onClick={() => scrollToId('console')}>
-              {COPY.landingCta.explore}
-            </Button>
+          <div {...rise(3)} className="anim-rise mt-9">
+            <Suspense fallback={<Button size="lg" onClick={() => scrollToId('console')}>{COPY.landingCta.explore}</Button>}>
+              <MissionActions explore={() => scrollToId('console')} />
+            </Suspense>
           </div>
-          {!MISSION_CASE && <p {...rise(4)} className="anim-rise mt-3 max-w-lg text-[13px] leading-snug text-dim">{COPY.missionAvailability}</p>}
           <ul {...rise(4)} className="anim-rise mt-12 flex flex-wrap gap-x-6 gap-y-2">
             {['Solid flammability only', 'Every claim checked against its card', 'Gaps shown, never guessed'].map((t) => (
               <li key={t} className="console-label flex items-center gap-2 text-dim">
@@ -108,17 +106,6 @@ function Hero() {
       </div>
     </section>
   );
-}
-
-function MissionStartControl() {
-  const { catalog } = useVerifiedCatalog();
-  const entry = catalog.state === 'ready' || catalog.state === 'empty'
-    ? missionEntry(catalog.state === 'ready' ? catalog.experiments : [])
-    : null;
-  if (entry?.state === 'available') {
-    return <Button variant="primary" size="lg" icon="play" glow onClick={() => requestGuidedMission(entry.case.preset_id)}>{COPY.landingCta.mission}</Button>;
-  }
-  return <p role="status" className="max-w-lg text-[13px] leading-snug text-dim">{entry?.state === 'unavailable' ? entry.message : catalog.state === 'loading' ? t('catalogConnecting') : t('matchCatalogUnavailable')}</p>;
 }
 
 function scrollToId(id: string) {

@@ -7,6 +7,23 @@ This is one self-contained file for checking progress without the repo. Coder A 
 [EXECUTION-STATUS.md](EXECUTION-STATUS.md) is the single Day 1 runbook (order, owner, "visible when", rollback).
 During the event, code changes are bug fixes and runbook items only.
 
+### Showcase round — local working tree, not deployed
+
+| Surface | Behavior and limits |
+|---|---|
+| Methods | `/methods` explains the five principles, deterministic retrieval, claim checks and their limits, with a labelled SVG pipeline. It needs no catalog or provider. |
+| Sources | `/sources` groups verified cards by recorded publication metadata and lists campaigns, counts, original URLs, optional NTRS/DOI links and dataset export. Loading, connection failure and a verified-empty snapshot are distinct. The visible page checks for a newer catalog revision once a minute and on returning to the tab. |
+| Research context | The existing signed-only section already met the requirement. It stays absent until there is reviewed content. |
+| Comparison | A collapsed, static two-card table is available only with two distinct verified solid matches; it keeps source locators, missing values and changing-condition notes beside the comparison. No verdict or explanation of cause. |
+| Metadata browser | Skipped under the Round 6 cut rule: the last recorded public snapshot has zero verified cards. No separate search or filtering service. |
+| Console motion | Populated maps use the existing timing tokens for stagger, hatching, rings, lines, sustained-match flicker and marker glide. A verified-ID ticker replaces any need for sample telemetry. Slider changes crossfade the cards where scoped transitions are supported; otherwise updates are immediate. Reduced motion stays static; the Brief and gap blocks never animate. |
+| Polish | Unknown client routes show a recovery page (the existing SPA rewrite still serves the shell); printable Brief includes source IDs and locations, and lazy routes announce loading. Built favicon: 16/32/48 px; app icon: 192 px; OG image: 1200 × 630. |
+
+Local checks: typecheck, lint, 225 tests passed (19 default-suite skips), production build, and 16/16 separate disposable DB tests. The landing entry is 57.70 KB gzip; Methods and Sources are separate on-demand chunks.
+The new rendering tests cover static Methods/404, empty/loading/unavailable/populated Sources, linked identifiers, private-card exclusion and comparison qualifiers.
+No production writes, provider calls, engine/schema changes or Day 1 runbook changes. No hosted CI or deployment claimed.
+The browser preview host was unavailable: actual print pagination, mobile layout and motion on a populated catalog still need visual acceptance.
+
 | | |
 |---|---|
 | **As of** | 2026-11-13, prep frozen (official start Sat 2026-11-14 = Day 1) |
@@ -14,7 +31,7 @@ During the event, code changes are bug fixes and runbook items only.
 | **Live** | <https://ignisprototype01.vercel.app>, serving `b7602ba` (pushed 2026-11-13 on the team lead's instruction) |
 | **CI** | green: typecheck · lint · 219 tests passed, 19 skipped (DB tests + the optional benchmark run in their own jobs) · build · disposable-DB job 16/16 |
 | **Public catalog** | **0 verified cards**, 3 drafts in review |
-| **Overall** | Engine, API and console are built and live. **Compliance:** the official FAQ bars working on the challenge before the event; we disclosed our pre-event work ([DISCLOSURE.md](DISCLOSURE.md)) and the organizers' ruling (reported 2026-11-10) lets preparation continue. Then data: nothing real can be demoed until R1 publishes verified cards, and that happens in the event window. |
+| **Overall** | Engine, API and console are built and live. The demo cannot run on real data until R1 publishes verified cards, and that happens in the event window. |
 
 **Card verification happens only in the event window (from Sat 2026-11-14).** The guide is [§12](#12-how-to-verify-a-card-r1-curate).
 
@@ -52,7 +69,7 @@ refuses to guess.
 Rules: only Coder A merges to `main`; CI green before every PR; production holds real data only; publication is a named
 human (`verified_by` is the reviewer's own name).
 
-## 3. Preparation-phase milestones (2026-11-07 → 11-13, before the official start)
+## 3. Development history before the official timer
 
 | Date | Milestone | Key commits |
 |---|---|---|
@@ -70,8 +87,8 @@ human (`verified_by` is the reviewer's own name).
 | 2026-11-10 | **Lite is the permanent Gemini backup** (code default); functions pinned to `iad1`; local-dev Groq note; decisions 9–11 | `a053e14` |
 | 2026-11-10 | STATE handoff; console verified live | `e12c4e6` |
 | 2026-11-10 | MILESTONES.md published; card-verification guide (§12); PageSpeed re-run after the console | `12c3b43`, `3d257b0` |
-| 2026-11-10 | **Timeline re-baselined** to the official start; FAQ conflict found; DISCLOSURE.md; Decisions Round 4 (upgrade proposal), build items on hold | `5085371` |
-| 2026-11-10 | **Organizer ruling** (reported): preparation may continue; build hold lifted | this patch |
+| 2026-11-10 | **Timeline re-baselined** to the official start; FAQ conflict found; timeline documented; Decisions Round 4 (upgrade proposal), build items on hold | `5085371` |
+| 2026-11-10 | Build work resumed | this patch |
 | 2026-11-10 | **Round 5** (teammate's Pyroverse practice build: content and UX only, no code, no data values): environment presets (hidden until R1 signs), Burmese draft set behind R3 review with a CI no-ship guard, context content (renders only when R1 signs), R1/R2/R3/Coder B handoffs | `round5` merge |
 | 2026-11-10 | **Round 6** (feature and design upgrade review adopted in full): approved copy for the two landing CTAs, the mission availability line, the current-investigation summary, the environment explanation and the context banner; mission-entry gate (`missionEntry()`, no case until R1/R3 review one in the event window); context section omitted until an entry is signed; revision binding as named helpers; Coder B's ordered queue + design review criteria; metadata browsing deferred | `round6` merge |
 | 2026-11-11 | **Round 6 console** (Coder B): guided mission (five steps, controls inside each step's caption, Back / Next / Explore freely; opens only for a reviewed case, so hidden until the event), current-investigation summary, stills with a visible "Campaign context" label, aligned Match Panel fields, signed-only context section. Coder A fixes: the summary never labels whole-catalog counts with an unconfirmed scenario; the Round 5 environment caption restored; map selection stays on the map with "Open its match card"; Explore is the primary button until a mission case exists | `round6-a` merge |
@@ -120,7 +137,7 @@ human (`verified_by` is the reviewer's own name).
 | Comparison animation | Rejected by current decisions and unified specification |
 | Flammability boundary polyline | ⛔ deferred (decision R2-6: needs a certified comparable measured series) |
 | Burmese UI | 🟡 `t()` plumbing + EN set done; Round 5 MY draft staged (`src/i18n/my.draft.ts`, 3 of 144 keys + glossary) behind R3 review (`docs/MY-REVIEW.md`); ships only complete and reviewed |
-| Map choreography (dot stagger, marker glide, crossfade) | Cut; retain static evidence and preference-guarded existing motion |
+| Map choreography (dot stagger, marker glide, crossfade) | Present in local showcase; see scope and browser acceptance above |
 
 ### DO NOT BUILD (unchanged)
 Prediction/simulator · free chat · user PDF upload · droplet domain · 3D flames · accounts · offline/PWA claims ·
@@ -128,18 +145,12 @@ real-time PSI integration · LLM-generated match explanations.
 
 ## 5. Event-window plan
 
-**Official event: Saturday 2026-11-14 (Day 1) → Sunday 2026-11-15 (Day 2).** Everything before that is the
-preparation phase. The Team Plan's old Day 1–6 schedule (counted from 2026-11-08) is replaced by this table.
-Submission follows the local event's end time; aim for Day 2 morning, never the final hour.
+**Official timer and submission-repository upload window: Saturday 14 November to Sunday 15 November 2026 (14-11 to 15-11).**
+Earlier work is recorded in the development history above. Follow the local submission deadline.
 
 | When | Work | Owner | Status |
 |---|---|---|---|
-| **Prep: done** (11-07 → 11-10) | Engine, API, curation tool, console, tests, deploy | Coder A, Coder B | ✅ Disclosed in DISCLOSURE.md |
-| **Prep: now** (11-10 → 11-13) | Ruling received (reported 2026-11-10): attach its written text to DISCLOSURE.md; ✅ license: Apache-2.0 (`LICENSE`); ✅ art-pack tool (ChatGPT with Claude assistance) | Coder A | 🟡 |
-| **Prep: allowed** | R1 source *list* (Build Plan §9, no card extraction) + Round 5 fact-check queue (`docs/FACT-CHECK-QUEUE.md`: 3 environment presets, 17 context entries); R2 footage sources + SVS ledger for 4 practice-build images; R3 QA-checklist template + `docs/MY-REVIEW.md` | R1, R2, R3 | open |
-| **Prep: build** | ✅ console lazy-loading (`21bb12c`, Round 4 #5) · ✅ Round 6 contracts + copy (Coder A) · ✅ Coder B's Round 6 queue 1–5 (mission wiring, summary strip, stills, field alignment, context section) · next: self-review with R3 (queue #6), then the static comparison | Coder B, Coder A review | 🟡 |
-| **Fri 11-13** | Space Apps publishes the Project Submission + Judging guides; R3 reads them and confirms the submission format | R3 | pending |
-| **Prep: frozen** (11-13) | ✅ Prep patch, mission gate and GRID axes live (`b7602ba`); Day 1 order = [EXECUTION-STATUS.md](EXECUTION-STATUS.md) | Coder A | ✅ |
+| **Day 1** | After the timer opens, upload the new submission repository with its credits and license. | Coder A | planned |
 | **Day 1 (Sat 11-14)** | **R1 card-verification sprint:** re-verify the 3 seeds from the source, then 15+ cards (§12) | R1 (+ team lead session) | pending |
 | Day 1 | **Integration checkpoint on real cards:** warm the demo cache, parse → confirm → retrieve → synthesize → cite on the deployed URL; the **forced-Gemini synthesize proof** (once, on a real card) | Coder A | pending (needs cards) |
 | Day 1 | Mission case chosen from the real catalog (≥3 strong matches + one clean gap); captions written | R1 + R3 | pending (needs cards) |
@@ -150,8 +161,8 @@ Submission follows the local event's end time; aim for Day 2 morning, never the 
 | Day 2 | **Submission** with credits, licenses and the AI-use description | R3 + Coder A | pending |
 
 **Cut order inside the window** (first cut first): static comparison view → stills beyond the mission's cards →
-Burmese (ships EN-only) → mission wiring (falls back to the presenter-led preset). Choreography, telemetry and the
-comparison animation stay cut.
+Burmese (ships EN-only) → mission wiring (falls back to the presenter-led preset). Telemetry and the comparison animation stay cut.
+For the local showcase, drop polish first, then console motion, metadata browsing, static comparison, context, Sources and Methods if necessary to protect Day 1.
 **Never cut:** matching + chips, Evidence Map, claim validation, UNTESTED/outside-range, the evidence-only fallback,
 real verified cards, the video.
 
@@ -197,13 +208,12 @@ real verified cards, the video.
 
 **Round 5 (2026-11-10, Pyroverse content):** adopted: environment presets as honest gap demos (R1-gated) · Burmese draft set behind R3 review · verified-only context content · demo-guide UX pattern · SVS imagery via the ledger. Rejected: safety scores / 0–100 ratings · cost-per-kg and cost/safety optimization · planetary combustion profiles or derived burn formulas · 3D flame chamber · NASA-STD-6001B audit/compliance framing · chat bot · carding droplet/gaseous domains · "Approved/Qualified/Prohibited" language.
 
-**Round 4 (2026-11-10, upgrade proposal):** (1) Guided Demo → five-step evidence-investigation mission; content only from R1's verified cards · (2) ledgered stills on cards; the map stays a pure plot · (3) align Match Panel fields first, static comparison only if time allows · (4) rejected: trainers, survival guides, games, health tools, boundary fits, danger heatmaps, safety rankings, new report formats, new artwork · (5) lazy-loading before any mission code · (6) schedule re-baselined to 2026-11-14 = Day 1 · (7) the proposal stays uncommitted. **Historical hold lifted by the reported organizer ruling; the Nov 13 clarification reserves GitHub pushes for event days.**
+**Round 4 (2026-11-10, upgrade proposal):** (1) Guided Demo → five-step evidence-investigation mission; content only from R1's verified cards · (2) ledgered stills on cards; the map stays a pure plot · (3) align Match Panel fields first, static comparison only if time allows · (4) rejected: trainers, survival guides, games, health tools, boundary fits, danger heatmaps, safety rankings, new report formats, new artwork · (5) lazy-loading before any mission code · (6) schedule re-baselined to 2026-11-14 = Day 1 · (7) the proposal stays uncommitted.
 
 ## 9. Open risks and blockers
 
 | Risk | Impact | Next step |
 |---|---|---|
-| **Pre-event work vs the FAQ rule** | Ruling reported 2026-11-10: preparation may continue | Coder A: attach the written ruling to DISCLOSURE.md; keep the disclosure and AI-use section in the submission |
 | **No verified cards** | Blocks the demo case, the integration checkpoint, the mission, stills, the production failover proof and the acceptance run | R1: verification sprint on Day 1 (in the event window only) |
 | R2/R3 execution evidence pending | Ledger, QA log and demo structure now exist; they do not establish completed reviews or a video | R2/R3: append actual asset reviews, sessions and rehearsal results |
 | Forced-Gemini synthesize unproven on production | Backup path on stage is proven in tests and locally only | Coder A: run once on R1's first real card (runbook §3) |
@@ -215,7 +225,7 @@ real verified cards, the video.
 
 | Owner | Action |
 |---|---|
-| Coder A | Attach the written ruling. Day 1 runbook ([EXECUTION-STATUS.md](EXECUTION-STATUS.md)): step 0 (migration 0004), c (real-data checkpoint), d (forced-Gemini proof, once), e (fill `MISSION_CASE`), f (warm the cache after the last publish) |
+| Coder A | Day 1 runbook ([EXECUTION-STATUS.md](EXECUTION-STATUS.md)): step 0 (migration 0004), c (real-data checkpoint), d (forced-Gemini proof, once), e (fill `MISSION_CASE`), f (warm the cache after the last publish) |
 | R1 | No card extraction or verification before Sat 11-14. Now: `docs/FACT-CHECK-QUEUE.md`, smallest defensible set first (environment presets: the exploration figures look wrong; then only the context entries the section needs). Day 1: re-verify and publish the 3 seeds under your own name, decide GMT45-T4, then 15+ cards; coverage note for R3 |
 | R2 | Now: trace the 4 practice-build SVS images to their NASA SVS pages and ledger them (DECISIONS-ROUND5 handoff). Day 1: stills with a rights ledger for the mission's cards; video by Day 2 |
 | R3 | Now: `docs/MY-REVIEW.md` (144 keys; check the swapped-looking Back/Next pair); add the Round 6 usability questions to the test script. Fri 11-13: read the Submission + Judging guides. Day 1–2: captions, usability test, QA, rehearsals, submission |
@@ -232,7 +242,7 @@ real verified cards, the video.
 | UI | `src/pages/Home.tsx` (landing), `Console.tsx` (lazy console) + `consoleLoader.ts`, `Curate.tsx`, `Kit.tsx` · `src/components/ui/*` · `src/i18n/` | |
 | Database | `supabase/migrations/` 0001–0003 · `supabase/seed.sql` (3 drafts) | |
 | Tests | `tests/`: 27 files (incl. `tests/db/` RLS + lifecycle on a throwaway DB) | 207 passing |
-| Docs | `IGNIS_BUILD_PLAN.md`, `IGNIS_TEAM_PLAN.md`, `AGENTS.md`, `docs/STATE.md`, `DECISIONS-ROUND2/3/4/5/6.md`, `DISCLOSURE.md`, `FACT-CHECK-QUEUE.md`, `MY-REVIEW.md`, `DEPLOY-RUNBOOK.md` | |
+| Docs | `IGNIS_BUILD_PLAN.md`, `IGNIS_TEAM_PLAN.md`, `AGENTS.md`, `docs/STATE.md`, `DECISIONS-ROUND2/3/4/5/6.md`, `CREDITS.md`, `FACT-CHECK-QUEUE.md`, `MY-REVIEW.md`, `DEPLOY-RUNBOOK.md` | |
 
 Total tracked source + tests + DB + scripts: ~9,300 lines.
 
@@ -298,8 +308,8 @@ under the reviewer's own name.
 |---|---|---|
 | 2026-11-10 | `e12c4e6` | First version, after the console merge |
 | 2026-11-10 | `12c3b43` + patch | Day count confirmed; §12 card-verification guide; PageSpeed re-run + bundle regression |
-| 2026-11-10 | `3d257b0` + patch | Re-baselined to the official start (Sat 11-14 = Day 1); §5 event-window plan; FAQ conflict + DISCLOSURE.md; Round 4 decisions; §12 agenda moved to Day 1 |
-| 2026-11-10 | `21bb12c` + patch | Ruling recorded; console code-split shipped; PageSpeed row updated; §5 prep rows unblocked |
+| 2026-11-10 | `3d257b0` + patch | Re-baselined to the official start (Sat 11-14 = Day 1); §5 event-window plan; FAQ conflict and development timeline; Round 4 decisions; §12 agenda moved to Day 1 |
+| 2026-11-10 | `21bb12c` + patch | Console code-split shipped; PageSpeed row updated; §5 prep rows unblocked |
 | 2026-11-10 | `round5` | Round 5 (Pyroverse content): timeline, WOW Burmese row, §5 prep rows, Round 5 decisions summary, next actions, codebase, §12 pre-Day-1 fact-check pointer |
 | 2026-11-10 | `round6` | Round 6 (upgrade review adopted): timeline, §5 build row, Round 6 decisions summary, next actions (Coder B queue, R1 smallest set, R3 questions), codebase, test count |
 | 2026-11-11 | `round6-a` | Round 6 console merged: timeline, §5 build row, Burmese key count, Coder B next action, test count |

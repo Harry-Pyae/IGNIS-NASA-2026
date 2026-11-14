@@ -1,6 +1,6 @@
 # IGNIS — Team Plan v2 (2 coders + optional 3rd · 3 research/testing members)
 
-**NASA Space Apps · "Flame in Freefall" · Remaining build window: ~6 days**
+**NASA Space Apps · "Flame in Freefall" · Official event: Saturday 14 November to Sunday 15 November 2026**
 
 **Status:** the Foundation (old Part 1) is **COMPLETE** — both rounds: scaffold,
 schema + RLS, design tokens/primitives/icons, shared types with frozen
@@ -216,16 +216,14 @@ dated and passing.
 
 ---
 
-## Remaining schedule (~6 days)
+## Official event schedule: 14-11 to 15-11 (2026)
 
-| Day | Milestone (end of day) |
+| Day | Team handoff |
 |---|---|
-| **1** | Coder A: resolver + gates + similarity tested on seeds. Coder B: Scenario Builder + static Evidence Map. R1: seeds re-verified + 5 new cards. R2: source footage pull started, first stills. R3: QA checklist drafted, first pass on live URL. |
-| **2** | Engine complete (gaps, coverage, chips). Console: Match Panel + map interactions. **15 verified cards.** R3: captions draft. |
-| **3** | **Integration checkpoint:** full live flow — parse → match → synthesize → validated Brief on the deployed URL. Guided Demo wired. 20 cards. First full QA sweep. |
-| **4** | Honesty surfaces complete (gap shading, outside-range, provenance, export). Choreography. 25 cards + telemetry curves. R2: all card stills in. Dress rehearsal #0. |
-| **5** | Coder C list (or its fallback subset). 30+ cards. Video rough cut. Full QA regression. Demo scenario locked from coverage note. |
-| **6** | **Feature freeze (morning).** Video final. Two timed rehearsals. Bug-fix only. Final acceptance run + QA log complete. Submission prepared; submitted next morning with buffer. |
+| Saturday 14 November | Once the timer starts, Coder A uploads the submission repository. R1 verifies cards, R1/R3 choose the mission, R2 checks media, and Coder A tests the real-data flow. |
+| Sunday 15 November | R3 runs the participant tests and rehearsals, R2 finishes the video, and R3 and Coder A submit before the local deadline. |
+
+Use the [event runbook](docs/EXECUTION-STATUS.md) for the order of operations and the [milestones](docs/MILESTONES.md) for ownership.
 
 **Cut order when a day slips** (first cut first): boundary polyline →
 comparison animation → auto-play captions (static captions stay) →

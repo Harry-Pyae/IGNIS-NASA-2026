@@ -3,7 +3,8 @@
  * Code-split out of the landing chunk: Home.tsx lazy-loads it (src/pages/consoleLoader.ts decides when),
  * so the engine, Zod schemas and console UI stay off the first paint. Owner: Coder B (console sections).
  */
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
+import { flushSync } from 'react-dom';
 import { Badge, Button, Chip, CitationChip, Panel, PresetChip, SectionHeader, Slider } from '../components/ui';
 import { useVerifiedCatalog } from '../lib/catalog';
 import { COPY } from '../lib/copy';
@@ -15,6 +16,7 @@ import { FIELD_UNITS, PARAM_LABELS, ParseScenarioResponseSchema, SynthesizeRespo
 import { gapGrid, gapRadar, GRID, type GapRadar as GapRadarData } from '../engine/gaps';
 import { whyMatched } from '../engine/match';
 import { t } from '../i18n';
+import { CardComparison } from '../components/CardComparison';
 import { missionEntry } from '../engine/mission';
 import { contextSection } from '../lib/context-content';
 import { GUIDED_MISSION_REQUEST, takePendingMission } from './consoleLoader';
@@ -174,10 +176,19 @@ export function Console() {
   }
 
   function moveSlider(update: Partial<Pick<ParsedScenario, 'o2_pct' | 'flow_cm_s'>>) {
-    setScenario((current) => ({ ...current, ...update }));
-    if ('o2_pct' in update) setAppliedEnvironmentId(null);
-    setConfirmed((current) => current ? { ...current, ...update } : null);
-    setMessage('');
+    const apply = () => {
+      setScenario((current) => ({ ...current, ...update }));
+      if ('o2_pct' in update) setAppliedEnvironmentId(null);
+      setConfirmed((current) => current ? { ...current, ...update } : null);
+      setMessage('');
+    };
+    const panel = document.querySelector<HTMLElement & {startViewTransition?: (update: () => void) => ViewTransition}>('.match-cards');
+    if (confirmed && panel?.startViewTransition && window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+      // Scope the crossfade to the cards: the Brief and map stay fully live.
+      const fade = panel.startViewTransition(() => flushSync(apply));
+      // A superseded slider transition skips its animation but still applies its update.
+      void fade.ready.catch(() => {});
+    } else apply();
   }
 
   const activeEnvironment = ENVIRONMENTS.find((env) => env.id === appliedEnvironmentId && env.o2_pct === scenario.o2_pct && env.pressure_kpa === scenario.pressure_kpa) ?? null;
@@ -260,6 +271,10 @@ export function Console() {
 
   return (
     <div id="console" className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-24 sm:px-6">
+      {views && views.eligible.length > 0 && <div className="experiment-ticker min-w-0 overflow-hidden border-y border-border py-2 text-xs text-dim" aria-label="Verified experiment IDs">
+        {confirmed && <p className="console-label mb-1 text-dim"><span aria-hidden="true" className="anim-blink mr-2 inline-block size-1.5 rounded-full bg-amber"/>Live retrieval</p>}
+        <div className="anim-ticker flex w-max font-mono">{[0,1].map(copy => <div aria-hidden={copy === 1} key={copy} className="flex shrink-0">{views.eligible.map(c => <span key={c.id} className="pr-8">{experimentLabel(c)}</span>)}</div>)}</div>
+      </div>}
       <Panel as="section" aria-labelledby="s1" className="reveal">
         <SectionHeader id="s1" step={t('describeStep')} title={t('missionScenario')} />
         <MissionCaption step={guidedStep === 0 ? 0 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[0].caption)} />
@@ -409,10 +424,12 @@ export function Console() {
         <SectionHeader id="s3" step={t('matchesStep')} title={t('matchPanel')} />
           <MissionCaption step={guidedStep === 2 ? 2 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[2].caption)} />
           <MatchPanel matches={views?.top_k ?? []} status={dataStatus} confirmed={confirmed !== null} selectedId={selectedId} onSelect={setSelectedId} />
+          {confirmed && views && <CardComparison cards={views.top_k.map(m => m.experiment)}/>}
         </Panel>
-        <Panel as="section" aria-labelledby="s4" className="motion-still">
+        <Panel as="section" aria-labelledby="s4" className="mission-brief motion-still">
           <SectionHeader id="s4" step={t('briefStep')} title={t('missionBrief')} />
           <MissionCaption step={guidedStep === 3 ? 3 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[3].caption)} />
+          {confirmed && <p className="brief-print-only">IGNIS · {confirmed.material.status === 'resolved' ? confirmed.material.fuel_material : COPY.materialUnresolved} · {COPY.summary.o2(confirmed.o2_pct)} · {COPY.summary.flow(confirmed.flow_cm_s)} · Catalog revision: {revision}</p>}
           <MissionBrief
             briefing={activeBriefing}
             status={activeBriefStatus}
@@ -611,6 +628,7 @@ export function EvidenceMap({
                 </pattern>
                 <clipPath id="ignis-plot-clip"><rect x={left} y={top} width={plotWidth} height={plotHeight} /></clipPath>
               </defs>
+              <g className="map-hatching" style={{'--dots': plotted.length} as CSSProperties}>
               {grid.cells.flatMap((row) => row).map((cell) => cell.state === 'tested' ? null : (
                 <rect
                   key={`${cell.o2_min}-${cell.flow_min}`}
@@ -625,6 +643,12 @@ export function EvidenceMap({
                   strokeWidth=".5"
                 />
               ))}
+              </g>
+              <g clipPath="url(#ignis-plot-clip)" aria-hidden="true" pointerEvents="none">
+                <foreignObject x={left} y={top} width={plotWidth} height={plotHeight}>
+                  <div className="map-radar anim-radar" />
+                </foreignObject>
+              </g>
               {grid.envelope && (
                 <rect
                   x={x(grid.envelope.flow_min)}
@@ -659,10 +683,10 @@ export function EvidenceMap({
               <g clipPath="url(#ignis-plot-clip)">
               {scenario?.o2_pct != null && scenario.flow_cm_s != null && matches.slice(0, 3).map(({ experiment }) => (
                 experiment.o2_pct != null && experiment.flow_cm_s != null && (
-                  <line key={`match-${experiment.id}`} x1={x(scenario.flow_cm_s!)} y1={y(scenario.o2_pct!)} x2={x(experiment.flow_cm_s!)} y2={y(experiment.o2_pct!)} stroke="var(--color-amber)" strokeWidth="1.2" strokeDasharray="4 5" opacity=".7" />
+                  <line className="anim-ants" key={`match-${experiment.id}`} x1={x(scenario.flow_cm_s!)} y1={y(scenario.o2_pct!)} x2={x(experiment.flow_cm_s!)} y2={y(experiment.o2_pct!)} stroke="var(--color-amber)" strokeWidth="1.2" strokeDasharray="4 5" opacity=".7" />
                 )
               ))}
-              {plotted.map((experiment) => (
+              {plotted.map((experiment,i) => (
                 <g
                   key={experiment.id}
                   id={`map-point-${experiment.id}`}
@@ -677,15 +701,16 @@ export function EvidenceMap({
                   <circle cx={x(experiment.flow_cm_s!)} cy={y(experiment.o2_pct!)} r="18" fill="transparent" />
                   {matchIds.has(experiment.id) && <circle cx={x(experiment.flow_cm_s!)} cy={y(experiment.o2_pct!)} r="9" fill="none" stroke="var(--color-text)" strokeWidth="1.25" />}
                   {selectedId === experiment.id && <circle cx={x(experiment.flow_cm_s!)} cy={y(experiment.o2_pct!)} r="13" fill="none" stroke="var(--color-amber)" strokeWidth="2" />}
-                  <OutcomeMark outcome={experiment.outcome} x={x(experiment.flow_cm_s!)} y={y(experiment.o2_pct!)} color={outcomeColor(experiment.outcome)} />
+                  <g className="anim-dot-in map-dot" style={{'--i':i} as CSSProperties}><g className={experiment.outcome === 'sustained' && matchIds.has(experiment.id) ? 'anim-flicker' : undefined}><OutcomeMark outcome={experiment.outcome} x={x(experiment.flow_cm_s!)} y={y(experiment.o2_pct!)} color={outcomeColor(experiment.outcome)} /></g></g>
                   <title>{experiment.test_id} · {experiment.outcome ?? t('outcomeNotReported')} · {experiment.o2_pct}% O₂ · {experiment.flow_cm_s} cm/s</title>
                 </g>
               ))}
               </g>
               {scenario?.o2_pct != null && scenario.flow_cm_s != null && onMapAxes(scenario.o2_pct, scenario.flow_cm_s) && (
-                <g aria-label={`Scenario marker: ${scenario.flow_cm_s} centimeters per second airflow, ${scenario.o2_pct}% oxygen`}>
-                  <circle cx={x(scenario.flow_cm_s)} cy={y(scenario.o2_pct)} r="11" fill="none" stroke="var(--color-text)" strokeWidth="2" />
-                  <circle cx={x(scenario.flow_cm_s)} cy={y(scenario.o2_pct)} r="3" fill="var(--color-text)" />
+                <g className="scenario-glide" style={{transform: `translate(${x(scenario.flow_cm_s)}px, ${y(scenario.o2_pct)}px)`}} pointerEvents="none" aria-label={`Scenario marker: ${scenario.flow_cm_s} centimeters per second airflow, ${scenario.o2_pct}% oxygen`}>
+                  {[false,true].map(second => <circle aria-hidden="true" key={String(second)} className={'map-pulse anim-pulse-ring'+(second ? ' is-second' : '')} r="9" fill="none" stroke="var(--color-text)" />)}
+                  <circle r="11" fill="none" stroke="var(--color-text)" strokeWidth="2" />
+                  <circle r="3" fill="var(--color-text)" />
                 </g>
               )}
             </svg>
@@ -735,7 +760,7 @@ export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }:
   return (
     <div>
     <p className="mb-3 text-sm leading-relaxed text-dim">{COPY.matchOrder}</p>
-    <div className="grid auto-rows-fr gap-3 lg:grid-cols-3">
+    <div className="match-cards grid auto-rows-fr gap-3 lg:grid-cols-3">
       {matches.map((match, index) => {
         const why = whyMatched(match);
         const { experiment } = match;
@@ -871,6 +896,12 @@ function MissionBrief({
         );
       })}
       <p className="text-[12px] leading-relaxed text-dim">{COPY.claimsGuarantee}</p>
+      <ol className="brief-print-only" aria-label="Brief sources">{briefing.evidence.map(({evidence_id, experiment_id}) => {
+        const card = matches.find(m => m.experiment.id === experiment_id)?.experiment;
+        if (!card) return null;
+        const source = evidenceSource(card);
+        return <li key={evidence_id}>[{evidence_id}] {experimentLabel(card)} · {card.source_title} · {evidenceLocator(card)} {source?.url}</li>;
+      })}</ol>
     </div>
   );
 }

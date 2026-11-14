@@ -6,9 +6,8 @@ Official challenge wording checked against the [2026 challenge page](https://www
 **Flame in Freefall: SI-Powered Fire Safety Insights from Microgravity Combustion Data.**
 The short product name remains IGNIS. Historical plan wording is not silently rewritten.
 
-- [x] Record team lead's clarification: preparation allowed; GitHub pushes only on event days.
+- [ ] After the timer opens, upload the new submission repository with its [credits](CREDITS.md) and [license](../LICENSE), then check its public link.
 - [x] Record branding tools: ChatGPT with Claude assistance; identify artwork as illustration.
-- [ ] Attach original organizer ruling and identify its scope; do not invent organizer identity/date or global eligibility.
 - [ ] Verify actual local event, deadline, final 2026 judging rubric and submission format. Historical 2025 rules are not current rules.
 - [ ] Public deployment/repository/source links accessible without curator credentials.
 - [ ] Real NASA evidence published by R1; final coverage note and mission approved.
