@@ -64,7 +64,35 @@ export const COPY = {
   // Round 3 plain-language layer (docs/WHO-DOES-WHAT.md). One sentence + one anchor already in the product, ≤ 25 words.
   // Longer explanations live in `glossary` (/methods). Facts still waiting for R1's source are deliberately absent:
   // the Moon-base oxygen figure, "flames need moving air", the ISS cabin pressure, and the transition/partial outcomes.
+  help: {
+    label: 'How to use this',
+    home: 'Start with a preset, find matching experiments, then open a citation to check the original observation.',
+    scenario: 'Choose a material and form. Leave conditions you do not know unspecified.',
+    map: 'Select a point to inspect its experiment. Check the evidence counts for runs without map coordinates.',
+    matches: 'Exact matches share the requested material. Class matches use a different material in the same class. Open a source to check the observation.',
+    brief: 'Select an evidence ID to open its card. If narration is unavailable or a claim is withheld, follow the available experiment sources.',
+    gaps: 'Read each gap within the current IGNIS catalog. A hatched region has no verified card at those conditions.',
+    methods: 'Follow the pipeline to see how IGNIS checks a proposed statement against cited experiment fields before showing it.',
+    sources: 'Open a paper or dataset by campaign, or export the verified catalog as JSON.',
+    library: 'Search or filter the verified cards. Clear your search and filters to return to the full catalog.',
+    detail: 'Read the original quote, check its source locator, and compare the normalized units in the conditions table.',
+    compare: 'Choose two distinct experiments. Check the changing-condition notes before comparing reported values.',
+    curate: 'Save a private draft, reopen it to review each field against its source, then publish under your name.',
+    kit: 'Use this internal page to check shared components and their states.',
+    notFound: 'Use the home link to return to IGNIS.',
+  },
   plain: {
+    presets: {
+      counts: (eligible: number, exact: number, classOnly: number) =>
+        `${eligible} verified ${eligible === 1 ? 'run' : 'runs'} · ${exact} exact material · ${classOnly} same class`,
+      map: (visible: number, offAxis: number, missing: number) =>
+        `${visible} on map · ${offAxis} outside axes · ${missing} missing coordinates`,
+      runCount: (n: number) => `${n} verified ${n === 1 ? 'run' : 'runs'}`,
+      needsMaterial: 'Choose a material',
+      noRuns: 'No compatible runs in this catalog',
+      explore: 'Explore a documented case',
+      library: 'Browse verified experiments',
+    },
     draft: { restored: "Unfinished inputs restored.", discard: "Discard draft", return: "Return to your draft" },
     retrieval: { find: "Find matching experiments", choose: "Choose a material", view: "View ranked experiments" },
     hints: {

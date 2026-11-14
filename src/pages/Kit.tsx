@@ -152,7 +152,7 @@ export function Kit() {
   const [active, setActive] = useState('Cabin wall panel (PMMA)');
   return (
     <Page wide className="flex flex-col gap-6">
-      <PageHeader eyebrow="Design kit" title="IGNIS primitives" intro={<>
+      <PageHeader help="helpKit" eyebrow="Design kit" title="IGNIS primitives" intro={<>
         Import from <code className="font-mono text-text">src/components/ui</code>. Tokens live in{' '}
         <code className="font-mono text-text">src/styles/tokens.css</code>. Every page uses <code className="font-mono text-text">Page</code> + <code className="font-mono text-text">PageHeader</code>.
       </>} />
