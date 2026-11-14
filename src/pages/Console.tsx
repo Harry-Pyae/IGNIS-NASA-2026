@@ -512,7 +512,7 @@ export function Console() {
         <div className="mb-5 grid gap-5">
             <Slider label="O₂" describedBy="scenario-hint-o2" hint={<InputHint field="o2" label="O₂" />} unit="%" min={14} max={30} value={scenario.o2_pct} onChange={(value) => moveSlider({ o2_pct: value })} onClear={() => moveSlider({ o2_pct: null })} allowUnspecified unspecifiedValue={21} unspecifiedLabel={t('notSpecified')} setValueLabel={t('setOxygen')} clearValueLabel={t('clearOxygen')} />
             <Slider label="Airflow" describedBy="scenario-hint-airflow" hint={<InputHint field="airflow" label="Airflow" />} unit="cm/s" min={0} max={30} value={scenario.flow_cm_s} onChange={(value) => moveSlider({ flow_cm_s: value })} onClear={() => moveSlider({ flow_cm_s: null })} allowUnspecified unspecifiedLabel={t('notSpecified')} setValueLabel={t('setAirflow')} clearValueLabel={t('clearAirflow')} />
-            <p className="text-[13px] text-dim">{COPY.sliderCaption}</p>
+            <p className="text-[14px] text-dim">{COPY.sliderCaption}</p>
         </div>
         <div className="mb-4 flex flex-col gap-2 border-b border-border pb-3">
             <p className="text-sm text-dim break-words">
@@ -642,19 +642,19 @@ export function Console() {
                     <PresetChip key={env.id} active={activeEnvironment?.id === env.id} onClick={() => chooseEnvironment(env)}>{env.label}</PresetChip>
                   ))}
                 </div>
-                <p className="text-[13px] text-dim">{COPY.environmentCaption}</p>
+                <p className="text-[14px] text-dim">{COPY.environmentCaption}</p>
                 {activeEnvironment && (
-                  <p className="text-[13px] text-text">
+                  <p className="text-[14px] text-text">
                     {COPY.environmentExplanation} {activeEnvironment.context}{' '}
                     {activeEnvironment.verification.source_url && <a href={activeEnvironment.verification.source_url} target="_blank" rel="noreferrer" className={textLink}>{t('source')}</a>}
                   </p>
                 )}
-                {activeEnvironment && <p role="status" className="text-[13px] text-dim">{COPY.environmentApplied}</p>}
-                {activeEnvironment && <p className="text-[13px] text-dim">{COPY.environmentLimit}</p>}
-                {activeEnvironment && isElevatedO2(activeEnvironment) && <p className="text-[13px] text-warn">{COPY.elevatedO2(activeEnvironment.o2_pct)}</p>}
+                {activeEnvironment && <p role="status" className="text-[14px] text-dim">{COPY.environmentApplied}</p>}
+                {activeEnvironment && <p className="text-[14px] text-dim">{COPY.environmentLimit}</p>}
+                {activeEnvironment && isElevatedO2(activeEnvironment) && <p className="text-[14px] text-warn">{COPY.elevatedO2(activeEnvironment.o2_pct)}</p>}
               </div>
             )}
-            {evidenceUpdated && !mapInView && confirmed && <p role="status" className="flex flex-wrap items-center gap-x-2 self-start rounded-full border border-raised bg-bg/60 px-3 py-1 text-[13px] text-text">
+            {evidenceUpdated && !mapInView && confirmed && <p role="status" className="flex flex-wrap items-center gap-x-2 self-start rounded-full border border-raised bg-bg/60 px-3 py-1 text-[14px] text-text">
               {COPY.plain.evidenceUpdated} · <Button variant="tertiary" onClick={showMap}>{COPY.plain.viewEvidence}</Button>
             </p>}
             <div className="rounded-xl border border-border bg-bg/45 p-3" aria-live="polite">
@@ -823,21 +823,32 @@ function MapLegend({ outcomeColor }: { outcomeColor: (outcome: Experiment['outco
     { key: 'outside' as const, label: t('outsideCatalogRange'), swatch: <i aria-hidden className="h-3 w-4 rounded-sm border border-dashed border-faint/60 bg-faint/10" />, caption: COPY.plain.map.outside },
   ];
   const caption = items.find((item) => item.key === active)?.caption ?? COPY.mapScope;
+  // Two groups, so what can be pressed never sits beside what can't: explained items are bordered buttons;
+  // items without approved copy are a plain key below.
+  const explained = items.filter((item) => item.caption);
+  const keyOnly = items.filter((item) => !item.caption);
   return (
-    <div className="mt-4">
-      <p className="console-label mb-1 text-faint">{COPY.plain.map.prompt}</p>
-      <div className="-ml-2.5 flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-dim" role="group" aria-label="Evidence map legend">
-        {items.map((item) => item.caption ? (
-          <button key={item.key} type="button" aria-pressed={active === item.key} aria-controls="map-legend-caption"
-            onClick={() => setActive((current) => current === item.key ? null : item.key)}
-            className="bubble-control pressable inline-flex min-h-9 items-center gap-2 rounded-full border border-transparent px-2.5 can-hover:hover:border-border can-hover:hover:text-text aria-pressed:border-amber/50 aria-pressed:bg-amber/[0.06] aria-pressed:text-text">
-            {item.swatch}{item.label}
-          </button>
-        ) : (
-          <span key={item.key} className="inline-flex min-h-9 items-center gap-2 px-2.5">{item.swatch}{item.label}</span>
-        ))}
+    <div className="mt-4" role="group" aria-label={t('legendRegion')}>
+      <p className="console-label mb-2 text-faint">{COPY.plain.map.prompt}</p>
+      <div className="grid gap-x-3 gap-y-2 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-baseline">
+        <p id="legend-explained" className="text-sm text-dim">{t('legendExplained')}</p>
+        <div className="flex flex-wrap gap-2" role="group" aria-labelledby="legend-explained">
+          {explained.map((item) => (
+            <button key={item.key} type="button" aria-pressed={active === item.key} aria-controls="map-legend-caption"
+              onClick={() => setActive((current) => current === item.key ? null : item.key)}
+              className="bubble-control pressable inline-flex min-h-9 items-center gap-2 rounded-full border border-border px-3 text-sm text-text can-hover:hover:border-raised aria-pressed:border-amber/60 aria-pressed:bg-amber/[0.08]">
+              {item.swatch}{item.label}
+            </button>
+          ))}
+        </div>
+        {keyOnly.length > 0 && <>
+          <p id="legend-key-only" className="text-sm text-dim">{t('legendKeyOnly')}</p>
+          <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-dim" aria-labelledby="legend-key-only">
+            {keyOnly.map((item) => <li key={item.key} className="inline-flex min-h-9 items-center gap-2">{item.swatch}{item.label}</li>)}
+          </ul>
+        </>}
       </div>
-      <p id="map-legend-caption" aria-live="polite" className={cx('mt-2 min-h-[4.5rem] border-l-2 pl-3 text-sm leading-relaxed', active ? 'border-amber/60 text-text' : 'border-border text-dim')}>{caption}</p>
+      <p id="map-legend-caption" aria-live="polite" className={cx('mt-3 min-h-[3.5rem] border-l-2 pl-3 text-sm leading-relaxed', active ? 'border-amber/60 text-text' : 'border-border text-dim')}>{caption}</p>
     </div>
   );
 }
@@ -851,7 +862,7 @@ function ConditionBar({ summary: { scenario, confirmed, counts }, action, onActi
   const name = material.status === 'resolved' ? material.fuel_material.replace(/_/g, ' ') : material.raw ?? t('notSpecified');
   return (
     <div role="region" aria-label={COPY.summary.scenario} className="fixed inset-x-0 top-[var(--header-h,0px)] z-30 border-b border-border bg-bg/95 backdrop-blur-sm xl:hidden">
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2 text-[13px] sm:px-6">
+      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2 text-[14px] sm:px-6">
         <p className="min-w-0 flex-1 truncate text-text">
           {name} · {COPY.summary.o2(scenario.o2_pct)} · {COPY.summary.flow(scenario.flow_cm_s)}
           {confirmed && counts && <span className="text-dim"> · {COPY.summary.topMatches(counts.top_k ?? 0)}</span>}
@@ -1062,19 +1073,19 @@ export function EvidenceMap({
               {ticks(GRID.flow.min, GRID.flow.max, 5).map((flow) => (
                 <g key={`x-${flow}`}>
                   <line x1={x(flow)} x2={x(flow)} y1={top} y2={top + plotHeight} stroke="var(--plot-grid)" strokeDasharray="3 5" />
-                  <text x={x(flow)} y={height - 20} textAnchor="middle" fill="var(--color-dim)" fontSize="11">{flow}</text>
+                  <text x={x(flow)} y={height - 20} textAnchor="middle" fill="var(--color-dim)" fontSize="12">{flow}</text>
                 </g>
               ))}
               {ticks(GRID.o2.min, GRID.o2.max, 4).map((o2) => (
                 <g key={`y-${o2}`}>
                   <line x1={left} x2={left + plotWidth} y1={y(o2)} y2={y(o2)} stroke="var(--plot-grid)" strokeDasharray="3 5" />
-                  <text x={left - 10} y={y(o2) + 4} textAnchor="end" fill="var(--color-dim)" fontSize="11">{o2}</text>
+                  <text x={left - 10} y={y(o2) + 4} textAnchor="end" fill="var(--color-dim)" fontSize="12">{o2}</text>
                 </g>
               ))}
               <line x1={left} x2={left + plotWidth} y1={top + plotHeight} y2={top + plotHeight} stroke="var(--color-faint)" />
               <line x1={left} x2={left} y1={top} y2={top + plotHeight} stroke="var(--color-faint)" />
-              <text x={left + plotWidth / 2} y={height - 3} textAnchor="middle" fill="var(--color-dim)" fontSize="12">{t('airflowAxis')}</text>
-              <text transform={`translate(15 ${top + plotHeight / 2}) rotate(-90)`} textAnchor="middle" fill="var(--color-dim)" fontSize="12">{t('oxygenAxis')}</text>
+              <text x={left + plotWidth / 2} y={height - 3} textAnchor="middle" fill="var(--color-dim)" fontSize="13">{t('airflowAxis')}</text>
+              <text transform={`translate(15 ${top + plotHeight / 2}) rotate(-90)`} textAnchor="middle" fill="var(--color-dim)" fontSize="13">{t('oxygenAxis')}</text>
               <g clipPath="url(#ignis-plot-clip)">
               {scenario?.o2_pct != null && scenario.flow_cm_s != null && matches.slice(0, 3).map(({ experiment }) => (
                 experiment.o2_pct != null && experiment.flow_cm_s != null && (
@@ -1119,8 +1130,8 @@ export function EvidenceMap({
               </li>)}
             </ul>
           </details>}
-          <p className="mt-3 text-[13px] text-dim">{plotted.length} {t('plotted')} · {matches.length} {t('rankedMatches')}</p>
-          {outsideAxesCount > 0 && <p role="status" className="mt-2 text-[13px] text-dim">{outsideAxesCount} {t(outsideAxesCount === 1 ? 'outsideAxesRecord' : 'outsideAxesRecords')}</p>}
+          <p className="mt-3 text-[14px] text-dim">{plotted.length} {t('plotted')} · {matches.length} {t('rankedMatches')}</p>
+          {outsideAxesCount > 0 && <p role="status" className="mt-2 text-[14px] text-dim">{outsideAxesCount} {t(outsideAxesCount === 1 ? 'outsideAxesRecord' : 'outsideAxesRecords')}</p>}
           {outsideEnvelope && <p role="status" className="mt-3 rounded-lg border border-warn/35 bg-warn/[0.05] px-3 py-2 text-sm text-warn">{COPY.outsideRange}</p>}
           {selected && (
             <div className="mt-4 rounded-xl border border-border bg-bg/55 p-4">
@@ -1144,7 +1155,7 @@ export function EvidenceMap({
           )}
         </>
       )}
-      {status === 'connected' && missingAxisCount > 0 && <p className="mt-3 text-[13px] text-dim">{missingAxisCount} {t(missingAxisCount === 1 ? 'eligibleRecord' : 'eligibleRecords')} {t(missingAxisCount === 1 ? 'missingAxisRecord' : 'missingAxisRecords')}</p>}
+      {status === 'connected' && missingAxisCount > 0 && <p className="mt-3 text-[14px] text-dim">{missingAxisCount} {t(missingAxisCount === 1 ? 'eligibleRecord' : 'eligibleRecords')} {t(missingAxisCount === 1 ? 'missingAxisRecord' : 'missingAxisRecords')}</p>}
     </div>
   );
 }
@@ -1159,12 +1170,12 @@ export function MatchPanel({ matches, status, confirmed, scenario, selectedId, o
     <div>
     <p className="mb-3 text-sm leading-relaxed text-dim">{COPY.matchOrder} <a href="/methods" className={textLink}>How matching works and what it does not tell you</a></p>
     <div className="mb-4 rounded-xl border border-border bg-bg/35 px-4 py-3">
-      <ul aria-label={COPY.plain.chipKeyLabel} className="flex flex-wrap gap-x-5 gap-y-1.5 text-[13px] text-dim">
+      <ul aria-label={COPY.plain.chipKeyLabel} className="flex flex-wrap gap-x-5 gap-y-1.5 text-[14px] text-dim">
         {(Object.keys(COPY.plain.chipKey) as (keyof typeof COPY.plain.chipKey)[]).map((status) => (
           <li key={status}><span aria-hidden className="mr-1.5 font-mono text-text">{CHIP_STATUS[status].symbol}</span>{COPY.plain.chipKey[status]}</li>
         ))}
       </ul>
-      <p className="mt-2 flex items-start gap-2 border-t border-border/60 pt-2 text-[13px] text-dim"><Icon name="info" size={15} className="mt-0.5 shrink-0" /><span>{COPY.plain.compared}</span></p>
+      <p className="mt-2 flex items-start gap-2 border-t border-border/60 pt-2 text-[14px] text-dim"><Icon name="info" size={15} className="mt-0.5 shrink-0" /><span>{COPY.plain.compared}</span></p>
     </div>
     <div className="match-cards grid auto-rows-fr gap-3 lg:grid-cols-3 xl:grid-cols-2">
       {matches.map((match, index) => {
@@ -1228,7 +1239,7 @@ export function MatchPanel({ matches, status, confirmed, scenario, selectedId, o
             )}
             <p className="mt-3 mb-2 break-words text-sm text-dim [overflow-wrap:anywhere]">{experiment.source_title}</p>
             {dataset && <p className="mb-2 text-sm text-dim [overflow-wrap:anywhere]">{dataset}</p>}
-            <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border/70 pt-3 text-[13px]">
+            <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border/70 pt-3 text-[14px]">
               {provenance && <span className="min-w-0 break-words text-dim [overflow-wrap:anywhere]">{provenance}</span>}
               {source && <a href={source.url} target="_blank" rel="noreferrer" className={`min-h-10 ${textLink}`}>{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}
             </div>
@@ -1306,7 +1317,7 @@ function MissionBrief({
           </Panel>
         );
       })}
-      <p className="text-[12px] leading-relaxed text-dim">{COPY.claimsGuarantee}</p>
+      <p className="text-xs leading-relaxed text-dim">{COPY.claimsGuarantee}</p>
       <ol className="brief-print-only" aria-label="Brief sources">{briefing.evidence.map(({evidence_id, experiment_id}) => {
         const card = matches.find(m => m.experiment.id === experiment_id)?.experiment;
         if (!card) return null;
@@ -1378,7 +1389,7 @@ function GapRadarPanel({
               </li>
             ))}
           </ol>
-          <p id="region-footnote" className="mt-3 text-[13px] leading-relaxed text-dim"><sup aria-hidden className="mr-1">1</sup>{COPY.plain.regionCells}</p>
+          <p id="region-footnote" className="mt-3 text-[14px] leading-relaxed text-dim"><sup aria-hidden className="mr-1">1</sup>{COPY.plain.regionCells}</p>
         </div>
       ) : (
         <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-5 text-sm text-dim">{t('noUntestedWithinRange')}</p>

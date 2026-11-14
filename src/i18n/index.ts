@@ -255,6 +255,10 @@ const EN = {
   helpCurate: COPY.help.curate,
   helpKit: COPY.help.kit,
   helpNotFound: COPY.help.notFound,
+  // Evidence Map legend: pressable items and the plain key are separate groups
+  legendRegion: 'Evidence map legend',
+  legendExplained: 'Tap for meaning',
+  legendKeyOnly: 'Also on the map',
   // Round 8 · C1 error boundaries
   recoveryRegion: 'Display error',
   recoveryApp: 'IGNIS could not display this page.',

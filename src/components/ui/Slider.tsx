@@ -59,7 +59,7 @@ export function Slider({ label, hint, describedBy, value, min, max, step = 1, un
         onChange={(e) => onChange(Number(e.target.value))}
         style={{ '--fill': `${Math.min(100, Math.max(0, fill))}%` } as CSSProperties}
       />
-      <div className="flex justify-between font-mono text-[10px] text-dim tabular-nums">
+      <div className="flex justify-between font-mono text-[12px] text-dim tabular-nums">
         <span>{min}</span>
         <span>{max}</span>
       </div>

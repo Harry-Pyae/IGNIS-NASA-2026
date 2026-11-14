@@ -21,7 +21,7 @@ const VARIANTS: Record<Variant, string> = {
   ghost: 'text-dim can-hover:hover:text-text can-hover:hover:bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)]',
 };
 const SIZES: Record<Size, string> = {
-  sm: 'h-8 px-3 text-[13px] gap-1.5 rounded-lg',
+  sm: 'h-8 px-3 text-[14px] gap-1.5 rounded-lg',
   md: 'h-10 px-4 text-sm gap-2 rounded-xl',
   lg: 'h-12 px-5 text-[15px] gap-2.5 rounded-xl',
 };

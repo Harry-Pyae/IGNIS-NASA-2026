@@ -249,7 +249,7 @@ function HowItWorks() {
                   <span className="console-label text-dim">{s.tag}</span>
                   <h3 className="mt-1 text-[17px] font-semibold tracking-[-0.015em]">{s.title}</h3>
                 </div>
-                <p className="text-[14px] leading-[1.6] text-dim">
+                <p className="text-[15px] leading-[1.6] text-dim">
                   {s.lines[0]} <span className="text-text">{s.lines[1]}</span>
                 </p>
               </li>
@@ -315,7 +315,7 @@ function Footer() {
   const { summary } = useCatalogSummary();
   return (
     <footer className="border-t border-border/70 px-4 py-12 sm:px-6">
-      <div className="mx-auto grid max-w-6xl gap-8 text-[13px] text-dim md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <div className="mx-auto grid max-w-6xl gap-8 text-[14px] text-dim md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="flex flex-col gap-3">
           <p className="flex flex-wrap items-center gap-2 text-text">
             <img src="/art/logo-flame-64.webp" width={20} height={20} alt="" aria-hidden loading="lazy" className="size-5 rounded-full" />

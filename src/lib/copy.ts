@@ -5,7 +5,7 @@
  * NASA research, so absence is always bounded to "the current IGNIS catalog".
  */
 export const COPY = {
-  sliderCaption: 'Sliders change which verified NASA experiments IGNIS retrieves.',
+  sliderCaption: 'Sliders change which verified experiments match.',
   // Environment presets (DECISIONS-ROUND5 #1): framed as showing where evidence ends, never as a fault.
   environmentCaption: "Environment presets change oxygen and pressure only. Use them to see where the verified catalog's evidence ends.",
   elevatedO2: (pct: number) => `Elevated oxygen: ${pct}% O₂ is above the 21% of Earth-normal air.`,
@@ -15,7 +15,7 @@ export const COPY = {
   claimsGuarantee:
     'Observed and supported statements cite retrieved experiments, and the server checks each cited value against its card. Gaps are marked separately.',
   interpretationLimit: 'Interpretation of the cited experiments, not a direct observation. Checked references do not establish causation or equivalence between tests.',
-  mapScope: 'Each occupied cell contains at least one catalog observation in a 1 percentage-point oxygen and 2 cm/s airflow band. Inspect the card for material, form, thickness, pressure and changing conditions; the cell does not establish coverage of every condition within it.',
+  mapScope: 'A filled cell holds at least one catalog run within 1 % O₂ and 2 cm/s airflow. It does not cover every condition in that band: check each card for material, form, thickness, pressure and changing conditions.',
   matchOrder: 'Ordered by similarity of reported conditions, not material safety. A class-only match does not establish equivalent material behavior.',
   changingConditions: 'Conditions changed during this run',
   staleScenario: 'Inputs changed. Confirm this scenario to update its matches and Mission Brief.',
@@ -39,7 +39,7 @@ export const COPY = {
   // Round 6 (docs/DECISIONS-ROUND6.md). Two paths through one product: the mission is primary only once it is ready.
   landingCta: { mission: 'Start the guided mission', explore: 'Explore the evidence' },
   missionAvailability:
-    'The guided mission opens once a case built from verified NASA cards has been reviewed. Until then, explore the evidence on your own.',
+    'The guided mission opens once its case of verified NASA cards is reviewed. Until then, explore on your own.',
   // Current-investigation summary: these counts mean different things, so each keeps its own label.
   summary: {
     scenario: 'Your scenario',
@@ -53,7 +53,7 @@ export const COPY = {
     o2: (v: number | null) => (v == null ? 'O₂ not specified' : `O₂ ${v}%`),
     flow: (v: number | null) => (v == null ? 'Flow not specified' : `Flow ${v} cm/s`),
     // Before confirmation the counts are whole-catalog counts; never label them with unconfirmed inputs.
-    notConfirmed: 'Not confirmed yet. These counts cover the whole verified catalog; confirm the scenario to see its own evidence.',
+    notConfirmed: 'Not confirmed: these counts cover the whole verified catalog. Confirm to see your scenario’s evidence.',
   },
   environmentExplanation: 'Sets oxygen and pressure only.',
   environmentLimit: 'These atmosphere inputs do not establish lunar partial-gravity behavior or spacesuit operational safety from orbital microgravity observations.',
@@ -126,7 +126,7 @@ export const COPY = {
       untested: 'Hatched: inside the catalog’s range, but no verified card at these conditions yet.',
       outside: 'Dashed: beyond the range the current IGNIS catalog covers.',
       scenario: 'Your confirmed scenario, placed by its oxygen and airflow.',
-      prompt: 'Legend · select an item to see what it means',
+      prompt: 'Legend',
     },
     // Match Panel key: explained once above the cards, not on every card.
     chipKeyLabel: 'What the match symbols mean',
@@ -140,7 +140,7 @@ export const COPY = {
       not_specified: 'you left it empty',
     },
     units: { normalized: 'normalized units', asReported: 'units as reported' },
-    compared: 'How many of your conditions were compared. Empty, unreported or identical-everywhere conditions are not counted.',
+    compared: 'Conditions compared. Empty, unreported or identical-everywhere ones are not counted.',
     firstVisit: {
       mission: 'New here? Run the guided mission. It walks you through one real investigation.',
       explore: 'New here? Pick a preset, confirm it, then follow the numbered steps down the page.',
@@ -163,7 +163,7 @@ export const COPY = {
       scenario: 'For your confirmed scenario: only verified cards that pass its material and form checks',
     },
     // A region's range is the outline of its untested cells; tested cells can sit inside that outline.
-    regionCells: 'None of these cells has a verified experiment in the current IGNIS catalog. The range outlines them and can include tested cells.',
+    regionCells: 'No cell here has a verified experiment in the current IGNIS catalog. The outline can include tested cells.',
     catalogRefreshing: 'The verified catalog changed. Loading the new evidence…',
   },
   /** /methods "Plain words" section. Each entry: the term as it appears in the app, then what it means. */
