@@ -100,13 +100,23 @@ export function valuesToRecord(v: FormValues): { record: CurateRecord } | { erro
 }
 
 /** The card the form is currently bound to (null = a new, unsaved card). */
-export type Editing = { id: string; status: 'draft' | 'published' } | null;
+/** The card being edited and the version (`updated_at`) it was read at — sent back as `expected_updated_at`. */
+export type Editing = { id: string; status: 'draft' | 'published'; updated_at: string } | null;
 
 /** /api/curate-write body. The ONLY place a card id enters a write: from the form's current binding. */
 export function writeBody(record: CurateRecord, editing: Editing, publish: boolean, verifiedBy: string) {
+  const base = { id: editing?.id, expected_updated_at: editing?.updated_at, record };
   return publish
-    ? { action: 'publish' as const, id: editing?.id, record, verified_by: verifiedBy.trim() }
-    : { action: 'save_draft' as const, id: editing?.id, record };
+    ? { action: 'publish' as const, ...base, verified_by: verifiedBy.trim() }
+    : { action: 'save_draft' as const, ...base };
+}
+
+/** A2 conflict view: the form fields whose value differs between my unsaved edit and the server's current version. */
+export function changedFields(mine: FormValues, current: Experiment): { field: string; mine: string; current: string }[] {
+  const theirs = recordToValues(current);
+  return Object.keys(FIELD_KINDS)
+    .filter((field) => (mine[field] ?? '').trim() !== (theirs[field] ?? '').trim())
+    .map((field) => ({ field, mine: mine[field] ?? '', current: theirs[field] ?? '' }));
 }
 
 /**

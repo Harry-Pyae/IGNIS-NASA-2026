@@ -17,6 +17,7 @@ import {
   recordToValues,
   valuesToRecord,
   writeBody,
+  changedFields,
 } from '../lib/curation';
 import { cx } from '../lib/cx';
 import {
@@ -51,7 +52,8 @@ type Dropped = { field: string; reason: string }[];
 type FieldIssue = { path: string; message: string };
 
 class CurateRequestError extends Error {
-  constructor(message: string, readonly issues: FieldIssue[]) {
+  /** A2: on 409 edit_conflict, the server's current version of the card. */
+  constructor(message: string, readonly issues: FieldIssue[], readonly conflict?: Experiment) {
     super(message);
   }
 }
@@ -68,6 +70,8 @@ export function Curate() {
   const [secret, setSecret] = useState(readSecret);
   const [values, setValues] = useState<FormValues>(EMPTY_FORM);
   const [editing, setEditing] = useState<Editing>(null);
+  const [conflict, setConflict] = useState<Experiment | null>(null);
+  const [listStale, setListStale] = useState(false);
   const [verifiedBy, setVerifiedBy] = useState('');
   const [excerpt, setExcerpt] = useState('');
   const [carry, setCarry] = useState<string[]>([]);
@@ -106,7 +110,7 @@ export function Curate() {
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new CurateRequestError(json?.error?.message ?? `HTTP ${res.status}`, json?.error?.issues ?? []);
+        throw new CurateRequestError(json?.error?.message ?? `HTTP ${res.status}`, json?.error?.issues ?? [], json?.error?.current);
       }
       return json;
     },
@@ -129,6 +133,7 @@ export function Curate() {
   const refresh = useCallback(async () => {
     const { items } = (await call('/api/curate-cards')) as { items: CurateListItem[] };
     setCards(items);
+    setListStale(false);
   }, [call]);
 
   useEffect(() => {
@@ -146,6 +151,7 @@ export function Curate() {
     sessions.switchForm();
     setValues(EMPTY_FORM);
     setEditing(null);
+    setConflict(null);
     setQuotes({});
     setDropped([]);
     setVerifiedBy('');
@@ -160,7 +166,8 @@ export function Curate() {
       const { experiment } = (await call(`/api/curate-cards?id=${id}`)) as { experiment: Experiment };
       if (!live()) return; // the curator moved on to another card meanwhile
       setValues(recordToValues(experiment));
-      setEditing({ id, status: experiment.verified_by ? 'published' : 'draft' });
+      setEditing({ id, status: experiment.verified_by ? 'published' : 'draft', updated_at: experiment.updated_at });
+      setConflict(null);
       setQuotes({});
       setDropped([]);
       setVerifiedBy('');
@@ -203,23 +210,32 @@ export function Curate() {
       const { experiment } = (await call('/api/curate-write', writeBody(result.record, editing, publish, verifiedBy))) as {
         experiment: Experiment;
       };
-      await refresh(); // the list is right whichever card the form shows now
       // Item 4: if the curator pressed New (or reopened another card) meanwhile, this response must
       // NOT re-bind the form to the saved card — the next save would then overwrite it.
-      if (!live()) {
-        setStatus({ tone: 'success', text: `Saved ${experiment.test_id} (${experiment.id}). The form was switched meanwhile, so it stays on the new card.` });
-        return;
+      if (live()) {
+        // A2: bind the saved ID + version FIRST, so a later failure can never lead to a duplicate re-submit.
+        setEditing({ id: experiment.id, status: experiment.verified_by ? 'published' : 'draft', updated_at: experiment.updated_at });
+        setConflict(null);
       }
-      setEditing({ id: experiment.id, status: experiment.verified_by ? 'published' : 'draft' });
       setStatus({
         tone: 'success',
-        text: publish
-          ? `Published ${experiment.test_id}, verified by ${experiment.verified_by}. It is now visible to the public.`
-          : `Saved draft ${experiment.test_id} (${experiment.id}). Drafts are private until a curator verifies them.`,
+        text: !live()
+          ? `Saved ${experiment.test_id} (${experiment.id}). The form was switched meanwhile, so it stays on the new card.`
+          : publish
+            ? `Published ${experiment.test_id}, verified by ${experiment.verified_by}. It is now visible to the public.`
+            : `Saved draft ${experiment.test_id} (${experiment.id}). Drafts are private until a curator verifies them.`,
       });
+      // The save succeeded; a failed list refresh is a separate, retryable problem (never a reason to save again).
+      try {
+        await refresh();
+      } catch {
+        setListStale(true);
+      }
     }, error => {
       if (!live()) return;
-      setSaveError(error instanceof CurateRequestError ? error : new CurateRequestError(String(error), []));
+      const failure = error instanceof CurateRequestError ? error : new CurateRequestError(String(error), []);
+      if (failure.conflict) setConflict(failure.conflict); // keep MY edit in the form; show theirs for comparison
+      setSaveError(failure);
     });
   };
 
@@ -276,6 +292,10 @@ export function Curate() {
             </Button>
           </div>
         </div>
+        {listStale && <p role="status" className="mt-3 flex flex-wrap items-center gap-3 text-sm text-warn">
+          The card list could not refresh. Your last save did go through.
+          <Button size="sm" disabled={busy} onClick={() => run(refresh)}>Retry list</Button>
+        </p>}
         {cards === null ? (
           <p className="mt-3 text-sm text-dim">Enter the curator secret to list cards.</p>
         ) : cards.length === 0 ? (
@@ -396,7 +416,30 @@ export function Curate() {
               );
             })}
 
-            {saveError && <div role="alert" tabIndex={-1} data-save-error className="rounded-lg border border-warn/35 p-3 text-sm text-warn sm:col-span-2">
+            {conflict && editing && <div role="region" aria-label="Edit conflict" className="rounded-lg border border-warn/35 p-3 text-sm sm:col-span-2">
+              <p className="font-semibold text-warn">Someone saved this card after you opened it ({conflict.updated_at.slice(0, 19).replace('T', ' ')} UTC). Your edit is still in the form.</p>
+              {changedFields(values, conflict).length > 0 ? <table className="mt-2 w-full table-fixed text-left text-[13px] [overflow-wrap:anywhere]">
+                <thead><tr className="text-dim"><th className="w-1/4 py-1">Field</th><th className="py-1">Your edit</th><th className="py-1">Saved version</th></tr></thead>
+                <tbody>{changedFields(values, conflict).map((row) => <tr key={row.field} className="border-t border-border align-top">
+                  <td className="py-1 font-mono">{row.field}</td><td className="py-1">{row.mine || '—'}</td><td className="py-1">{row.current || '—'}</td>
+                </tr>)}</tbody>
+              </table> : <p className="mt-2 text-dim">Your fields match the saved version; only its timestamp changed.</p>}
+              <div className="mt-3 flex flex-wrap gap-3">
+                <Button size="sm" onClick={() => {
+                  setValues(recordToValues(conflict));
+                  setEditing({ id: conflict.id, status: conflict.verified_by ? 'published' : 'draft', updated_at: conflict.updated_at });
+                  setConflict(null);
+                  setSaveError(null);
+                }}>Load the saved version</Button>
+                <Button size="sm" onClick={() => {
+                  setEditing({ id: conflict.id, status: conflict.verified_by ? 'published' : 'draft', updated_at: conflict.updated_at });
+                  setConflict(null);
+                  setSaveError(null);
+                  setStatus({ tone: 'warn', text: 'Keeping your edit. Save or publish again to replace the saved version.' });
+                }}>Keep my edit, then save again</Button>
+              </div>
+            </div>}
+            {saveError && !conflict && <div role="alert" tabIndex={-1} data-save-error className="rounded-lg border border-warn/35 p-3 text-sm text-warn sm:col-span-2">
               {saveError.message}
               {saveError.issues.length > 0 && <ul className="mt-1 list-disc pl-5">{saveError.issues.map(({ path, message }, index) =>
                 <li key={index}>{path ? `${path}: ` : ''}{message}</li>)}</ul>}

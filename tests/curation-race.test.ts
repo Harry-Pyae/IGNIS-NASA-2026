@@ -31,7 +31,7 @@ function curateForm(guarded = true) {
     return new Promise<void>((done) =>
       replies.push(() => {
         const experiment = { id: body.id ?? OLD_ID, verified_by: null };
-        if (live()) state.editing = { id: experiment.id, status: 'draft' };
+        if (live()) state.editing = { id: experiment.id, status: 'draft', updated_at: 't1' };
         done();
       }),
     );
@@ -45,7 +45,7 @@ function curateForm(guarded = true) {
   const reopen = (id: string) => {
     sessions.switchForm();
     const live = guarded ? sessions.begin() : () => true;
-    return new Promise<void>((done) => replies.push(() => (live() && (state.editing = { id, status: 'draft' }), done())));
+    return new Promise<void>((done) => replies.push(() => (live() && (state.editing = { id, status: 'draft', updated_at: 't0' }), done())));
   };
   return { state, save, newCard, reopen, release: (i: number) => replies[i]!() };
 }
@@ -53,7 +53,7 @@ function curateForm(guarded = true) {
 describe('curation: superseded responses never re-bind the form', () => {
   it('delayed save of the old card, then New: the next save creates a NEW card', async () => {
     const form = curateForm();
-    form.state.editing = { id: OLD_ID, status: 'draft' }; // curator is editing the old card
+    form.state.editing = { id: OLD_ID, status: 'draft', updated_at: 't0' }; // curator is editing the old card
     const pending = form.save(record('OLD-CARD')); // Save… (reply delayed)
     form.newCard(); // …clicks New before it returns
     form.release(0); // the old save's reply finally lands
@@ -67,7 +67,7 @@ describe('curation: superseded responses never re-bind the form', () => {
 
   it('control: without the guard, the same sequence WOULD overwrite the old card', async () => {
     const form = curateForm(false);
-    form.state.editing = { id: OLD_ID, status: 'draft' };
+    form.state.editing = { id: OLD_ID, status: 'draft', updated_at: 't0' };
     const pending = form.save(record('OLD-CARD'));
     form.newCard();
     form.release(0);
@@ -90,6 +90,14 @@ describe('curation: superseded responses never re-bind the form', () => {
     const pending = form.save(record('FIRST'));
     form.release(0);
     await pending;
-    expect(form.state.editing).toEqual({ id: OLD_ID, status: 'draft' });
+    expect(form.state.editing).toEqual({ id: OLD_ID, status: 'draft', updated_at: 't1' }); // bound to the version the save returned
+  });
+});
+
+describe('A2 · edits carry the version they were read at', () => {
+  it('writeBody sends expected_updated_at for an existing card, and nothing for a new one', () => {
+    expect(writeBody(record('X'), { id: OLD_ID, status: 'draft', updated_at: '2026-11-14T04:17:26.679064+00:00' }, false, ''))
+      .toMatchObject({ action: 'save_draft', id: OLD_ID, expected_updated_at: '2026-11-14T04:17:26.679064+00:00' });
+    expect(writeBody(record('X'), null, true, 'Ada Reviewer')).toMatchObject({ action: 'publish', id: undefined, expected_updated_at: undefined });
   });
 });

@@ -20,6 +20,8 @@ const write = (body: unknown, headers: Record<string, string> = secret) =>
   );
 const list = (query = '') => curateCards(new Request(`http://x/api/curate-cards${query}`, { headers: secret }));
 const stats = async () => (await anon().rpc('catalog_stats')).data as { verified: number; in_review: number; revision: string };
+/** A2: the version a curator last read (sent back as expected_updated_at). */
+const version = async (id: string) => (await service().from('experiments').select('updated_at').eq('id', id).single()).data!.updated_at as string;
 const publicRows = async (test_id: string) => (await anon().from('experiments').select('id, verified_by').eq('test_id', test_id)).data;
 
 describe.skipIf(!dbTestsEnabled)('curation lifecycle (A2)', () => {
@@ -63,7 +65,7 @@ describe.skipIf(!dbTestsEnabled)('curation lifecycle (A2)', () => {
   });
 
   it('R1 corrects it — still a draft', async () => {
-    const res = await write({ action: 'save_draft', id, record: { ...record(testId), thickness_mm: 1.5, notes: 'corrected per Table 2' } });
+    const res = await write({ action: 'save_draft', id, expected_updated_at: await version(id), record: { ...record(testId), thickness_mm: 1.5, notes: 'corrected per Table 2' } });
     expect(res.status).toBe(200);
     expect((await res.json()).experiment).toMatchObject({ thickness_mm: 1.5, verified_by: null });
     expect(await publicRows(testId)).toEqual([]);
@@ -71,7 +73,7 @@ describe.skipIf(!dbTestsEnabled)('curation lifecycle (A2)', () => {
 
   it('publication under a placeholder or blank name is rejected', async () => {
     for (const name of ['Part 1 lead (placeholder)', 'TBD', '  ']) {
-      const res = await write({ action: 'publish', id, record: record(testId), verified_by: name });
+      const res = await write({ action: 'publish', id, expected_updated_at: await version(id), record: record(testId), verified_by: name });
       expect(res.status).toBe(400);
     }
     expect(await publicRows(testId)).toEqual([]);
@@ -79,7 +81,7 @@ describe.skipIf(!dbTestsEnabled)('curation lifecycle (A2)', () => {
 
   it('a named reviewer publishes: now public, catalog revision changes', async () => {
     const before = await stats();
-    const res = await write({ action: 'publish', id, record: { ...record(testId), thickness_mm: 1.5 }, verified_by: 'Ada Reviewer' });
+    const res = await write({ action: 'publish', id, expected_updated_at: await version(id), record: { ...record(testId), thickness_mm: 1.5 }, verified_by: 'Ada Reviewer' });
     expect(res.status).toBe(200);
     expect((await res.json()).experiment).toMatchObject({ verified_by: 'Ada Reviewer' });
     expect(await publicRows(testId)).toEqual([{ id, verified_by: 'Ada Reviewer' }]);
@@ -90,9 +92,27 @@ describe.skipIf(!dbTestsEnabled)('curation lifecycle (A2)', () => {
 
   it('saving a correction to a published card un-publishes it until re-verified', async () => {
     const revision = (await stats()).revision;
-    await write({ action: 'save_draft', id, record: { ...record(testId), thickness_mm: 2 } });
+    await write({ action: 'save_draft', id, expected_updated_at: await version(id), record: { ...record(testId), thickness_mm: 2 } });
     expect(await publicRows(testId)).toEqual([]);
     expect((await stats()).revision).not.toBe(revision);
+  });
+
+  it('A2: a stale tab cannot overwrite or unpublish a newer save — 409 with the current version, nothing written', async () => {
+    const tid = `LIFECYCLE-${crypto.randomUUID()}`;
+    const created = (await (await write({ action: 'save_draft', record: record(tid) })).json()).experiment;
+    const staleRead = created.updated_at as string; // tab A reads the card…
+    const fresh = await write({ action: 'publish', id: created.id, expected_updated_at: staleRead, record: { ...record(tid), notes: 'tab B correction' }, verified_by: 'Ada Reviewer' });
+    expect(fresh.status).toBe(200); // …tab B saves and publishes a newer version
+    const stale = await write({ action: 'save_draft', id: created.id, expected_updated_at: staleRead, record: { ...record(tid), notes: 'tab A old edit' } });
+    expect(stale.status).toBe(409);
+    const body = await stale.json();
+    expect(body.error).toMatchObject({ code: 'edit_conflict', current: { id: created.id, notes: 'tab B correction', verified_by: 'Ada Reviewer' } });
+    expect(await publicRows(tid)).toEqual([{ id: created.id, verified_by: 'Ada Reviewer' }]); // still published
+  });
+
+  it('A2: an update without the version it edits is refused', async () => {
+    const res = await write({ action: 'save_draft', id, record: record(testId) });
+    expect(res.status).toBe(400);
   });
 
   it('synthesize rejects a verified SAME card in a solid scenario (no provider needed)', async () => {
