@@ -1,9 +1,16 @@
 import { useCatalogSummary } from '../lib/catalog';
+import { useEffect, useState } from 'react';
 import { ExportButton, ProvenancePill } from './CatalogStatus';
 
 /** App shell header: brand mark + wordmark (left), live provenance pill + export (right). */
 export function AppHeader() {
   const { summary, retry } = useCatalogSummary();
+  const [hash, setHash] = useState(() => window.location.hash);
+  useEffect(() => {
+    const update = () => setHash(window.location.hash);
+    window.addEventListener('hashchange', update);
+    return () => window.removeEventListener('hashchange', update);
+  }, []);
   return (
     <header className="app-header sticky top-0 z-40">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-4 sm:px-6">
@@ -21,9 +28,12 @@ export function AppHeader() {
           <ExportButton summary={summary} label="Export dataset" compact />
         </div>
       </div>
-      <nav aria-label="Project navigation" className="mx-auto flex max-w-6xl gap-5 px-4 pb-2 text-sm sm:px-6">
-        {([['/', 'Console'], ['/methods', 'Methods'], ['/sources', 'Sources']] as const).map(([url,label]) => {
-          const current = (window.location.pathname.replace(/\/$/, '') || '/') === url;
+      <nav aria-label="Project navigation" className="mx-auto flex max-w-6xl flex-wrap gap-x-5 gap-y-3 px-4 pb-3 text-sm sm:px-6">
+        {([['/', 'Home'], ['/#console', 'Scenario'], ['/library', 'Library'], ['/compare', 'Compare'], ['/methods', 'Methods'], ['/sources', 'Sources']] as const).map(([url,label]) => {
+          const path = window.location.pathname.replace(/\/$/, '') || '/';
+          const inScenario = path === '/' && /^#(console|s[1-5]|experiment-.+)$/.test(hash);
+          const current = url === '/#console' ? inScenario
+            : (path === url && !inScenario) || (url === '/library' && path.startsWith('/library/'));
           return <a key={url} href={url} aria-current={current ? 'page' : undefined} className={current ? 'text-amber underline underline-offset-4' : 'text-dim hover:text-text'}>{label}</a>;
         })}
       </nav>
