@@ -154,3 +154,22 @@ Color always has a text or shape counterpart.
      context there.
   4. The region-card line is worded about the region's *cells*. A region's range can contain tested runs: the current
      18–22 % × 2–12 cm/s outline contains all 3 verified runs.
+- **Round 8, Coder A (2026-11-14).** Each item: verified behaviour, plus anything still waiting on a person.
+  - **A1:** the secret was rotated by the team lead, and production now refuses the old value (401). The documented
+    local secret is refused on any deployment, including for the debug/provider headers. The three curator routes
+    share a 30/min per-IP limit, checked before the secret. Read-only audit: 3 verified cards, 0 drafts, no card
+    edited after R1's publish, revision unchanged. Still to do (team lead): check the Vercel logs for `/api/curate-*`
+    traffic between 04:17 UTC and the rotation.
+  - **A2:** curate writes are compare-and-set on `(id, updated_at)`. A stale tab gets a 409 with the current version,
+    and `/curate` keeps the curator's edit, shows a field diff and offers an explicit choice. A failed list refresh
+    after a save is reported and retried on its own; it never re-submits. The curate form also keeps a per-tab draft
+    (form fields only, never the secret or the signature), offered for restore and never applied automatically.
+  - **A3:** `retrievalState()`: only a settled catalog read can state a count. B wires the remaining surfaces.
+  - **A4:** "on the map", "outside the map's axes" and "missing coordinates" all come from the map's own partition.
+  - **A5:** a parse in flight is cancelled by any edit; its result, error and pending state are ignored.
+  - **A6:** `MISSION_CASE` now needs `reviewed_versions`: each selected card's `updated_at` at review time. Copy
+    them from `/api/export` when signing the mission.
+  - **A7:** `presetAvailability()`, the data for B4.
+  - **A8:** share links carry the ranked cards' versions, so a reopened link reports a cited card updated since,
+    and never claims an exact rebuild.
+  - **C1 (error boundaries)** was not done as Coder A's fallback, because Coder C is active.

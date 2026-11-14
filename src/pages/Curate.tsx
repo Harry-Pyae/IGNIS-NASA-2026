@@ -18,6 +18,10 @@ import {
   valuesToRecord,
   writeBody,
   changedFields,
+  CURATE_DRAFT_KEY,
+  parseDraft,
+  serializeDraft,
+  type CurateDraft,
 } from '../lib/curation';
 import { cx } from '../lib/cx';
 import {
@@ -73,6 +77,12 @@ export function Curate() {
   const [conflict, setConflict] = useState<Experiment | null>(null);
   const [listStale, setListStale] = useState(false);
   const [verifiedBy, setVerifiedBy] = useState('');
+  // Round 8: an unsaved edit from earlier in this tab, offered (never auto-applied) until restored or discarded.
+  const [recoverable, setRecoverable] = useState<CurateDraft | null>(() => {
+    try { return parseDraft(sessionStorage.getItem(CURATE_DRAFT_KEY)); } catch { return null; }
+  });
+  /** The form as last loaded or saved: only differences from it are kept as a draft. */
+  const pristine = useRef(JSON.stringify(EMPTY_FORM));
   const [excerpt, setExcerpt] = useState('');
   const [carry, setCarry] = useState<string[]>([]);
   const [quotes, setQuotes] = useState<Record<string, string>>({});
@@ -130,6 +140,15 @@ export function Curate() {
     }
   };
 
+  // Keep the unsaved difference for this tab (blocked or full storage just means no recovery, never a broken form).
+  useEffect(() => {
+    try {
+      const draft = JSON.stringify(values) === pristine.current ? null : serializeDraft(values, editing);
+      if (draft) sessionStorage.setItem(CURATE_DRAFT_KEY, draft);
+      else if (!recoverable) sessionStorage.removeItem(CURATE_DRAFT_KEY); // keep an offered draft until Restore/Discard
+    } catch { /* storage unavailable */ }
+  }, [values, editing, recoverable]);
+
   const refresh = useCallback(async () => {
     const { items } = (await call('/api/curate-cards')) as { items: CurateListItem[] };
     setCards(items);
@@ -149,6 +168,7 @@ export function Curate() {
 
   const newCard = () => {
     sessions.switchForm();
+    pristine.current = JSON.stringify(EMPTY_FORM);
     setValues(EMPTY_FORM);
     setEditing(null);
     setConflict(null);
@@ -165,6 +185,7 @@ export function Curate() {
     return run(async () => {
       const { experiment } = (await call(`/api/curate-cards?id=${id}`)) as { experiment: Experiment };
       if (!live()) return; // the curator moved on to another card meanwhile
+      pristine.current = JSON.stringify(recordToValues(experiment));
       setValues(recordToValues(experiment));
       setEditing({ id, status: experiment.verified_by ? 'published' : 'draft', updated_at: experiment.updated_at });
       setConflict(null);
@@ -216,6 +237,7 @@ export function Curate() {
         // A2: bind the saved ID + version FIRST, so a later failure can never lead to a duplicate re-submit.
         setEditing({ id: experiment.id, status: experiment.verified_by ? 'published' : 'draft', updated_at: experiment.updated_at });
         setConflict(null);
+        pristine.current = JSON.stringify(values); // saved: nothing left to recover
       }
       setStatus({
         tone: 'success',
@@ -363,6 +385,23 @@ export function Curate() {
           )}
         </Panel>
 
+        {recoverable && <div role="region" aria-label="Unsaved edit" className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-warn/35 p-3 text-sm">
+          <p className="min-w-0 flex-1">
+            An unsaved edit from earlier in this tab ({recoverable.editing ? `card ${recoverable.values.test_id ?? recoverable.editing.id}` : `new card${recoverable.values.test_id ? ` ${recoverable.values.test_id}` : ''}`}, {recoverable.saved_at.slice(11, 16)} UTC) can be restored. The reviewer name is never kept.
+          </p>
+          <Button size="sm" onClick={() => {
+            sessions.switchForm();
+            setValues({ ...EMPTY_FORM, ...recoverable.values });
+            setEditing(recoverable.editing);
+            setConflict(null);
+            setRecoverable(null);
+            setStatus({ tone: 'warn', text: 'Restored your unsaved edit. Check it, then save; if the card changed meanwhile you will be shown both versions.' });
+          }}>Restore</Button>
+          <Button size="sm" variant="tertiary" onClick={() => {
+            setRecoverable(null);
+            try { sessionStorage.removeItem(CURATE_DRAFT_KEY); } catch { /* storage unavailable */ }
+          }}>Discard</Button>
+        </div>}
         <form ref={form} onSubmit={onSubmit}>
           <Panel className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-wrap items-center gap-2 sm:col-span-2">

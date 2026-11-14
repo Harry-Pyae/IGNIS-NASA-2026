@@ -137,3 +137,39 @@ export function createFormSessions() {
     },
   };
 }
+
+/**
+ * Round 8 (B6, curate side — Coder A): a per-tab draft of the curate form, so a refresh or a route-away doesn't lose
+ * work. ONLY record form fields travel: never the curator secret, the "Verified by" signature, extraction quotes or
+ * any generated claim. A restored edit keeps its version, so a card changed meanwhile surfaces as an A2 conflict.
+ */
+export const CURATE_DRAFT_KEY = 'ignis-curate-draft-v1';
+export type CurateDraft = { v: 1; values: FormValues; editing: Editing; saved_at: string };
+
+const formOnly = (values: FormValues): FormValues =>
+  Object.fromEntries(Object.keys(FIELD_KINDS).filter((k) => typeof values[k] === 'string' && values[k] !== '').map((k) => [k, values[k]!]));
+
+/** null when there is nothing worth keeping (a blank new card). */
+export function serializeDraft(values: FormValues, editing: Editing, now = new Date()): string | null {
+  const fields = formOnly(values);
+  const meaningful = Object.keys(fields).some((k) => !(k in EMPTY_FORM && fields[k] === EMPTY_FORM[k]));
+  if (!meaningful && !editing) return null;
+  const draft: CurateDraft = { v: 1, values: fields, editing, saved_at: now.toISOString() };
+  return JSON.stringify(draft);
+}
+
+/** Validated read: anything malformed, from another version, or tampered is ignored (never half-restored). */
+export function parseDraft(raw: string | null): CurateDraft | null {
+  if (!raw) return null;
+  try {
+    const d = JSON.parse(raw) as Partial<CurateDraft>;
+    if (d?.v !== 1 || typeof d.saved_at !== 'string' || !d.values || typeof d.values !== 'object') return null;
+    const e = d.editing;
+    const editingOk = e === null || (typeof e === 'object' && typeof e.id === 'string' && typeof e.updated_at === 'string' && (e.status === 'draft' || e.status === 'published'));
+    if (!editingOk) return null;
+    return { v: 1, values: formOnly(d.values as FormValues), editing: e ?? null, saved_at: d.saved_at };
+  } catch {
+    return null;
+  }
+}
+
