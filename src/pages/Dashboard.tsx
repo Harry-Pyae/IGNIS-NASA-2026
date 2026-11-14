@@ -135,7 +135,7 @@ export function Dashboard() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search NASA experiments, materials, test IDs (e.g. PMMA, BASS-II)..."
-                className="w-full rounded-2xl border border-orange-500/15 bg-white/50 dark:bg-black/20 py-2 pl-10 pr-4 text-sm text-text placeholder:text-dim focus:outline-none focus:ring-2 focus:ring-amber/50 transition-all"
+                className="w-full rounded-2xl border border-white/60 dark:border-orange-500/15 bg-white/25 dark:bg-black/20 backdrop-blur-md py-2 pl-10 pr-4 text-sm text-text placeholder:text-dim focus:outline-none focus:ring-2 focus:ring-amber/50 transition-all"
                 aria-label="Search experiments"
               />
             </div>
@@ -150,7 +150,7 @@ export function Dashboard() {
                 type="button"
                 onClick={toggleTheme}
                 aria-label={`Switch to ${theme === 'light' ? 'Dark Space' : 'Warm Liquid Glass'} mode`}
-                className="flex items-center gap-2 rounded-2xl border border-orange-500/20 bg-white/70 dark:bg-black/40 px-3.5 py-2 text-xs font-medium text-text shadow-sm transition-all hover:border-amber hover:text-amber"
+                className="flex items-center gap-2 rounded-2xl border border-white/70 dark:border-orange-500/20 bg-white/35 dark:bg-black/40 backdrop-blur-md px-3.5 py-2 text-xs font-medium text-text shadow-sm transition-all hover:border-amber hover:text-amber"
               >
                 {theme === 'light' ? (
                   <>
@@ -208,7 +208,7 @@ export function Dashboard() {
                 </a>
                 <a
                   href="/library"
-                  className="inline-flex items-center gap-2 rounded-2xl border border-orange-500/20 bg-white/60 dark:bg-black/30 px-5 py-3 text-sm font-semibold text-text transition-all hover:border-amber hover:text-amber"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-white/70 dark:border-orange-500/20 bg-white/35 dark:bg-black/30 backdrop-blur-md px-5 py-3 text-sm font-semibold text-text transition-all hover:border-amber hover:text-amber"
                 >
                   <Icon name="evidence" size={18} />
                   <span>Browse Library</span>
@@ -311,7 +311,7 @@ export function Dashboard() {
 
                     {/* Verbatim quote block */}
                     {experiments[0].key_observation_quote && (
-                      <blockquote className="rounded-2xl border border-orange-500/15 bg-white/40 dark:bg-black/20 p-4 text-sm text-dim italic">
+                      <blockquote className="rounded-2xl border border-white/60 dark:border-orange-500/15 bg-white/25 dark:bg-black/20 backdrop-blur-md p-4 text-sm text-dim italic">
                         "{experiments[0].key_observation_quote}"
                         <footer className="mt-2 text-xs font-mono font-normal not-italic text-amber">
                           — {experiments[0].source_title} (Page {experiments[0].source_page})
@@ -476,7 +476,7 @@ export function Dashboard() {
                     return (
                       <div
                         key={index}
-                        className="rounded-2xl border border-orange-500/15 bg-white/50 dark:bg-black/30 p-3"
+                        className="rounded-2xl border border-white/60 dark:border-orange-500/15 bg-white/30 dark:bg-black/30 backdrop-blur-md p-3"
                       >
                         <span className="console-label text-[10px] text-amber font-mono">
                           {index === 0 ? 'Experiment 1' : 'Experiment 2'}
@@ -653,7 +653,7 @@ function StatCard({
 
 function TelemetryTile({ label, value, note }: { label: string; value: string; note: string }) {
   return (
-    <div className="rounded-2xl border border-orange-500/15 bg-white/40 dark:bg-black/20 p-3">
+    <div className="rounded-2xl border border-white/60 dark:border-orange-500/15 bg-white/30 dark:bg-black/20 backdrop-blur-md p-3">
       <div className="console-label text-[10px] text-dim">{label}</div>
       <div className="mt-1 font-mono text-base font-bold text-amber">{value}</div>
       <div className="text-[11px] text-dim">{note}</div>
