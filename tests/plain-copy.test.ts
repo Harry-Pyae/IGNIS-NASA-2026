@@ -8,6 +8,7 @@ const lines = [
   ...Object.values(plain.hints), ...Object.values(plain.chips), ...Object.values(plain.outcomes),
   ...Object.values(plain.brief), ...Object.values(plain.map), plain.compared,
   plain.firstVisit.mission, plain.firstVisit.explore,
+  ...Object.values(plain.collapsed), ...Object.values(plain.gapScope), plain.regionCells,
 ];
 const words = (s: string) => s.split(/\s+/).filter(Boolean).length;
 

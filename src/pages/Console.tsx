@@ -3,7 +3,7 @@
  * Code-split out of the landing chunk: Home.tsx lazy-loads it (src/pages/consoleLoader.ts decides when),
  * so the engine, Zod schemas and console UI stay off the first paint. Owner: Coder B (console sections).
  */
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type FormEvent } from 'react';
 import { flushSync } from 'react-dom';
 import { Badge, Button, Chip, CitationChip, Panel, PresetChip, SectionHeader, Slider, textLink } from '../components/ui';
 import { useCatalogRevisionWatch, useCatalogSummary, useVerifiedCatalog } from '../lib/catalog';
@@ -43,6 +43,16 @@ const MISSION_STEPS = [
 function InputHint({ field, label }: { field: keyof typeof COPY.plain.hints; label: string }) {
   return <InfoHint id={`scenario-hint-${field}`} label={COPY.plain.hintButton(label)}>{COPY.plain.hints[field]}</InfoHint>;
 }
+
+/** ≥1280px: the two-column workbench (sticky control rail + evidence column). */
+const WIDE = '(min-width: 1280px)';
+const subscribeWide = (onChange: () => void) => {
+  const query = window.matchMedia(WIDE);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+};
+const useWide = () => useSyncExternalStore(subscribeWide, () => window.matchMedia(WIDE).matches, () => false);
+const reducedMotion = () => !window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
 
 export function Console() {
   const { catalog, reload } = useVerifiedCatalog();
@@ -98,16 +108,40 @@ export function Console() {
     if (!heading) return;
     heading.tabIndex = -1;
     heading.focus({ preventScroll: true });
-    heading.closest('section')?.scrollIntoView({
-      behavior: window.matchMedia('(prefers-reduced-motion: no-preference)').matches ? 'smooth' : 'instant',
-      block: 'start',
-    });
+    const target = document.getElementById('evidence-map') ?? heading.closest('section');
+    target?.scrollIntoView({ behavior: reducedMotion() ? 'instant' : 'smooth', block: 'start' });
+  }, []);
+  const wide = useWide();
+  // Desktop workbench: after Confirm the page settles on the ranked matches while the map stays visible above them.
+  const showMatches = useCallback(() => {
+    const heading = document.getElementById('s3');
+    const matches = heading?.closest('section');
+    const map = document.getElementById('s2')?.closest('section');
+    if (!heading || !matches || !map) return;
+    heading.tabIndex = -1;
+    heading.focus({ preventScroll: true });
+    const header = document.querySelector<HTMLElement>('.app-header')?.offsetHeight ?? 0;
+    const plot = document.querySelector('#evidence-map svg') ?? map;
+    const plotTop = plot.getBoundingClientRect().top + window.scrollY - header - 12;
+    const matchesTop = matches.getBoundingClientRect().top + window.scrollY;
+    // Show ~160px of the matches; never scroll past the top of the plot (it must stay in view above them).
+    window.scrollTo({ top: Math.min(plotTop, matchesTop - window.innerHeight + 160), behavior: reducedMotion() ? 'instant' : 'smooth' });
   }, []);
   useEffect(() => {
     if (!confirmed || !focusAfterConfirm.current) return;
     focusAfterConfirm.current = false;
-    showMap();
-  }, [confirmed, showMap]);
+    // Below 1280px the condensed bar appears instead ("View evidence"), one tap from the evidence.
+    if (wide) showMatches();
+  }, [confirmed, wide, showMatches]);
+  // Below xl: a condensed condition bar while the controls are off screen, or after Confirm, until the map is in view.
+  const [railInView, setRailInView] = useState(true);
+  useEffect(() => {
+    const section = document.getElementById('s1')?.closest('section');
+    if (!section) return;
+    const observer = new IntersectionObserver(([entry]) => setRailInView(entry!.isIntersecting), { threshold: 0 });
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
   // One "Evidence updated · View" chip, shown only while the map is off screen and live retrieval changed.
   const [mapInView, setMapInView] = useState(false);
   const [evidenceUpdated, setEvidenceUpdated] = useState(false);
@@ -330,7 +364,7 @@ export function Console() {
   }
 
   return (
-    <div id="console" className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-24 sm:px-6">
+    <div id="console" className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-24 sm:px-6 xl:max-w-7xl">
       {views && views.eligible.length > 0 && <div className="experiment-ticker min-w-0 overflow-hidden border-y border-border py-2 text-xs text-dim" aria-label="Verified experiment IDs">
         {confirmed && <p className="console-label mb-1 text-dim"><span aria-hidden="true" className="anim-blink mr-2 inline-block size-1.5 rounded-full bg-amber"/>Live retrieval</p>}
         <div className="anim-ticker flex w-max font-mono">{[0,1].map(copy => <div aria-hidden={copy === 1} key={copy} className="flex shrink-0">{views.eligible.map(c => <span key={c.id} className="pr-8">{experimentLabel(c)}</span>)}</div>)}</div>
@@ -343,52 +377,35 @@ export function Console() {
           try { localStorage.setItem('ignis-scenario-intro-dismissed', '1'); } catch { /* Dismiss for this visit. */ }
         }}>{COPY.plain.firstVisit.dismiss}</Button>
       </div>}
-      <Panel as="section" aria-labelledby="s1" className="reveal">
+      {!wide && (confirmed !== null || (!railInView && !mapInView)) && <ConditionBar
+        summary={investigationSummary(draft, confirmed, views)}
+        action={confirmed ? COPY.plain.viewEvidenceAction : COPY.plain.jumpToMap}
+        onAction={showMap}
+      />}
+      <div className="flex flex-col gap-6 xl:grid xl:grid-cols-[400px_minmax(0,1fr)] xl:items-start">
+      <Panel as="section" aria-labelledby="s1" className="reveal xl:sticky xl:top-[calc(var(--header-h,0px)+1rem)] xl:flex xl:max-h-[calc(100dvh-var(--header-h,0px)-2rem)] xl:flex-col">
         <SectionHeader id="s1" step={t('describeStep')} title={t('missionScenario')} />
         <MissionCaption step={guidedStep === 0 ? 0 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[0].caption)} />
-        <div className="grid gap-8 lg:grid-cols-2">
+        <div className="grid gap-8 lg:grid-cols-2 xl:-mr-2 xl:min-h-0 xl:grid-cols-1 xl:gap-5 xl:overflow-y-auto xl:pr-2">
           <div className="flex min-w-0 flex-col gap-4">
-            <div className="rounded-xl border border-border bg-bg/45 p-3" aria-live="polite">
-              {confirmed && closestMatch ? (
-                <>
-                  <p className="console-label mb-2 text-dim">{t('closestMatch')}: {experimentLabel(closestMatch.experiment)}</p>
-                  <p className="mb-2 text-sm text-text">{whyMatched(closestMatch).summary}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {whyMatched(closestMatch).lines.map((line) => {
-                      const [label, ...statusParts] = line.text.split(': ');
-                      return <Chip key={line.key} status={line.status} label={label} statusText={statusParts.join(': ')} />;
-                    })}
-                  </div>
-                </>
-              ) : confirmed ? (
-                <p className="text-sm text-dim">{dataStatus === 'unavailable' ? t('noMatchCatalog') : t('noEligibleMatchesForScenario')}</p>
-              ) : (
-                <p className="text-sm text-dim">{t('confirmForClosestMatch')}</p>
-              )}
-              {confirmed && outsideParams.map(({ parameter, scenario_value }) => (
-                <p key={parameter} className="mt-2 console-label text-warn">
-                  ⇥ {PARAM_LABELS[parameter]} {scenario_value} {FIELD_UNITS[parameter]} · {t('outsideCatalogRange')}
-                </p>
-              ))}
+            <div>
+              <p className="console-label mb-3 text-dim">{t('scenarioPresetsStart')}</p>
+              <div className="flex flex-wrap gap-2" role="group" aria-label={t('scenarioPresets')}>
+                {SCENARIO_PRESETS.map((preset) => (
+                  <PresetChip key={preset.id} active={preset.id === presetId} onClick={() => choosePreset(preset.id)}>{preset.label}</PresetChip>
+                ))}
+                <PresetChip active={presetId === null} onClick={() => {
+                  setPresetId(null);
+                  editScenario({ fuel_material_raw: null, fuel_form: null, thickness_mm: null, o2_pct: null, flow_cm_s: null, pressure_kpa: null }, true);
+                }}>{t('custom')}</PresetChip>
+              </div>
             </div>
             <details ref={scenarioEditor} className="rounded-xl border border-border bg-bg/35 p-3">
               <summary className="cursor-pointer console-label text-dim">{t('editScenario')} · {scenario.fuel_material_raw ?? t('selectMaterial')}</summary>
               <div className="mt-4 flex flex-col gap-4">
-                <div>
-                  <p className="console-label mb-3 text-dim">{t('scenarioPresetsStart')}</p>
-                  <div className="flex flex-wrap gap-2" role="group" aria-label={t('scenarioPresets')}>
-                    {SCENARIO_PRESETS.map((preset) => (
-                      <PresetChip key={preset.id} active={preset.id === presetId} onClick={() => choosePreset(preset.id)}>{preset.label}</PresetChip>
-                    ))}
-                    <PresetChip active={presetId === null} onClick={() => {
-                      setPresetId(null);
-                      editScenario({ fuel_material_raw: null, fuel_form: null, thickness_mm: null, o2_pct: null, flow_cm_s: null, pressure_kpa: null }, true);
-                    }}>{t('custom')}</PresetChip>
-                  </div>
-                </div>
                 <form onSubmit={parseDescription} className="flex flex-col gap-2">
                   <label htmlFor="scenario-description" className="console-label text-dim">{t('orDescribeScenario')}</label>
-                  <textarea id="scenario-description" value={description} onChange={(event) => { setDescription(event.target.value); setMessage(''); }} maxLength={2000} rows={2} placeholder={t('scenarioExample')} className="w-full resize-y rounded-xl border border-border bg-bg/70 px-3 py-2.5 text-sm text-text placeholder:text-faint focus:border-amber focus:outline-none" />
+                  <textarea id="scenario-description" value={description} onChange={(event) => { setDescription(event.target.value); setMessage(''); }} maxLength={2000} rows={2} placeholder={t('scenarioExample')} className="w-full resize-y rounded-xl border border-border bg-bg/70 px-3 py-2.5 text-sm text-text placeholder:text-faint focus:border-amber" />
                   <Button type="submit" size="sm" disabled={parsing || !description.trim()} className="self-start">{parsing ? t('parsing') : t('parseScenario')}</Button>
                 </form>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -397,11 +414,11 @@ export function Console() {
                       <label htmlFor="scenario-material" aria-describedby="scenario-hint-material" className="console-label text-dim">{t('material')}</label>
                       <InputHint field="material" label={t('material')} />
                     </div>
-                    <input id="scenario-material" aria-describedby="scenario-hint-material" value={scenario.fuel_material_raw ?? ''} onChange={(event) => editScenario({ fuel_material_raw: event.target.value || null }, true)} placeholder={t('enterMaterial')} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text placeholder:text-faint focus:border-amber focus:outline-none" />
+                    <input id="scenario-material" aria-describedby="scenario-hint-material" value={scenario.fuel_material_raw ?? ''} onChange={(event) => editScenario({ fuel_material_raw: event.target.value || null }, true)} placeholder={t('enterMaterial')} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text placeholder:text-faint focus:border-amber" />
                   </div>
                   <label className="flex flex-col gap-1.5">
                     <span className="console-label text-dim">{t('form')}</span>
-                    <select aria-describedby="scenario-hint-material" value={scenario.fuel_form ?? ''} onChange={(event) => editScenario({ fuel_form: (event.target.value || null) as ParsedScenario['fuel_form'] })} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text focus:border-amber focus:outline-none">
+                    <select aria-describedby="scenario-hint-material" value={scenario.fuel_form ?? ''} onChange={(event) => editScenario({ fuel_form: (event.target.value || null) as ParsedScenario['fuel_form'] })} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text focus:border-amber">
                       <option value="">{t('notSpecified')}</option>
                       {['flat_sheet', 'rod', 'fabric', 'thick_slab'].map((form) => <option key={form} value={form}>{form.replace('_', ' ')}</option>)}
                     </select>
@@ -428,34 +445,18 @@ export function Console() {
                       <label htmlFor="scenario-thickness" aria-describedby="scenario-hint-thickness" className="console-label text-dim">{t('thicknessMm')}</label>
                       <InputHint field="thickness" label={t('thicknessMm')} />
                     </div>
-                    <input id="scenario-thickness" aria-describedby="scenario-hint-thickness" type="number" min="0" step="any" value={scenario.thickness_mm ?? ''} onChange={(event) => editScenario({ thickness_mm: event.target.value === '' ? null : Number(event.target.value) })} placeholder={t('notSpecified')} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text placeholder:text-faint focus:border-amber focus:outline-none" />
+                    <input id="scenario-thickness" aria-describedby="scenario-hint-thickness" type="number" min="0" step="any" value={scenario.thickness_mm ?? ''} onChange={(event) => editScenario({ thickness_mm: event.target.value === '' ? null : Number(event.target.value) })} placeholder={t('notSpecified')} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text placeholder:text-faint focus:border-amber" />
                   </div>
                   <div className="flex flex-col gap-1.5">
                     <div className="flex items-center gap-2">
                       <label htmlFor="scenario-pressure" aria-describedby="scenario-hint-pressure" className="console-label text-dim">{t('pressureKpa')}</label>
                       <InputHint field="pressure" label={t('pressureKpa')} />
                     </div>
-                    <input id="scenario-pressure" aria-describedby="scenario-hint-pressure" type="number" min="0" step="any" value={scenario.pressure_kpa ?? ''} onChange={(event) => editScenario({ pressure_kpa: event.target.value === '' ? null : Number(event.target.value) })} placeholder={t('notSpecified')} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text placeholder:text-faint focus:border-amber focus:outline-none" />
+                    <input id="scenario-pressure" aria-describedby="scenario-hint-pressure" type="number" min="0" step="any" value={scenario.pressure_kpa ?? ''} onChange={(event) => editScenario({ pressure_kpa: event.target.value === '' ? null : Number(event.target.value) })} placeholder={t('notSpecified')} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text placeholder:text-faint focus:border-amber" />
                   </div>
                 </div>
               </div>
             </details>
-            <div className="flex flex-wrap items-center gap-3">
-              <Button variant="primary" disabled={material.status !== 'resolved'} aria-describedby={material.status !== 'resolved' ? 'confirm-blocked' : undefined} onClick={() => {
-                if (confirmed === draft) {
-                  showMap();
-                  return;
-                }
-                focusAfterConfirm.current = true;
-                setConfirmed(draft);
-                setMessage(catalog.state === 'unavailable' ? t('confirmedCatalogUnavailable') : t('confirmedCatalog'));
-              }}>
-                {t('confirmScenario')}
-              </Button>
-              {material.status !== 'resolved' && <p id="confirm-blocked" className="text-sm text-dim">{COPY.materialUnresolved}</p>}
-              {confirmed && <span role="status" className="text-sm text-success">{t('confirmed')} · {views?.top_k.length ?? 0} {t('confirmedMatches')}</span>}
-            </div>
-            {message && <p role="status" className="text-sm text-dim">{message}</p>}
           </div>
           <div className="flex flex-col gap-5">
             {ENVIRONMENTS.length > 0 && (
@@ -484,9 +485,52 @@ export function Console() {
             {evidenceUpdated && !mapInView && confirmed && <p role="status" className="flex flex-wrap items-center gap-x-2 self-start rounded-full border border-raised bg-bg/60 px-3 py-1 text-[13px] text-text">
               {COPY.plain.evidenceUpdated} · <Button variant="tertiary" onClick={showMap}>{COPY.plain.viewEvidence}</Button>
             </p>}
+            <div className="rounded-xl border border-border bg-bg/45 p-3" aria-live="polite">
+              {confirmed && closestMatch ? (
+                <>
+                  <p className="console-label mb-2 text-dim">{t('closestMatch')}: {experimentLabel(closestMatch.experiment)}</p>
+                  <p className="mb-2 text-sm text-text">{whyMatched(closestMatch).summary}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {whyMatched(closestMatch).lines.map((line) => {
+                      const [label, ...statusParts] = line.text.split(': ');
+                      return <Chip key={line.key} status={line.status} label={label} statusText={statusParts.join(': ')} />;
+                    })}
+                  </div>
+                </>
+              ) : confirmed ? (
+                <p className="text-sm text-dim">{dataStatus === 'unavailable' ? t('noMatchCatalog') : t('noEligibleMatchesForScenario')}</p>
+              ) : (
+                <p className="text-sm text-dim">{t('confirmForClosestMatch')}</p>
+              )}
+              {confirmed && outsideParams.map(({ parameter, scenario_value }) => (
+                <p key={parameter} className="mt-2 console-label text-warn">
+                  ⇥ {PARAM_LABELS[parameter]} {scenario_value} {FIELD_UNITS[parameter]} · {t('outsideCatalogRange')}
+                </p>
+              ))}
+            </div>
           </div>
         </div>
+        <div className="mt-5 flex flex-col gap-2 xl:border-t xl:border-border xl:pt-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <Button id="confirm-scenario" variant="primary" disabled={material.status !== 'resolved'} aria-describedby={material.status !== 'resolved' ? 'confirm-blocked' : undefined} onClick={() => {
+                if (confirmed === draft) {
+                  if (wide) showMatches(); else showMap();
+                  return;
+                }
+                focusAfterConfirm.current = true;
+                setConfirmed(draft);
+                setMessage(catalog.state === 'unavailable' ? t('confirmedCatalogUnavailable') : t('confirmedCatalog'));
+              }}>
+                {t('confirmScenario')}
+              </Button>
+              {material.status !== 'resolved' && <p id="confirm-blocked" className="text-sm text-dim">{COPY.materialUnresolved}</p>}
+              {confirmed && <span role="status" className="text-sm text-success">{t('confirmed')} · {views?.top_k.length ?? 0} {t('confirmedMatches')}</span>}
+            </div>
+            {message && <p role="status" className="text-sm text-dim">{message}</p>}
+        </div>
       </Panel>
+
+      <div className="flex min-w-0 flex-col gap-6">
 
       {inputsChanged && !confirmed && <p role="status" className="rounded-lg border border-warn/35 p-3 text-sm text-warn">{COPY.staleScenario}</p>}
       <Panel as="section" aria-labelledby="s2" className="reveal scroll-mt-[calc(var(--header-h,0px)+1rem)]">
@@ -508,6 +552,7 @@ export function Console() {
       </Panel>
 
       <div className="grid gap-6">
+        {confirmed ? <>
         <Panel as="section" aria-labelledby="s3" className="reveal">
         <SectionHeader id="s3" step={t('matchesStep')} title={t('matchPanel')} />
         <ShareBanner share={share} />
@@ -532,6 +577,30 @@ export function Console() {
             onCitation={(id) => { setSelectedId(id); focusExperiment(id); }}
           />
         </Panel>
+        </> : <>
+        <Panel as="section" aria-labelledby="s3" className="!py-4">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+            <SectionHeader id="s3" step={t('matchesStep')} title={t('matchPanel')} className="!mb-0 !border-0 !pb-0" />
+            <p className="min-w-0 flex-1 text-sm text-dim">{COPY.plain.collapsed.matches}</p>
+            {missionCase
+              ? <Button variant="primary" onClick={() => startMission(missionCase.preset_id)}>{COPY.landingCta.mission}</Button>
+              : <Button onClick={() => {
+                const confirm = document.getElementById('confirm-scenario');
+                confirm?.scrollIntoView({ behavior: reducedMotion() ? 'instant' : 'smooth', block: 'center' });
+                confirm?.focus({ preventScroll: true });
+              }}>{COPY.plain.collapsed.matchesAction}</Button>}
+          </div>
+          <ShareBanner share={share} />
+          <MissionCaption step={guidedStep === 2 ? 2 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[2].caption)} />
+        </Panel>
+        <Panel as="section" aria-labelledby="s4" className="mission-brief motion-still !py-4">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+            <SectionHeader id="s4" step={t('briefStep')} title={t('missionBrief')} className="!mb-0 !border-0 !pb-0" />
+            <p className="min-w-0 flex-1 text-sm text-dim">{COPY.plain.collapsed.brief}</p>
+          </div>
+          <MissionCaption step={guidedStep === 3 ? 3 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[3].caption)} />
+        </Panel>
+        </>}
       </div>
 
       <Panel as="section" aria-labelledby="s5" className="motion-still">
@@ -539,6 +608,8 @@ export function Console() {
         <MissionCaption step={guidedStep === 4 ? 4 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[4].caption)} />
         <GapRadarPanel data={radar} status={dataStatus} scenarioActive={confirmed !== null} />
       </Panel>
+      </div>
+      </div>
       {research && <ResearchContext section={research} />}
     </div>
   );
@@ -576,6 +647,26 @@ function MissionCaption({ step, onStep, text }: { step: number | null; onStep: (
   );
 }
 
+function ConditionBar({ summary: { scenario, confirmed, counts }, action, onAction }: {
+  summary: ReturnType<typeof investigationSummary>;
+  action: string;
+  onAction: () => void;
+}) {
+  const { material } = scenario;
+  const name = material.status === 'resolved' ? material.fuel_material.replace(/_/g, ' ') : material.raw ?? t('notSpecified');
+  return (
+    <div role="region" aria-label={COPY.summary.scenario} className="fixed inset-x-0 top-[var(--header-h,0px)] z-30 border-b border-border bg-bg/95 backdrop-blur-sm xl:hidden">
+      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2 text-[13px] sm:px-6">
+        <p className="min-w-0 flex-1 truncate text-text">
+          {name} · {COPY.summary.o2(scenario.o2_pct)} · {COPY.summary.flow(scenario.flow_cm_s)}
+          {confirmed && counts && <span className="text-dim"> · {COPY.summary.topMatches(counts.top_k ?? 0)}</span>}
+        </p>
+        <Button size="sm" onClick={onAction}>{action}</Button>
+      </div>
+    </div>
+  );
+}
+
 export function InvestigationSummary({
   summary: { scenario, confirmed, counts },
   status,
@@ -598,8 +689,8 @@ export function InvestigationSummary({
     : [t(status === 'unavailable' ? 'evidenceUnavailable' : 'loading')];
 
   return (
-    // Sticky at the top of the Evidence Map section on desktop, so the context travels with the plot; a plain block below lg.
-    <div role="group" aria-label={`${summary.scenario}, ${summary.conditions}, ${summary.evidence}`} className="mb-4 grid grid-cols-2 gap-3 rounded-xl border border-border bg-bg/35 p-3 sm:grid-cols-4 lg:sticky lg:top-[calc(var(--header-h,0px)+0.5rem)] lg:z-20 lg:bg-bg/95 lg:backdrop-blur-sm">
+    // Desktop: the sticky control rail beside the plot carries the scenario context. Below xl: the condensed bar.
+    <div role="group" aria-label={`${summary.scenario}, ${summary.conditions}, ${summary.evidence}`} className="mb-4 grid grid-cols-2 gap-3 rounded-xl border border-border bg-bg/35 p-3 sm:grid-cols-4">
       {closest && <p className="col-span-2 text-sm text-text sm:col-span-4">{t('closestMatch')}: {closest} · <a href="#s4" className={textLink}>{t('missionBrief')}</a></p>}
       <div className="min-w-0">
         <p className="console-label text-dim">{summary.scenario}</p>
@@ -616,7 +707,7 @@ export function InvestigationSummary({
           ? <p className="mt-1 text-xs text-dim">{summary.topMatches(counts.top_k ?? 0)}</p>
           : <p role="status" className="mt-1 text-xs text-warn">{summary.notConfirmed}</p>)}
       </div>
-      <div className="col-span-2 sm:col-span-4">
+      <div className="col-span-2 sm:col-span-4 xl:hidden">
         <Button size="sm" onClick={onEdit}>{t('editScenario')}</Button>
       </div>
     </div>
@@ -710,7 +801,7 @@ export function EvidenceMap({
   };
 
   return (
-    <div id="evidence-map" tabIndex={-1} className="min-w-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber">
+    <div id="evidence-map" tabIndex={-1} className="min-w-0 scroll-mt-[calc(var(--header-h,0px)+3.5rem)] xl:scroll-mt-[calc(var(--header-h,0px)+1rem)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber">
       {status === 'loading' ? (
         <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-6 text-center text-sm text-dim">{t('catalogConnecting')}</p>
       ) : status === 'unavailable' ? (
@@ -720,7 +811,7 @@ export function EvidenceMap({
       ) : (
         <>
           <div className="overflow-x-auto rounded-xl border border-border bg-bg/45 p-2 sm:p-4">
-            <svg viewBox={`0 0 ${width} ${height}`} role="group" aria-label={t('mapAccessibility')} className="block h-auto min-w-[520px] w-full">
+            <svg viewBox={`0 0 ${width} ${height}`} role="group" aria-label={t('mapAccessibility')} className="block h-auto max-h-[70vh] min-w-[520px] w-full">
               <title>{t('mapVerifiedTitle')}</title>
               <defs>
                 <pattern id="ignis-untested-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
@@ -862,7 +953,7 @@ export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }:
   return (
     <div>
     <p className="mb-3 text-sm leading-relaxed text-dim">{COPY.matchOrder} <a href="/methods" className={textLink}>How matching works and what it does not tell you</a></p>
-    <div className="match-cards grid auto-rows-fr gap-3 lg:grid-cols-3">
+    <div className="match-cards grid auto-rows-fr gap-3 lg:grid-cols-3 xl:grid-cols-2">
       {matches.map((match, index) => {
         const why = whyMatched(match);
         const { experiment } = match;
@@ -1061,6 +1152,7 @@ function GapRadarPanel({
 
   return (
     <div className="flex flex-col gap-4">
+      <p className="console-label text-text">{scenarioActive ? COPY.plain.gapScope.scenario : COPY.plain.gapScope.catalog}</p>
       <p className="text-sm leading-relaxed text-dim">{COPY.gapNote}</p>
       {data.availability === 'no_plottable_evidence' ? (
         <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-5 text-sm text-dim">
@@ -1077,6 +1169,7 @@ function GapRadarPanel({
                 <p className="console-label text-amber">{t('region')} {index + 1} · {region.cells} {t('untestedCells')}</p>
                 <p className="mt-2 text-sm text-text">O₂ {region.o2_min}–{region.o2_max}%</p>
                 <p className="mt-1 text-sm text-text">Airflow {region.flow_min}–{region.flow_max} cm/s</p>
+                <p className="mt-2 text-[13px] leading-snug text-dim">{COPY.plain.regionCells}</p>
               </li>
             ))}
           </ol>

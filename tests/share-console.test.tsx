@@ -1,3 +1,4 @@
+import { COPY } from '../src/lib/copy';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, expect, it, vi } from 'vitest';
 import { Console } from '../src/pages/Console';
@@ -42,4 +43,19 @@ it('restores a shared scenario without confirming or requesting a Brief', () => 
   expect(html).not.toContain('Copy share link');
   expect(html).not.toContain('Live retrieval');
   expect(fetchSpy).not.toHaveBeenCalled();
+});
+
+it('before Confirm, steps 03/04 are slim single rows and step 05 labels its catalog-wide scope', () => {
+  vi.stubGlobal('fetch', vi.fn());
+  vi.stubGlobal('window', { location: { search: '?share=' + encodeURIComponent(encodeShare(scenario(), 'r1', [record.id])) } });
+  const html = renderToStaticMarkup(<Console />);
+  expect(html).toContain(COPY.plain.collapsed.matches);
+  expect(html).toContain(COPY.plain.collapsed.brief);
+  expect(html).toContain(COPY.plain.collapsed.matchesAction);
+  expect(html).toContain(COPY.plain.gapScope.catalog);
+  // Anchors and the step headings survive the collapse (guided mission + deep links).
+  for (const id of ['s1', 's2', 's3', 's4', 's5']) expect(html).toContain(`id="${id}"`);
+  // One call to action only: the brief row has no button.
+  const brief = html.slice(html.indexOf('id="s4"'), html.indexOf('id="s5"'));
+  expect(brief).not.toContain('<button');
 });
