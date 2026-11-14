@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useCatalogSummary, useVerifiedCatalog, type VerifiedCatalog, type CatalogSummary } from '../lib/catalog';
 import { ExportButton } from '../components/CatalogStatus';
-import { Button, Panel } from '../components/ui';
+import { Button, Page, PageHeader, Panel } from '../components/ui';
 import { COPY } from '../lib/copy';
 import { evidenceSource } from '../lib/evidenceSource';
 import type { Experiment } from '../lib/types';
@@ -50,10 +50,9 @@ export function SourceList({catalog, summary, retry}: {catalog: VerifiedCatalog;
   const verified = catalog.state === 'ready' ? catalog.experiments.filter(card => card.verified_by != null) : [];
   const campaigns = [...new Set(verified.map(card => card.campaign))].sort();
   const inReview = summary.state === 'ready' && catalog.state === 'empty' && catalog.revision === summary.stats.revision ? summary.stats.in_review : 0;
-  return <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
-    <p className="console-label text-amber">Sources / verified catalog</p>
-    <h1 className="display my-4 text-4xl">Source bibliography</h1>
-    <p className="mb-5 max-w-2xl text-lg text-dim">These are the papers and datasets cited by published experiment cards. Counts refer to cards in the current catalog.</p>
+  return <Page>
+    <PageHeader eyebrow="Sources / verified catalog" title="Source bibliography"
+      intro="These are the papers and datasets cited by published experiment cards. Counts refer to cards in the current catalog." />
     <ExportButton summary={summary} label="Export verified dataset (.json)"/>
     <section className="mt-8" aria-labelledby="challenge-resources">
       <h2 id="challenge-resources" className="mb-2 text-xl font-semibold">Official challenge resources</h2>
@@ -77,6 +76,8 @@ export function SourceList({catalog, summary, retry}: {catalog: VerifiedCatalog;
                   if (c.ntrs_id && /^\d+$/.test(c.ntrs_id)) links.set('https://ntrs.nasa.gov/citations/'+c.ntrs_id, 'NTRS '+c.ntrs_id);
                   const doi = doiId(c.doi);
                   if (doi) links.set('https://doi.org/'+doi.split('/').map(encodeURIComponent).join('/'), 'DOI '+doi);
+                  const dataset = doiId(c.dataset_doi ?? null);
+                  if (dataset) links.set('https://doi.org/'+dataset.split('/').map(encodeURIComponent).join('/'), 'PSI dataset DOI '+dataset);
                 }
                 return <li key={card.id}><Panel>
                   <h3 className="mb-2 text-lg font-semibold [overflow-wrap:anywhere]">{card.source_title}</h3>
@@ -87,5 +88,5 @@ export function SourceList({catalog, summary, retry}: {catalog: VerifiedCatalog;
             </section>)}</div>}
         </>}
     </div>
-  </main>;
+  </Page>;
 }

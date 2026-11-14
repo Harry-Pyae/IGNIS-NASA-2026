@@ -11,11 +11,12 @@ import { COPY } from '../lib/copy';
 import { pickMaterial, presetScenario, resolveMaterial, SCENARIO_PRESETS } from '../engine/aliases';
 import { applyEnvironment, isElevatedO2, visibleEnvironmentPresets, type EnvironmentPreset } from '../engine/environments';
 import { briefingKey, currentBriefing, evidenceViews, investigationSummary, mapCoordinates, onMapAxes } from '../engine/views';
-import { evidenceLocator, evidenceSource } from '../lib/evidenceSource';
+import { datasetCitation, evidenceLocator, evidenceSource } from '../lib/evidenceSource';
 import { FIELD_UNITS, PARAM_LABELS, ParseScenarioResponseSchema, SynthesizeResponseSchema, type Briefing, type ContinuousParam, type Experiment, type MatchResult, type ParsedScenario, type ResolvedScenario } from '../lib/types';
 import { gapGrid, gapRadar, GRID, type GapRadar as GapRadarData } from '../engine/gaps';
 import { whyMatched } from '../engine/match';
 import { t } from '../i18n';
+import { InfoHint } from '../features/hint/InfoHint';
 import { CardComparison } from '../components/CardComparison';
 import { CopyShareLink, ShareBanner } from '../features/share/ScenarioShare';
 import { useScenarioShare } from '../features/share/useScenarioShare';
@@ -38,6 +39,10 @@ const MISSION_STEPS = [
   { target: 's4', title: 'missionStepBrief', caption: 'missionCaptionBrief' },
   { target: 's5', title: 'missionStepGaps', caption: 'missionCaptionGaps' },
 ] as const;
+
+function InputHint({ field, label }: { field: keyof typeof COPY.plain.hints; label: string }) {
+  return <InfoHint id={`scenario-hint-${field}`} label={COPY.plain.hintButton(label)}>{COPY.plain.hints[field]}</InfoHint>;
+}
 
 export function Console() {
   const { catalog, reload } = useVerifiedCatalog();
@@ -305,13 +310,14 @@ export function Console() {
       </div>}
       <Panel as="section" aria-labelledby="s1" className="reveal">
         {firstVisit && <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-border p-3 text-sm text-dim">
+          <p className="min-w-0 flex-1">{missionCase ? COPY.plain.firstVisit.mission : COPY.plain.firstVisit.explore}</p>
           {missionCase
             ? <Button size="sm" onClick={() => startMission(missionCase.preset_id)}>{COPY.landingCta.mission}</Button>
             : <p className="min-w-0 flex-1">{COPY.missionAvailability}</p>}
           <Button size="sm" onClick={() => {
             setFirstVisit(false);
             try { localStorage.setItem('ignis-scenario-intro-dismissed', '1'); } catch { /* Dismiss for this visit. */ }
-          }}>Dismiss</Button>
+          }}>{COPY.plain.firstVisit.dismiss}</Button>
         </div>}
         <SectionHeader id="s1" step={t('describeStep')} title={t('missionScenario')} />
         <MissionCaption step={guidedStep === 0 ? 0 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[0].caption)} />
@@ -361,13 +367,16 @@ export function Console() {
                   <Button type="submit" size="sm" disabled={parsing || !description.trim()} className="self-start">{parsing ? t('parsing') : t('parseScenario')}</Button>
                 </form>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <label className="flex flex-col gap-1.5">
-                    <span className="console-label text-dim">{t('material')}</span>
-                    <input value={scenario.fuel_material_raw ?? ''} onChange={(event) => editScenario({ fuel_material_raw: event.target.value || null }, true)} placeholder={t('enterMaterial')} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text placeholder:text-faint focus:border-amber focus:outline-none" />
-                  </label>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="scenario-material" aria-describedby="scenario-hint-material" className="console-label text-dim">{t('material')}</label>
+                      <InputHint field="material" label={t('material')} />
+                    </div>
+                    <input id="scenario-material" aria-describedby="scenario-hint-material" value={scenario.fuel_material_raw ?? ''} onChange={(event) => editScenario({ fuel_material_raw: event.target.value || null }, true)} placeholder={t('enterMaterial')} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text placeholder:text-faint focus:border-amber focus:outline-none" />
+                  </div>
                   <label className="flex flex-col gap-1.5">
                     <span className="console-label text-dim">{t('form')}</span>
-                    <select value={scenario.fuel_form ?? ''} onChange={(event) => editScenario({ fuel_form: (event.target.value || null) as ParsedScenario['fuel_form'] })} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text focus:border-amber focus:outline-none">
+                    <select aria-describedby="scenario-hint-material" value={scenario.fuel_form ?? ''} onChange={(event) => editScenario({ fuel_form: (event.target.value || null) as ParsedScenario['fuel_form'] })} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text focus:border-amber focus:outline-none">
                       <option value="">{t('notSpecified')}</option>
                       {['flat_sheet', 'rod', 'fabric', 'thick_slab'].map((form) => <option key={form} value={form}>{form.replace('_', ' ')}</option>)}
                     </select>
@@ -389,14 +398,20 @@ export function Console() {
                   </div>
                 )}
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <label className="flex flex-col gap-1.5">
-                    <span className="console-label text-dim">{t('thicknessMm')}</span>
-                    <input type="number" min="0" step="any" value={scenario.thickness_mm ?? ''} onChange={(event) => editScenario({ thickness_mm: event.target.value === '' ? null : Number(event.target.value) })} placeholder={t('notSpecified')} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text placeholder:text-faint focus:border-amber focus:outline-none" />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="console-label text-dim">{t('pressureKpa')}</span>
-                    <input type="number" min="0" step="any" value={scenario.pressure_kpa ?? ''} onChange={(event) => editScenario({ pressure_kpa: event.target.value === '' ? null : Number(event.target.value) })} placeholder={t('notSpecified')} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text placeholder:text-faint focus:border-amber focus:outline-none" />
-                  </label>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="scenario-thickness" aria-describedby="scenario-hint-thickness" className="console-label text-dim">{t('thicknessMm')}</label>
+                      <InputHint field="thickness" label={t('thicknessMm')} />
+                    </div>
+                    <input id="scenario-thickness" aria-describedby="scenario-hint-thickness" type="number" min="0" step="any" value={scenario.thickness_mm ?? ''} onChange={(event) => editScenario({ thickness_mm: event.target.value === '' ? null : Number(event.target.value) })} placeholder={t('notSpecified')} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text placeholder:text-faint focus:border-amber focus:outline-none" />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="scenario-pressure" aria-describedby="scenario-hint-pressure" className="console-label text-dim">{t('pressureKpa')}</label>
+                      <InputHint field="pressure" label={t('pressureKpa')} />
+                    </div>
+                    <input id="scenario-pressure" aria-describedby="scenario-hint-pressure" type="number" min="0" step="any" value={scenario.pressure_kpa ?? ''} onChange={(event) => editScenario({ pressure_kpa: event.target.value === '' ? null : Number(event.target.value) })} placeholder={t('notSpecified')} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text placeholder:text-faint focus:border-amber focus:outline-none" />
+                  </div>
                 </div>
               </div>
             </details>
@@ -438,8 +453,8 @@ export function Console() {
                 {activeEnvironment && isElevatedO2(activeEnvironment) && <p className="text-[13px] text-warn">{COPY.elevatedO2(activeEnvironment.o2_pct)}</p>}
               </div>
             )}
-            <Slider label="O₂" unit="%" min={14} max={30} value={scenario.o2_pct} onChange={(value) => moveSlider({ o2_pct: value })} onClear={() => moveSlider({ o2_pct: null })} allowUnspecified unspecifiedValue={21} unspecifiedLabel={t('notSpecified')} setValueLabel={t('setOxygen')} clearValueLabel={t('clearOxygen')} />
-            <Slider label="Airflow" unit="cm/s" min={0} max={30} value={scenario.flow_cm_s} onChange={(value) => moveSlider({ flow_cm_s: value })} onClear={() => moveSlider({ flow_cm_s: null })} allowUnspecified unspecifiedLabel={t('notSpecified')} setValueLabel={t('setAirflow')} clearValueLabel={t('clearAirflow')} />
+            <Slider label="O₂" describedBy="scenario-hint-o2" hint={<InputHint field="o2" label="O₂" />} unit="%" min={14} max={30} value={scenario.o2_pct} onChange={(value) => moveSlider({ o2_pct: value })} onClear={() => moveSlider({ o2_pct: null })} allowUnspecified unspecifiedValue={21} unspecifiedLabel={t('notSpecified')} setValueLabel={t('setOxygen')} clearValueLabel={t('clearOxygen')} />
+            <Slider label="Airflow" describedBy="scenario-hint-airflow" hint={<InputHint field="airflow" label="Airflow" />} unit="cm/s" min={0} max={30} value={scenario.flow_cm_s} onChange={(value) => moveSlider({ flow_cm_s: value })} onClear={() => moveSlider({ flow_cm_s: null })} allowUnspecified unspecifiedLabel={t('notSpecified')} setValueLabel={t('setAirflow')} clearValueLabel={t('clearAirflow')} />
             <p className="text-[13px] text-dim">{COPY.sliderCaption}</p>
           </div>
         </div>
@@ -781,6 +796,7 @@ export function EvidenceMap({
             <span className="inline-flex items-center gap-2"><i aria-hidden className="h-3 w-4 rounded-sm border border-faint/50" style={{ backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 3px, var(--color-faint) 3px 4px)' }} />{t('untestedCell')}</span>
             <span className="inline-flex items-center gap-2"><i aria-hidden className="h-3 w-4 rounded-sm border border-dashed border-faint/60 bg-faint/10" />{t('outsideCatalogRange')}</span>
           </div>
+          <p className="mt-3 text-sm leading-relaxed text-dim">{COPY.plain.map.untested} {COPY.plain.map.outside}</p>
           <p className="mt-3 text-sm leading-relaxed text-dim">{COPY.mapScope}</p>
           <p className="mt-3 text-[13px] text-dim">{plotted.length} {t('plotted')} · {matches.length} {t('rankedMatches')}</p>
           {outsideAxesCount > 0 && <p role="status" className="mt-2 text-[13px] text-dim">{outsideAxesCount} {t(outsideAxesCount === 1 ? 'outsideAxesRecord' : 'outsideAxesRecords')}</p>}
@@ -826,6 +842,8 @@ export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }:
         const { experiment } = match;
         const source = evidenceSource(experiment);
         const provenance = evidenceLocator(experiment);
+        const dataset = datasetCitation(experiment);
+        const outcome = COPY.plain.outcomes[experiment.outcome as keyof typeof COPY.plain.outcomes];
         const field = (label: string, value: string, parameter?: ContinuousParam) => {
           const qualifier = parameter ? experiment.condition_changes?.filter((change) => change.parameter === parameter).map((change) => change.note) : [];
           return (
@@ -860,16 +878,24 @@ export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }:
               {field(PARAM_LABELS.pressure_kpa, experiment.pressure_kpa == null ? t('notReported') : `${experiment.pressure_kpa} kPa`, 'pressure_kpa')}
               <div className="grid grid-cols-[minmax(5.5rem,.7fr)_minmax(0,1.3fr)] items-center gap-3 py-2">
                 <dt className="text-xs text-dim">{t('outcome')}</dt>
-                <dd className="flex justify-end">{experiment.outcome ? <Badge variant={experiment.outcome} /> : <Badge variant="neutral">{t('outcomeNotReported')}</Badge>}</dd>
+                <dd className="flex flex-col items-end gap-1 text-right">{experiment.outcome ? <Badge variant={experiment.outcome} /> : <Badge variant="neutral">{t('outcomeNotReported')}</Badge>}{outcome && <span className="text-xs text-dim">{outcome}</span>}</dd>
               </div>
             </dl>
             <p className="mt-3 text-sm text-text">{why.summary}</p>
+            <p className="mt-1 text-xs text-dim">{COPY.plain.compared}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {why.lines.map((line) => {
                 const [label, ...statusParts] = line.text.split(': ');
                 return <Chip key={line.key} status={line.status} label={label} statusText={statusParts.join(': ')} />;
               })}
             </div>
+            <details className="mt-2 text-xs text-dim">
+              <summary className="cursor-pointer">What match chips mean</summary>
+              <dl className="mt-2 space-y-1">{why.lines.map(line => (
+                <div key={line.key}><dt className="inline font-medium">{line.text}</dt>{' '}
+                  <dd className="inline">{COPY.plain.chips[line.status]}</dd></div>
+              ))}</dl>
+            </details>
             {experiment.key_observation_quote && (
               <details className="mt-3 border-t border-border/70 pt-3 text-sm">
                 <summary className="cursor-pointer text-dim can-hover:hover:text-text">{t('sourceExcerpt')}</summary>
@@ -878,6 +904,7 @@ export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }:
               </details>
             )}
             <p className="mt-3 mb-2 break-words text-sm text-dim [overflow-wrap:anywhere]">{experiment.source_title}</p>
+            {dataset && <p className="mb-2 text-sm text-dim [overflow-wrap:anywhere]">{dataset}</p>}
             <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border/70 pt-3 text-[13px]">
               {provenance && <span className="min-w-0 break-words text-dim [overflow-wrap:anywhere]">{provenance}</span>}
               {source && <a href={source.url} target="_blank" rel="noreferrer" className="min-h-10 text-amber underline underline-offset-4">{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}
@@ -922,7 +949,7 @@ function MissionBrief({
     { classification: 'OBSERVED', title: t('observed'), tone: 'observed' as const },
     { classification: 'SUPPORTED', title: t('supportedInterpretation'), tone: 'interpretation' as const },
     { classification: 'UNTESTED', title: t('untested'), tone: 'untested' as const },
-  ];
+  ] as const;
   const experimentByEvidence = new Map(briefing.evidence.map(({ evidence_id, experiment_id }) => [evidence_id, experiment_id]));
 
   return (
@@ -935,6 +962,7 @@ function MissionBrief({
         return (
           <Panel key={group.classification} tone={group.tone} className="!p-4">
             <h3 className="console-label text-text">{group.title}</h3>
+            <p className="mt-1 text-sm text-dim">{COPY.plain.brief[group.classification]}</p>
             {group.classification === 'SUPPORTED' && <p className="mt-2 text-sm leading-relaxed text-dim">{COPY.interpretationLimit}</p>}
             <ul className="mt-2 flex flex-col gap-3">
               {claims.map((claim, index) => (
