@@ -1,3 +1,4 @@
+import { UsageHelp, type UsageHelpKey } from './UsageHelp';
 import type { ReactNode } from 'react';
 import { cx } from '../../lib/cx';
 
@@ -10,10 +11,11 @@ interface SectionHeaderProps {
   aside?: ReactNode;
   id?: string;
   className?: string;
+  help?: UsageHelpKey;
 }
 
 /** §8.3 section header pattern: `MISSION SCENARIO` + mono step tag `01 · DESCRIBE`. */
-export function SectionHeader({ step, title, aside, id, className }: SectionHeaderProps) {
+export function SectionHeader({ step, title, aside, id, className, help }: SectionHeaderProps) {
   return (
     <header
       className={cx('mb-5 flex flex-wrap items-end justify-between gap-3 border-b border-border/60 pb-4', className)}
@@ -23,6 +25,7 @@ export function SectionHeader({ step, title, aside, id, className }: SectionHead
         <h2 id={id} className="text-[15px] font-semibold tracking-[0.08em] text-text uppercase">
           {title}
         </h2>
+        {help && <UsageHelp topic={help} />}
       </div>
       {aside && <div className="flex items-center gap-2">{aside}</div>}
     </header>

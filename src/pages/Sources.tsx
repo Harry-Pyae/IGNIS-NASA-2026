@@ -44,7 +44,7 @@ export function SourceList({catalog, summary, retry}: {catalog: VerifiedCatalog;
   const campaigns = [...new Set(verified.map(card => card.campaign))].sort();
   const inReview = summary.state === 'ready' && catalog.state === 'empty' && catalog.revision === summary.stats.revision ? summary.stats.in_review : 0;
   return <Page>
-    <PageHeader eyebrow="Sources / verified catalog" title="Source bibliography"
+    <PageHeader help="helpSources" eyebrow="Sources / verified catalog" title="Source bibliography"
       intro="These are the papers and datasets cited by published experiment cards. Counts refer to cards in the current catalog." />
     <ExportButton summary={summary} label="Export verified dataset (.json)"/>
     <section className="mt-8" aria-labelledby="challenge-resources">

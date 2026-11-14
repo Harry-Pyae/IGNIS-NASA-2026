@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { useEffect, useState } from 'react';
 import { CardComparison } from '../components/CardComparison';
 import { Button, Page, PageHeader, Panel, Select } from '../components/ui';
@@ -30,30 +31,30 @@ export function Compare() {
   const settled = catalog.state === 'ready' || catalog.state === 'empty';
 
   return <Page>
-    <PageHeader eyebrow="Compare / verified catalog" title="Compare experiments" />
+    <PageHeader help="helpCompare" eyebrow={t('compareEyebrow')} title={t('compareTitle')} />
     <Panel>
-      {catalog.state === 'loading' && <p role="status">Loading verified experimentsâ€¦</p>}
+      {catalog.state === 'loading' && <p role="status">{t('compareLoading')}</p>}
       {catalog.state === 'unavailable' && <div className="flex flex-wrap items-center gap-2">
-        <p role="status">The verified catalog is unavailable.</p>
-        <Button size="sm" onClick={reload}>Retry</Button>
+        <p role="status">{t('compareUnavailable')}</p>
+        <Button size="sm" onClick={reload}>{t('retry')}</Button>
       </div>}
       {settled && <>
         <div className="mb-4 grid gap-3 sm:grid-cols-2">
           {pair.map((id, side) => {
             const options = eligible.filter(card => card.id !== pair[1 - side] || card.id === id)
-              .map(card => ({ value: card.id, label: `${card.campaign} Â· ${card.test_id}` }));
-            if (id && !options.some(option => option.value === id)) options.unshift({ value: id, label: `Unavailable Â· ${id}` });
-            return <Select key={side} label={`Experiment ${side + 1}`} placeholder="Choose a verified experiment"
+              .map(card => ({ value: card.id, label: `${card.campaign} · ${card.test_id}` }));
+            if (id && !options.some(option => option.value === id)) options.unshift({ value: id, label: `${t('compareUnavailableOption')} · ${id}` });
+            return <Select key={side} label={`${t('compareExperiment')} ${side + 1}`} placeholder={t('compareChoose')}
               value={id} options={options} onChange={event => select(side, event.target.value)} />;
           })}
         </div>
         {missing.length > 0 && <div role="status">
-          <p>These IDs are unavailable for comparison in the current IGNIS catalog.</p>
+          <p>{t('compareMissing')}</p>
           <ul className="list-inside list-disc break-words">
             {missing.map((id) => <li key={id}>{id}</li>)}
           </ul>
         </div>}
-        {cards.length < 2 && <p>Select two distinct verified solid-material experiments to compare.</p>}
+        {cards.length < 2 && <p>{t('compareDistinct')}</p>}
         {cards.length >= 2 && <CardComparison cards={cards} standalone />}
       </>}
     </Panel>
