@@ -17,6 +17,8 @@ import { gapGrid, gapRadar, GRID, type GapRadar as GapRadarData } from '../engin
 import { whyMatched } from '../engine/match';
 import { t } from '../i18n';
 import { CardComparison } from '../components/CardComparison';
+import { CopyShareLink, ShareBanner } from '../features/share/ScenarioShare';
+import { useScenarioShare } from '../features/share/useScenarioShare';
 import { missionEntry } from '../engine/mission';
 import { contextSection } from '../lib/context-content';
 import { GUIDED_MISSION_REQUEST, takePendingMission } from './consoleLoader';
@@ -66,6 +68,14 @@ export function Console() {
   const [inputsChanged, setInputsChanged] = useState(false);
   const [appliedEnvironmentId, setAppliedEnvironmentId] = useState<string | null>(null);
   const scenarioEditor = useRef<HTMLDetailsElement>(null);
+  const share = useScenarioShare(catalog, ({ material, ...conditions }) => {
+    const name = material.status === 'resolved' ? material.fuel_material : null;
+    setScenario({ ...conditions, fuel_material_raw: name });
+    setMaterialChoice(name);
+    setPresetId(null);
+    setAppliedEnvironmentId(null);
+    setInputsChanged(true);
+  });
   const sourceMaterials = useMemo(() => experiments.map(({ domain, fuel_material, material_class }) => ({ domain, fuel_material, material_class })), [experiments]);
   const activePreset = SCENARIO_PRESETS.find((preset) => preset.id === presetId);
   const material = materialChoice
@@ -422,6 +432,12 @@ export function Console() {
       <div className="grid gap-6">
         <Panel as="section" aria-labelledby="s3" className="reveal">
         <SectionHeader id="s3" step={t('matchesStep')} title={t('matchPanel')} />
+        <ShareBanner share={share} />
+        {confirmed && views && <CopyShareLink
+          scenario={confirmed}
+          revision={views.revision}
+          rankedIds={views.top_k.map(({ experiment }) => experiment.id)}
+        />}
           <MissionCaption step={guidedStep === 2 ? 2 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[2].caption)} />
           <MatchPanel matches={views?.top_k ?? []} status={dataStatus} confirmed={confirmed !== null} selectedId={selectedId} onSelect={setSelectedId} />
           {confirmed && views && <CardComparison cards={views.top_k.map(m => m.experiment)}/>}
