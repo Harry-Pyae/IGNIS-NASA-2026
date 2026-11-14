@@ -16,7 +16,7 @@ export function ProvenancePill({ summary, retry }: { summary: CatalogSummary; re
   const failed = summary.state === 'unavailable' && summary.reason === 'error';
   return (
     <span
-      className="console-label inline-flex min-w-0 items-center gap-2 rounded-full border border-border bg-panel/80 px-3 py-1.5 tracking-[0.08em] text-dim"
+      className="catalog-provenance console-label inline-flex min-w-0 items-center gap-2 rounded-full border border-border bg-panel/80 px-3 py-1.5 tracking-[0.08em] text-dim"
       aria-live="polite"
     >
       <Icon name={failed ? 'withheld' : 'provenance'} size={14} className={failed ? 'text-warn' : 'text-amber'} />

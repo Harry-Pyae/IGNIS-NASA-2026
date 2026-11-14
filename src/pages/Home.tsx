@@ -44,7 +44,7 @@ function Hero() {
         aria-hidden
         className="hero-scrim absolute inset-0 -z-10 max-xl:hidden"
       />
-      <div aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-b from-transparent to-bg max-xl:hidden" />
+      <div aria-hidden className="hero-bottom-fade absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-b from-transparent to-bg max-xl:hidden" />
 
       <div className="mx-auto w-full max-w-6xl px-4 pt-14 pb-16 sm:px-6 sm:pt-20 xl:py-20">
         <div className="max-w-2xl">
