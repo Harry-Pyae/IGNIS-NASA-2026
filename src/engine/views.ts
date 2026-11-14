@@ -5,8 +5,11 @@
  *   all_verified  every verified card in the snapshot (any domain)
  *   eligible      solid-flammability cards that pass the scenario's gates (all solid cards when
  *                 no scenario is active). SAME never enters.
- *   plotted       eligible cards that report BOTH o2_pct and flow_cm_s (the map's axes). A card
- *                 missing either stays in `eligible` and the table; null never becomes zero.
+ *   plotted       eligible cards DRAWN on the map: both o2_pct and flow_cm_s, inside the map's axes.
+ *   off_axis      eligible cards with both coordinates but beyond the displayed axes (measured, not drawn).
+ *   not_plotted   eligible cards missing o2_pct or flow_cm_s. They stay in `eligible` and the table; null never
+ *                 becomes zero. Round 8 · A4: all three come from mapCoordinates(), the SVG's own partition, so a
+ *                 summary count can never disagree with what the map draws.
  *   top_k         retrieve()'s ranked matches (k ≤ 5), with chips; empty without a scenario.
  */
 import { eligibleCards } from '../lib/gates.js';
@@ -35,6 +38,8 @@ export interface EvidenceViews {
   all_verified: Experiment[];
   eligible: Experiment[];
   plotted: Experiment[];
+  /** eligible cards with both coordinates but outside the displayed axes. */
+  off_axis: Experiment[];
   /** eligible cards that cannot be plotted, with the axis they lack. */
   not_plotted: { experiment: Experiment; missing: ('o2_pct' | 'flow_cm_s')[] }[];
   top_k: MatchResult[];
@@ -63,6 +68,7 @@ export function investigationSummary(draft: ResolvedScenario, confirmed: Resolve
     counts: views && {
       eligible: views.eligible.length,
       plotted: views.plotted.length,
+      off_axis: views.off_axis.length,
       not_plotted: views.not_plotted.length,
       top_k: confirmed ? views.top_k.length : null,
     },
@@ -78,13 +84,36 @@ export function evidenceViews(
   const all_verified = catalog.filter((c) => c.verified_by != null);
   const solid = all_verified.filter((c) => c.domain === 'solid_flammability');
   const eligible = scenario ? eligibleCards(scenario, solid) : solid;
-  const plotted = eligible.filter((c) => c.o2_pct != null && c.flow_cm_s != null);
-  const not_plotted = eligible
-    .filter((c) => c.o2_pct == null || c.flow_cm_s == null)
+  const map = mapCoordinates(eligible);
+  const plotted = map.visible;
+  const off_axis = map.outside;
+  const not_plotted = map.missing
     .map((experiment) => ({
       experiment,
       missing: (['o2_pct', 'flow_cm_s'] as const).filter((p) => experiment[p] == null),
     }));
   const r = scenario ? retrieve(scenario, all_verified, revision, k) : null;
-  return { revision, all_verified, eligible, plotted, not_plotted, top_k: r?.matches ?? [], coverage: r?.coverage ?? null };
+  return { revision, all_verified, eligible, plotted, off_axis, not_plotted, top_k: r?.matches ?? [], coverage: r?.coverage ?? null };
+}
+
+/**
+ * Round 8 · A3 — zero vs unknown. ONE settled answer for every section: only a successful catalog read may assert
+ * a count (or a gap). While loading it says loading; after a failed read it says unavailable (the inputs are kept and
+ * Retry re-reads). `matches: 0` therefore always means "the catalog was read and nothing matched".
+ */
+export type RetrievalState =
+  | { state: 'idle' }
+  | { state: 'loading' }
+  | { state: 'unavailable' }
+  | { state: 'settled'; revision: string; matches: number };
+
+export function retrievalState(
+  status: 'connected' | 'loading' | 'unavailable',
+  confirmed: ResolvedScenario | null,
+  views: EvidenceViews | null,
+): RetrievalState {
+  if (!confirmed) return { state: 'idle' };
+  if (status === 'unavailable') return { state: 'unavailable' };
+  if (status === 'loading' || !views) return { state: 'loading' };
+  return { state: 'settled', revision: views.revision, matches: views.top_k.length };
 }
