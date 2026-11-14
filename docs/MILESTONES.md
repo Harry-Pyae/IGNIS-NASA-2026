@@ -7,7 +7,19 @@ This is one self-contained file for checking progress without the repo. Coder A 
 [EXECUTION-STATUS.md](EXECUTION-STATUS.md) is the single Day 1 runbook (order, owner, "visible when", rollback).
 During the event, code changes are bug fixes and runbook items only.
 
-### Showcase round — local working tree, not deployed
+### Event Day 1 (2026-11-14), Coder A
+
+- **Production is down:** `https://ignisprototype01.vercel.app` returns `DEPLOYMENT_NOT_FOUND`. The repo was recreated
+  today as `Harry-Pyae/IGNIS-NASA-2026` and no Vercel deployment is linked to it. Re-import it in Vercel with the
+  `.env.example` variables, then reassign the `ignisprototype01` domain. Every Tier 0 step needs this first.
+- **Catalog (read-only `catalog_stats`, anon key):** 0 verified, 3 in review, revision `empty`. Steps c–f wait on R1's
+  step a.
+- **Step 0 (migration 0004)** has not been confirmed applied on production. Run it in the SQL editor before R1's first
+  publish.
+- Tier 1 split: `docs/WHO-DOES-WHAT.md`. Coder A shipped: `'/name/*'` route matching and a Methods link beside the
+  match order note.
+
+### Showcase round — in `main`, not yet verified live
 
 | Surface | Behavior and limits |
 |---|---|

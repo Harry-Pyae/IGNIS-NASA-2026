@@ -112,3 +112,13 @@ Color always has a text or shape counterpart.
      comparison, traceability or visible gaps, not an attractive dashboard).
 
   Record the step where they hesitate; that's fixed first.
+
+## Event addendum (2026-11-14, team lead)
+
+- **Tier 1 build during the event is authorized** by the team lead, scoped in `docs/WHO-DOES-WHAT.md`. It overrides the
+  prep-freeze "bug fixes + runbook only" rule for those verticals only. Tier 0 (the submission) still comes first.
+- **Evidence Library reopens the Round 6 "metadata browser" cut.** That cut was made for a 0-card catalog. The library
+  ships with an honest small-catalog empty state, and its filters never touch matching.
+- **Accounts (Tier 2, V6) stay unbuilt** unless Tiers 0–1 are green by Day 2 10:00. If they open, this line is
+  replaced by a named override of the Build Plan's "no accounts" rule.
+- **Routing stays a pathname switch.** `'/name/*'` keys match one extra segment (`src/main.tsx`). No React Router.
