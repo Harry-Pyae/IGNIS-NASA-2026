@@ -16,6 +16,8 @@ import { datasetCitation, evidenceLocator, evidenceSource } from '../lib/evidenc
 import { FIELD_UNITS, PARAM_LABELS, ParseScenarioResponseSchema, SynthesizeResponseSchema, type Briefing, type ContinuousParam, type Experiment, type MatchResult, type ParsedScenario, type ResolvedScenario } from '../lib/types';
 import { gapGrid, gapRadar, GRID, type GapRadar as GapRadarData } from '../engine/gaps';
 import { whyMatched } from '../engine/match';
+import { MatchInspection, NoMatchInspection } from '../features/evidence/MatchInspection';
+import { EvidenceHandoff } from '../features/evidence/EvidenceHandoff';
 import { t } from '../i18n';
 import { RecoveryBoundary } from '../features/recovery/RecoveryBoundary';
 import { InfoHint } from '../features/hint/InfoHint';
@@ -100,7 +102,7 @@ export function Console() {
   }, []);
   const [message, setMessage] = useState('');
   const [guidedStep, setGuidedStep] = useState<number | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(() => new URLSearchParams(window.location.search).get('specimen'));
   const [inputsChanged, setInputsChanged] = useState(false);
   const [appliedEnvironmentId, setAppliedEnvironmentId] = useState<string | null>(null);
   const scenarioEditor = useRef<HTMLDetailsElement>(null);
@@ -611,7 +613,9 @@ export function Console() {
           versions={Object.fromEntries(views.top_k.map(({ experiment }) => [experiment.id, experiment.updated_at]))}
         />}
           <MissionCaption step={guidedStep === 2 ? 2 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[2].caption)} />
-          <MatchPanel matches={views?.top_k ?? []} status={dataStatus} confirmed={confirmed !== null} selectedId={selectedId} onSelect={setSelectedId} />
+          <MatchPanel matches={views?.top_k ?? []} status={dataStatus} confirmed={confirmed !== null} scenario={confirmed} selectedId={selectedId} onSelect={setSelectedId} />
+          {confirmed && views && dataStatus === 'connected' && views.top_k.length === 0 &&
+            <NoMatchInspection scenario={confirmed} cards={experiments} />}
           {confirmed && views && <CardComparison cards={views.top_k.map(m => m.experiment)}/>}
         </Panel>
         </RecoveryBoundary>
@@ -619,7 +623,11 @@ export function Console() {
         <Panel as="section" aria-labelledby="s4" className="mission-brief motion-still">
           <SectionHeader id="s4" step={t('briefStep')} title={t('missionBrief')} />
           <MissionCaption step={guidedStep === 3 ? 3 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[3].caption)} />
-          {confirmed && <p className="brief-print-only">IGNIS · {confirmed.material.status === 'resolved' ? confirmed.material.fuel_material : COPY.materialUnresolved} · {COPY.summary.o2(confirmed.o2_pct)} · {COPY.summary.flow(confirmed.flow_cm_s)} · Catalog revision: {revision}</p>}
+          {confirmed && views && dataStatus === 'connected' && <>
+            <Button className="mb-3 print:hidden" onClick={() => window.print()}>Print evidence handoff</Button>
+            <EvidenceHandoff scenario={confirmed} revision={views.revision} matches={views.top_k}
+              briefing={activeBriefing} status={activeBriefStatus} />
+          </>}
           <MissionBrief
             briefing={activeBriefing}
             status={activeBriefStatus}
@@ -1015,6 +1023,14 @@ export function EvidenceMap({
             </svg>
           </div>
           <MapLegend outcomeColor={outcomeColor} />
+          {plotted.length > 0 && <details className="mt-3 text-sm">
+            <summary className="cursor-pointer">Select a run by name</summary>
+            <ul className="mt-2 flex flex-wrap gap-2">
+              {plotted.map(card => <li key={card.id}>
+                <Button size="sm" aria-pressed={selectedId === card.id} onClick={() => onSelect(card.id)}>{experimentLabel(card)}</Button>
+              </li>)}
+            </ul>
+          </details>}
           <p className="mt-3 text-[13px] text-dim">{plotted.length} {t('plotted')} · {matches.length} {t('rankedMatches')}</p>
           {outsideAxesCount > 0 && <p role="status" className="mt-2 text-[13px] text-dim">{outsideAxesCount} {t(outsideAxesCount === 1 ? 'outsideAxesRecord' : 'outsideAxesRecords')}</p>}
           {outsideEnvelope && <p role="status" className="mt-3 rounded-lg border border-warn/35 bg-warn/[0.05] px-3 py-2 text-sm text-warn">{COPY.outsideRange}</p>}
@@ -1031,6 +1047,7 @@ export function EvidenceMap({
               {selected.key_observation_quote && <blockquote className="mt-3 break-words border-l-2 border-raised pl-3 text-sm leading-relaxed text-dim [overflow-wrap:anywhere]">“{selected.key_observation_quote}”</blockquote>}
               <p className="mt-2 break-words text-sm text-dim [overflow-wrap:anywhere]">{selected.source_title}</p>
               {evidenceLocator(selected) && <p className="mt-1 break-words text-xs text-dim [overflow-wrap:anywhere]">{evidenceLocator(selected)}</p>}
+              <a className={`mt-3 block text-sm ${textLink}`} href={`/library/${encodeURIComponent(selected.id)}?specimen=1`}>Inspect this run in the Library</a>
               {/* Selection stays on the map; opening the match card is the visitor's choice (no jump on every click). */}
               {matches.some((match) => match.experiment.id === selected.id) && (
                 <button type="button" onClick={() => focusExperiment(selected.id)} className={`mt-3 text-sm ${textLink}`}>{t('openMatchCard')}</button>
@@ -1044,7 +1061,7 @@ export function EvidenceMap({
   );
 }
 
-export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }: { matches: MatchResult[]; status: 'connected' | 'loading' | 'unavailable'; confirmed: boolean; selectedId: string | null; onSelect: (id: string) => void }) {
+export function MatchPanel({ matches, status, confirmed, scenario, selectedId, onSelect }: { matches: MatchResult[]; status: 'connected' | 'loading' | 'unavailable'; confirmed: boolean; scenario?: ResolvedScenario | null; selectedId: string | null; onSelect: (id: string) => void }) {
   if (status === 'loading') return <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-6 text-center text-sm text-dim">{t('waitingCatalog')}</p>;
   if (status === 'unavailable') return <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-6 text-center text-sm text-dim">{t('matchCatalogUnavailable')}</p>;
   if (!confirmed) return <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-6 text-center text-sm text-dim">{t('confirmForMatches')}</p>;
@@ -1113,6 +1130,7 @@ export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }:
                 return <Chip key={line.key} status={line.status} label={label} statusText={statusParts.join(': ')} />;
               })}
             </div>
+            {scenario && <MatchInspection scenario={scenario} match={match} />}
             {experiment.key_observation_quote && (
               <details className="mt-3 border-t border-border/70 pt-3 text-sm">
                 <summary className="cursor-pointer text-dim can-hover:hover:text-text">{t('sourceExcerpt')}</summary>
