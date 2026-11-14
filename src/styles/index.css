@@ -9,6 +9,69 @@ html { scroll-padding-top: 6.5rem; }
 /* Theme switch: one crossfade of the whole page (AppHeader, View Transitions), gradients included. Instant under reduced motion. */
 html::view-transition-old(root),
 html::view-transition-new(root) { animation-duration: 240ms; animation-timing-function: ease; }
+
+/* Dropdowns (every <select>). Customizable select (Chromium 135+): the open list is a themed panel, keyboard,
+   typeahead, screen readers and mobile pickers stay native. Elsewhere: the native list, tinted to the theme. */
+select { color-scheme: var(--theme-scheme); }
+select option { background-color: var(--color-panel); color: var(--color-text); }
+@supports (appearance: base-select) {
+  select, ::picker(select) { appearance: base-select; }
+  select { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+  select:open { border-color: var(--color-amber); }
+  .select-chevron { display: none; } /* the picker icon below draws the chevron instead */
+  select:has(+ .select-chevron) { padding-inline-end: 0.75rem; }
+  select::picker-icon {
+    content: '';
+    width: 16px;
+    height: 16px;
+    margin-inline-start: auto;
+    background-color: var(--color-faint);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+  select:open::picker-icon { background-color: var(--color-amber); rotate: 180deg; }
+  ::picker(select) {
+    margin-block: 6px;
+    padding: 4px;
+    max-height: min(320px, 60dvh);
+    border: 1px solid var(--color-raised);
+    border-radius: 12px;
+    background: var(--color-panel);
+    color: var(--color-text);
+    box-shadow: 0 12px 32px -8px rgb(0 0 0 / 0.45);
+  }
+  select option {
+    padding: 8px 10px;
+    border-radius: 8px;
+    background-color: transparent;
+    font-size: 14px;
+    line-height: 1.35;
+    cursor: pointer;
+  }
+  select option:hover,
+  select option:focus-visible { background-color: color-mix(in srgb, var(--color-action) 14%, transparent); outline: none; }
+  select option:checked { color: var(--color-amber); font-weight: 500; }
+  select option::checkmark { color: var(--color-amber); }
+  select option:disabled { color: var(--color-faint); cursor: default; }
+  @media (prefers-reduced-motion: no-preference) {
+    select::picker-icon { transition: rotate 150ms var(--ease-out), background-color 150ms ease; }
+    /* Fade + slight scale (it may open above or below the field): 150ms in, 100ms out. */
+    /* State on the select (select:open), not ::picker(select):popover-open, which the CSS optimizer drops. */
+    ::picker(select) {
+      opacity: 0;
+      transform: scale(0.98);
+      transition: opacity 100ms ease-out, transform 100ms ease-out, overlay 100ms allow-discrete, display 100ms allow-discrete;
+    }
+    select:open::picker(select) {
+      opacity: 1;
+      transform: none;
+      transition-duration: 150ms;
+      transition-timing-function: var(--ease-out);
+    }
+    @starting-style {
+      select:open::picker(select) { opacity: 0; transform: scale(0.98); }
+    }
+  }
+}
 @media (prefers-reduced-motion: no-preference) {
   .map-dot, .map-pulse { transform-box: fill-box; transform-origin: center; }
   .map-pulse { display: inline; }
