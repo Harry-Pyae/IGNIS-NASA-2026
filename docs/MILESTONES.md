@@ -18,6 +18,10 @@ During the event, code changes are bug fixes and runbook items only.
   step a.
 - **Step 0 (migration 0004)** has not been confirmed applied on production. Run it in the SQL editor before R1's first
   publish.
+- **Midday:** R1's publish never reached the database. Same project (`zvzofutgfwzptlbfibpz`); all 3 seed rows still have
+  `verified_by` null and the 2026-11-07 seed `updated_at`. Round 2 split in `docs/WHO-DOES-WHAT.md`. Coder A's
+  dataset provenance (0005 + types + `/curate` + export + tests) is on branch `provenance`. It reaches `main` only after
+  0005 runs in production.
 - Tier 1 split: `docs/WHO-DOES-WHAT.md`. Coder A shipped: `'/name/*'` route matching and a Methods link beside the
   match order note.
 
