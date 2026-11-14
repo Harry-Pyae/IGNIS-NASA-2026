@@ -27,5 +27,24 @@ describe('Warm Liquid Glass Theme & Dashboard', () => {
     expect(markup).toContain('Closest Verified NASA Microgravity Match');
     expect(markup).toContain('IGNIS Refuses to Guess');
     expect(markup).toContain('Experiment Comparison');
+    // Navigation items
+    expect(markup).toContain('Mission Intelligence');
+    expect(markup).toContain('Scenario Console');
+    expect(markup).toContain('Research Library');
+    expect(markup).toContain('Compare Tests');
+    expect(markup).toContain('Methods &amp; Models');
+    expect(markup).toContain('NASA Sources');
+    // Telemetry items
+    expect(markup).toContain('Oxygen Conc.');
+    expect(markup).toContain('Cabin Pressure');
+    expect(markup).toContain('Forced Airflow');
+    expect(markup).toContain('Gravity Field');
+    // Dense glass card backing for readability
+    expect(markup).toContain('glass-dense-card');
+    // Mobile responsive container
+    expect(markup).toContain('NASA Experiments Mobile Cards');
+    expect(markup).toContain('NASA Experiments Table');
+    // Provenance
+    expect(markup).toContain('NASA Glenn Provenance');
   });
 });

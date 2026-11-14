@@ -164,69 +164,98 @@ html { scroll-padding-top: 6.5rem; }
   /* Warm Liquid Glass Dashboard overrides (iOS 28 Liquid Glass) */
   html.light .surface,
   [data-theme='light'] .surface {
-    background-color: rgba(255, 255, 255, 0.38);
+    background-color: rgba(255, 255, 255, 0.14);
     background-image:
-      radial-gradient(120% 90% at 0% 0%, rgba(255, 255, 255, 0.75), transparent 70%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 249, 242, 0.2));
-    backdrop-filter: blur(32px) saturate(220%);
-    -webkit-backdrop-filter: blur(32px) saturate(220%);
-    border: 1px solid rgba(255, 255, 255, 0.75);
+      radial-gradient(120% 90% at 0% 0%, rgba(255, 255, 255, 0.35), transparent 60%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 245, 235, 0.06));
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.65);
     box-shadow:
-      inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.95),
-      inset 0 -1px 1px 0 rgba(255, 255, 255, 0.3),
-      0 12px 36px -10px rgba(249, 115, 22, 0.08),
+      inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.95),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.25),
+      inset 0 -1px 1px 0 rgba(255, 255, 255, 0.15),
+      0 16px 36px -12px rgba(234, 88, 12, 0.08),
       0 1px 2px 0 rgba(0, 0, 0, 0.02);
   }
   html.light .surface-raised,
   [data-theme='light'] .surface-raised {
-    background-color: rgba(255, 255, 255, 0.55);
-    backdrop-filter: blur(36px) saturate(230%);
-    -webkit-backdrop-filter: blur(36px) saturate(230%);
-    border: 1px solid rgba(255, 255, 255, 0.85);
+    background-color: rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(18px) saturate(180%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.75);
     box-shadow:
-      inset 0 2px 2px 0 rgba(255, 255, 255, 1),
-      inset 0 -1px 1px 0 rgba(255, 255, 255, 0.4),
-      0 20px 48px -12px rgba(249, 115, 22, 0.12),
-      0 4px 12px -2px rgba(234, 88, 12, 0.04);
+      inset 0 2px 1.5px 0 rgba(255, 255, 255, 1),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.3),
+      inset 0 -1px 1px 0 rgba(255, 255, 255, 0.2),
+      0 20px 48px -12px rgba(234, 88, 12, 0.1),
+      0 3px 8px -2px rgba(234, 88, 12, 0.03);
   }
   html.light .surface-tinted,
   [data-theme='light'] .surface-tinted {
-    backdrop-filter: blur(28px) saturate(200%);
-    -webkit-backdrop-filter: blur(28px) saturate(200%);
+    backdrop-filter: blur(16px) saturate(170%);
+    -webkit-backdrop-filter: blur(16px) saturate(170%);
   }
   html.light .surface-inset,
   [data-theme='light'] .surface-inset {
-    background-color: rgba(255, 240, 224, 0.28);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    background-color: rgba(255, 240, 224, 0.24);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.55);
     box-shadow:
-      inset 0 2px 4px 0 rgba(234, 88, 12, 0.02),
-      inset 0 1px 1px 0 rgba(255, 255, 255, 0.6);
+      inset 0 1.5px 3px 0 rgba(234, 88, 12, 0.03),
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.75);
   }
 
-  /* Liquid Glass materials (iOS 28 Liquid Glass) */
+  /* Liquid Glass materials (iOS 28 Liquid Glass: 10–20% transparent clear glass) */
   .glass-dashboard-card {
-    background: rgba(255, 255, 255, 0.38);
-    backdrop-filter: blur(32px) saturate(220%);
-    -webkit-backdrop-filter: blur(32px) saturate(220%);
-    border: 1px solid rgba(255, 255, 255, 0.75);
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.18) 0%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 245, 235, 0.12) 100%
+    );
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.65);
     box-shadow:
-      inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.95),
-      inset 0 -1px 1px 0 rgba(255, 255, 255, 0.3),
-      0 12px 36px -8px rgba(249, 115, 22, 0.06),
+      inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.95),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+      inset 0 -1px 1px 0 rgba(255, 255, 255, 0.12),
+      0 16px 36px -12px rgba(234, 88, 12, 0.08),
       0 2px 6px -1px rgba(0, 0, 0, 0.02);
-    transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out), border-color 0.25s ease, background-color 0.25s ease;
+    transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out), border-color 0.25s ease, background 0.25s ease;
   }
   .glass-dashboard-card:hover {
     transform: translateY(-2px);
-    background: rgba(255, 255, 255, 0.55);
-    border-color: rgba(255, 255, 255, 0.95);
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.25) 0%,
+      rgba(255, 255, 255, 0.14) 50%,
+      rgba(255, 245, 235, 0.18) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.85);
     box-shadow:
-      inset 0 2px 2px 0 rgba(255, 255, 255, 1),
-      inset 0 -1px 1px 0 rgba(255, 255, 255, 0.4),
-      0 20px 48px -10px rgba(249, 115, 22, 0.14),
-      0 4px 12px -2px rgba(234, 88, 12, 0.05);
+      inset 0 2px 1.5px 0 rgba(255, 255, 255, 1),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.35),
+      0 22px 48px -12px rgba(249, 115, 22, 0.12),
+      0 4px 12px -2px rgba(234, 88, 12, 0.04);
+  }
+  /* Dense reading areas: slightly stronger translucent backing (~26-30%) for high contrast */
+  .glass-dense-card {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.32) 0%,
+      rgba(255, 255, 255, 0.22) 55%,
+      rgba(255, 245, 235, 0.26) 100%
+    );
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    box-shadow:
+      inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.95),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.25),
+      0 14px 32px -10px rgba(234, 88, 12, 0.06);
   }
   html:not(.light) .glass-dashboard-card {
     background: color-mix(in srgb, var(--color-panel) 82%, transparent);
@@ -238,6 +267,13 @@ html { scroll-padding-top: 6.5rem; }
   html:not(.light) .glass-dashboard-card:hover {
     border-color: var(--color-amber);
     box-shadow: 0 18px 40px -10px rgba(0, 0, 0, 0.8);
+  }
+  html:not(.light) .glass-dense-card {
+    background: color-mix(in srgb, var(--color-panel) 90%, transparent);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.6);
   }
 
   /* Hero liquid glass scrim & floating slab */
@@ -410,13 +446,13 @@ html { scroll-padding-top: 6.5rem; }
   }
   html.light .app-header,
   [data-theme='light'] .app-header {
-    background-color: rgba(255, 255, 255, 0.32);
+    background-color: rgba(255, 255, 255, 0.16);
     border-bottom: 1px solid rgba(255, 255, 255, 0.65);
     box-shadow:
       0 4px 24px -2px rgba(249, 115, 22, 0.04),
-      inset 0 1px 1px 0 rgba(255, 255, 255, 0.9);
-    -webkit-backdrop-filter: blur(32px) saturate(220%);
-    backdrop-filter: blur(32px) saturate(220%);
+      inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.95);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%);
   }
   @media (prefers-reduced-motion: no-preference) {
     @supports (animation-timeline: scroll()) {

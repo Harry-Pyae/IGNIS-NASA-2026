@@ -17,37 +17,37 @@ export function AmbientRibbons() {
 
       {/* Abstract 3D organic ribbon vector shapes */}
       <svg
-        className="ambient-ribbon-svg absolute inset-0 h-full w-full opacity-60 transition-opacity duration-700"
+        className="ambient-ribbon-svg absolute inset-0 h-full w-full opacity-85 transition-opacity duration-700"
         viewBox="0 0 1440 900"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         preserveAspectRatio="xMidYMid slice"
       >
         <defs>
-          <linearGradient id="ignis-ribbon-1" x1="15%" y1="0%" x2="85%" y2="100%">
-            <stop offset="0%" stopColor="#F97316" stopOpacity="0.32" />
-            <stop offset="45%" stopColor="#EA580C" stopOpacity="0.22" />
-            <stop offset="80%" stopColor="#FFB066" stopOpacity="0.12" />
-            <stop offset="100%" stopColor="#FFF0E0" stopOpacity="0" />
+          <linearGradient id="ignis-ribbon-1" x1="10%" y1="0%" x2="90%" y2="100%">
+            <stop offset="0%" stopColor="#F97316" stopOpacity="0.72" />
+            <stop offset="35%" stopColor="#EA580C" stopOpacity="0.60" />
+            <stop offset="70%" stopColor="#F59E0B" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="#FB923C" stopOpacity="0.12" />
           </linearGradient>
 
           <linearGradient id="ignis-ribbon-2" x1="100%" y1="10%" x2="0%" y2="90%">
-            <stop offset="0%" stopColor="#FF9800" stopOpacity="0.28" />
-            <stop offset="50%" stopColor="#F97316" stopOpacity="0.18" />
-            <stop offset="100%" stopColor="#EA580C" stopOpacity="0" />
+            <stop offset="0%" stopColor="#FB923C" stopOpacity="0.45" />
+            <stop offset="50%" stopColor="#EA580C" stopOpacity="0.35" />
+            <stop offset="100%" stopColor="#C2410C" stopOpacity="0.18" />
           </linearGradient>
 
           <linearGradient id="ignis-ribbon-sheen" x1="0%" y1="50%" x2="100%" y2="50%">
-            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.5" />
-            <stop offset="50%" stopColor="#FFF0E0" stopOpacity="0.2" />
-            <stop offset="100%" stopColor="#F97316" stopOpacity="0" />
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.85" />
+            <stop offset="40%" stopColor="#FFEDD5" stopOpacity="0.55" />
+            <stop offset="100%" stopColor="#F97316" stopOpacity="0.15" />
           </linearGradient>
 
           <filter id="ribbon-blur-soft" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="35" />
+            <feGaussianBlur stdDeviation="30" />
           </filter>
           <filter id="ribbon-blur-sheen" x="-10%" y="-10%" width="120%" height="120%">
-            <feGaussianBlur stdDeviation="14" />
+            <feGaussianBlur stdDeviation="10" />
           </filter>
         </defs>
 
