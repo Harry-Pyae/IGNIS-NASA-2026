@@ -3,6 +3,26 @@
 Updated 2026-11-13. Forms below are pending unless an execution result is explicitly recorded. No participant data
 or real-card acceptance results have been fabricated. Historical checks remain in STATE/MILESTONES.
 
+## Real-data production checks (2026-11-14, Coder A)
+
+Live `https://ignis-nasa-2026.vercel.app`. Catalog: 3 verified, 0 in review, revision `becd7b54435772eaf9f7499a69267ad5`.
+Real cards only, no production writes except the briefing cache the public path writes. Gemini: one call per step.
+
+| Step | Request | Observed result |
+|---|---|---|
+| Export | `GET /api/export` | `count: 3`, revision `becd7b54…`; GMT96-T7 (21 %, 10 cm/s, sustained), GMT96-T8 (21 %, 5 cm/s, sustained), GMT45-T4 (18.7 %, 2.2 cm/s held after 10, extinguished; condition change recorded) |
+| c · parse | unforced, "Crew clothing made of cotton fiberglass fabric in cabin air at 21% oxygen with 10 cm/s airflow" | 200 in 2.5 s, `provider: groq`; material raw "cotton fiberglass fabric", form fabric, O₂ 21, airflow 10; pressure and thickness `null` (not stated, not guessed) |
+| c · synthesize | *Crew clothing* preset body exactly as the console builds it (21 % O₂, airflow not specified, 101.325 kPa), 3 IDs | 200 in 7.2 s, `provider: groq`, status ok, 0 withheld. 3 OBSERVED (one per card; T4 carries its airflow change and p. 5 locator) + 1 SUPPORTED (T7 and T8 both sustained at 21 % with different airflow). All cited values equal their cards; all IDs in the catalog |
+| c · citations | each cited card's `source_url` | NTRS 20150008962 page 200; PDF 206 `application/pdf` |
+| f · cache warm | same body again | 200 in 3.4 s, `provider: cache`, identical claims |
+| d1 · forced Gemini parse | `x-ignis-provider: gemini` + curator secret | 200 in 3.5 s, `provider: gemini`, fields filled |
+| d2 · forced Gemini synthesize | same preset body | 200 in 5.1 s, `provider: gemini`, status ok, 3 OBSERVED, 0 withheld |
+| d3 · unforced parse | no headers | `provider: groq` (normal order back) |
+| Cache after forced run | preset body, unforced | `provider: cache` (forced run neither read nor wrote it) |
+
+Not yet run: step e (`MISSION_CASE` needs R1 and R3 to name the reviewed case and reviewer), browser click-through of
+citations at 1280 and 390 px (R3), migration 0004 confirmation (SQL editor).
+
 ## Local implementation checks
 
 Baseline `25f3681` plus current working-tree patch. Final commands/results are recorded here after execution.

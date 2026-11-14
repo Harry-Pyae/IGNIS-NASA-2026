@@ -123,4 +123,13 @@ describe.skipIf(!dbTestsEnabled)('curation lifecycle (A2)', () => {
     expect(res.status).toBe(400);
     expect((await res.json()).error).toMatchObject({ code: 'ineligible_evidence', issues: [{ message: 'domain_mismatch' }] });
   });
+
+  it('dataset provenance (0005): written through /curate, readable by anon once published', async () => {
+    const tid = `LIFECYCLE-${crypto.randomUUID()}`;
+    const dataset = { psi_investigation_id: 'PSI-25', dataset_doi: '10.0000/example', dataset_version: 'v4', dataset_file: 'run.csv', dataset_row_or_time: 'row 12' };
+    const res = await write({ action: 'publish', record: { ...record(tid), ...dataset }, verified_by: 'Ada Reviewer' });
+    expect(res.status).toBe(201);
+    const { data } = await anon().from('experiments').select(Object.keys(dataset).join(', ')).eq('test_id', tid);
+    expect(data).toEqual([dataset]);
+  });
 });

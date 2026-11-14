@@ -1,4 +1,4 @@
-import { Panel } from '../components/ui';
+import { Page, PageHeader, Panel } from '../components/ui';
 import { COPY } from '../lib/copy';
 
 const stages = [
@@ -17,10 +17,9 @@ const principles = [
 ] as const;
 
 export function Methods() {
-  return <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-    <p className="console-label text-amber">Methods / evidence retrieval</p>
-    <h1 className="display my-4 text-4xl text-text">From scenario to source</h1>
-    <p className="max-w-2xl text-lg text-dim">Follow a mission question through IGNIS and see where the software checks a statement before you read it.</p>
+  return <Page>
+    <PageHeader eyebrow="Methods / evidence retrieval" title="From scenario to source"
+      intro="Follow a mission question through IGNIS and see where the software checks a statement before you read it." />
     <section aria-labelledby="pipeline" className="my-10 grid items-start gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
       <Panel>
         <h2 id="pipeline" className="text-xl font-semibold">Evidence pipeline</h2>
@@ -42,5 +41,5 @@ export function Methods() {
     <dl className="mt-5 divide-y divide-border">{principles.map(([title, body]) => <div key={title} className="grid gap-2 py-4 sm:grid-cols-[1fr_2fr]"><dt className="font-semibold">{title}</dt><dd className="text-dim">{body}</dd></div>)}</dl>
     <p className="mt-6 border-l-2 border-raised pl-4 text-dim">{COPY.interpretationLimit}</p>
     <a className="mt-8 inline-block text-amber underline" href="/sources">Browse the source bibliography</a>
-  </main>;
+  </Page>;
 }

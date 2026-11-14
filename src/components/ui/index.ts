@@ -9,6 +9,7 @@ export { CHIP_STATUS, Chip, CitationChip, PresetChip } from './Chip';
 export { EmptyState } from './EmptyState';
 export { FlameSphereArt, ILLUSTRATION_NOTE } from './FlameSphereArt';
 export { ICON_NAMES, Icon, type IconName } from './Icon';
+export { Page, PageHeader } from './PageHeader';
 export { Panel, type PanelTone } from './Panel';
 export { SectionHeader } from './SectionHeader';
 export { Select } from './Select';

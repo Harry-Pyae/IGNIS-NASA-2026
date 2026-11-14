@@ -1,5 +1,10 @@
 # IGNIS — state handoff (2026-11-10, console merged · preparation phase)
 
+> **2026-11-14 04:17 UTC: the catalog is no longer zero.** R1's reviewers published 3 verified cards (BASS GMT96-T7,
+> BASS GMT96-T8, BASS-II GMT45-T4; NTRS 20150008962), revision `becd7b54435772eaf9f7499a69267ad5`. The real-data
+> sequence passed on production the same day: step c (Groq), the warmed cache, and the forced-Gemini synthesize proof.
+> Details are in `QA-LOG.md`, "Real-data production checks".
+
 > **2026-11-13: prep complete, frozen for the event. Only data and the Day 1/2 runbook items remain.**
 > Live = `main` `b7602ba` (unified-spec prep `82c63d2` + mission gate `45568e3` + map axes from GRID `b7602ba`),
 > pushed on the team lead's instruction. Sweep: typecheck · lint · 219 tests · build · disposable DB 16/16 · CI green.
@@ -55,7 +60,8 @@ Snapshot written by Coder A after the console merge. Overwrite on the next hando
 | Export (header + footer, live) | ✅ round 3: `ignis-catalog-empty.json`, `count: 0`, 33-field README, no fixtures |
 | health-llm | ✅ 2026-11-10 on `3e9efff`: groq 200, gemini `gemini-3.5-flash` 200 (the final flash check; the quota had recovered). No key material in responses |
 | Failover rehearsal: forced Gemini parse-scenario | ✅ 200, `provider: "gemini"`, schema-valid, resolves via the deterministic resolver. Header without the secret is ignored (`provider: "groq"`, no mention of the switch) |
-| Failover rehearsal: forced Gemini synthesize | ⏳ needs R1's first signed card (no test cards in production). Covered by `tests/provider-switch.test.ts` (validated briefing, no cache read or write) |
+| Failover rehearsal: forced Gemini synthesize | ✅ 2026-11-14, production, real cards: 200, `provider: gemini`, status ok, 3 OBSERVED claims, 0 withheld. The public cache still answered `cache` afterwards; the next unforced parse was `groq` |
+| **Synthesize on real cards (step c)** | ✅ 2026-11-14, production: *Crew clothing* preset, 3 cards retrieved. Groq generated status ok, 3 OBSERVED + 1 SUPPORTED, 0 withheld, every cited value equal to its card, NTRS source and PDF open. Second call `provider: cache` (warmed) |
 | Disposable-DB CI job (RLS + lifecycle, migrations 0001–0003) | ✅ green on `a053e14` |
 | Provider smoke test + parse-scenario round trip | ✅ 200 via Groq |
 | RLS + `/curate` lifecycle | ✅ 15/15 on the disposable DB in CI (every push). Earlier live-project runs wrote test rows, so they are **not to be repeated**; production gets read-only checks only. |
