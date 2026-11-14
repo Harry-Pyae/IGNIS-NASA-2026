@@ -11,7 +11,7 @@ import { useCatalogRevisionWatch, useCatalogSummary, useVerifiedCatalog } from '
 import { COPY } from '../lib/copy';
 import { pickMaterial, presetScenario, resolveMaterial, SCENARIO_PRESETS } from '../engine/aliases';
 import { applyEnvironment, isElevatedO2, visibleEnvironmentPresets, type EnvironmentPreset } from '../engine/environments';
-import { briefingKey, currentBriefing, evidenceViews, investigationSummary, mapCoordinates, onMapAxes } from '../engine/views';
+import { briefingKey, currentBriefing, evidenceViews, investigationSummary, mapCoordinates, onMapAxes, retrievalState } from '../engine/views';
 import { datasetCitation, evidenceLocator, evidenceSource } from '../lib/evidenceSource';
 import { FIELD_UNITS, PARAM_LABELS, ParseScenarioResponseSchema, SynthesizeResponseSchema, type Briefing, type ContinuousParam, type Experiment, type MatchResult, type ParsedScenario, type ResolvedScenario } from '../lib/types';
 import { gapGrid, gapRadar, GRID, type GapRadar as GapRadarData } from '../engine/gaps';
@@ -525,7 +525,13 @@ export function Console() {
                 {t('confirmScenario')}
               </Button>
               {material.status !== 'resolved' && <p id="confirm-blocked" className="text-sm text-dim">{COPY.materialUnresolved}</p>}
-              {confirmed && <span role="status" className="text-sm text-success">{t('confirmed')} · {views?.top_k.length ?? 0} {t('confirmedMatches')}</span>}
+              {(() => {
+                // A3: a count only after a settled read; loading and failure say so instead of "0".
+                const retrieval = retrievalState(dataStatus, confirmed, views);
+                if (retrieval.state === 'idle') return null;
+                if (retrieval.state === 'settled') return <span role="status" className="text-sm text-success">{t('confirmed')} · {retrieval.matches} {t('confirmedMatches')}</span>;
+                return <span role="status" className="text-sm text-dim">{t('confirmed')} · {t(retrieval.state === 'loading' ? 'waitingCatalog' : 'matchCatalogUnavailable')}</span>;
+              })()}
             </div>
             {message && <p role="status" className="text-sm text-dim">{message}</p>}
         </div>
@@ -727,7 +733,7 @@ export function InvestigationSummary({
   const form = scenario.fuel_form?.replace(/_/g, ' ') ?? t('notSpecified');
   const conditions = [summary.o2(scenario.o2_pct), summary.flow(scenario.flow_cm_s)].join(' · ');
   const evidence = counts
-    ? [summary.eligible(counts.eligible), summary.plotted(counts.plotted), summary.notPlotted(counts.not_plotted)]
+    ? [summary.eligible(counts.eligible), summary.plotted(counts.plotted), ...(counts.off_axis ? [summary.offAxis(counts.off_axis)] : []), summary.notPlotted(counts.not_plotted)]
     : [t(status === 'unavailable' ? 'evidenceUnavailable' : 'loading')];
 
   return (
