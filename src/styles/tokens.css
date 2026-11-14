@@ -143,14 +143,16 @@
 
 :root[data-theme='light'] {
   --theme-scheme: light;
-  --color-bg: #fff4ea;
-  --color-panel: #ffe4ce;
+  --color-bg: #ffead4;
+  --color-panel: #ffdfbe;
   --color-border: #e8be9e;
-  --color-glass-tint: #ff9e52;
-  --color-header-glass: #ffd8b8;
+  --color-glass-tint: #ff7923;
+  --color-glass-amber: #ffae48;
+  --color-glass-edge: rgb(255 240 198 / 0.82);
+  --color-header-glass: #ffd1a7;
   --color-header-edge: #d99563;
-  --color-hero-glass: #ffdec1;
-  --color-dense-surface: #fff2e6;
+  --color-hero-glass: #ffc894;
+  --color-dense-surface: #ffecd9;
   --color-disabled-surface: #f1dfd0;
   --color-raised: #8793a3;
   --color-control-border: #7c8897;
@@ -158,8 +160,8 @@
   --color-dim: #405063;
   --color-faint: #526175;
   --color-amber: #963b12;
-  --color-action: #e96c28;
-  --color-on-action: #1d140f;
+  --color-action: #d95a18;
+  --color-on-action: #170d08;
   --color-focus: #b74614;
   --color-flame: #a33b08;
   --color-blue: #184da8;
@@ -174,7 +176,7 @@
   --color-interp-border: #98accb;
   --color-untested-bg: #fff5de;
   --color-untested-border: #b79b56;
-  --surface-opacity: 76%;
+  --surface-opacity: 45%;
   --raised-opacity: 97%;
   --header-opacity: 100%;
   --header-top-opacity: 100%;

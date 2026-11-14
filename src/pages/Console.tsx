@@ -884,7 +884,7 @@ export function EvidenceMap({
         <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-6 text-center text-sm text-dim">{t('mapNoPoints')}</p>
       ) : (
         <>
-          <div className="overflow-x-auto rounded-xl border border-border bg-bg/45 p-2 sm:p-4">
+          <div className="evidence-plot overflow-x-auto rounded-xl border border-border bg-bg/45 p-2 sm:p-4">
             <svg viewBox={`0 0 ${width} ${height}`} role="group" aria-label={t('mapAccessibility')} className="block h-auto max-h-[70vh] min-w-[520px] w-full">
               <title>{t('mapVerifiedTitle')}</title>
               <defs>
