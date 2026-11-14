@@ -24,6 +24,8 @@ import { useScenarioShare } from '../features/share/useScenarioShare';
 import { missionEntry } from '../engine/mission';
 import { contextSection } from '../lib/context-content';
 import { GUIDED_MISSION_REQUEST, takePendingMission } from './consoleLoader';
+import { AskIGNIS } from '../features/ask/AskIGNIS';
+import type { ScenarioPatch } from '../features/ask/scenarioPatch';
 
 function experimentLabel(experiment: Experiment): string {
   return experiment.test_id.toLowerCase().startsWith(experiment.campaign.toLowerCase())
@@ -84,6 +86,8 @@ export function Console() {
     flow_cm_s: SCENARIO_PRESETS[0]?.flow_cm_s ?? null,
     pressure_kpa: SCENARIO_PRESETS[0]?.pressure_kpa ?? null,
   }));
+  const [scenarioRevision, setScenarioRevision] = useState(0);
+  const markScenarioChanged = () => setScenarioRevision((revision) => revision + 1);
   const [materialChoice, setMaterialChoice] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState<ResolvedScenario | null>(null);
   const [description, setDescription] = useState('');
@@ -105,6 +109,7 @@ export function Console() {
   const scenarioEditor = useRef<HTMLDetailsElement>(null);
   const share = useScenarioShare(catalog, ({ material, ...conditions }) => {
     invalidateParse();
+    markScenarioChanged();
     const name = material.status === 'resolved' ? material.fuel_material : null;
     setScenario({ ...conditions, fuel_material_raw: name });
     setMaterialChoice(name);
@@ -278,6 +283,7 @@ export function Console() {
 
   function editScenario(update: Partial<ParsedScenario>, materialEdited = false) {
     invalidateParse();
+    markScenarioChanged();
     if (confirmed) setInputsChanged(true);
     setScenario((current) => ({ ...current, ...update }));
     if ('o2_pct' in update || 'pressure_kpa' in update) setAppliedEnvironmentId(null);
@@ -292,6 +298,7 @@ export function Console() {
   function moveSlider(update: Partial<Pick<ParsedScenario, 'o2_pct' | 'flow_cm_s'>>) {
     invalidateParse();
     const apply = () => {
+      markScenarioChanged();
       setScenario((current) => ({ ...current, ...update }));
       if ('o2_pct' in update) setAppliedEnvironmentId(null);
       setConfirmed((current) => current ? { ...current, ...update } : null);
@@ -311,6 +318,7 @@ export function Console() {
 
   function chooseEnvironment(env: EnvironmentPreset) {
     invalidateParse();
+    markScenarioChanged();
     setAppliedEnvironmentId(env.id);
     setScenario((current) => applyEnvironment(current, env));
     setConfirmed((current) => current ? applyEnvironment(current, env) : null);
@@ -323,6 +331,7 @@ export function Console() {
     const preset = SCENARIO_PRESETS.find((item) => item.id === id);
     if (!preset) return;
     const value = presetScenario(preset, sourceMaterials);
+    markScenarioChanged();
     setPresetId(id);
     setAppliedEnvironmentId(null);
     setMaterialChoice(null);
@@ -383,6 +392,7 @@ export function Console() {
       if (!response.ok) throw new Error('Scenario parsing is unavailable right now. You can still edit the fields below.');
       const result = ParseScenarioResponseSchema.safeParse(body);
       if (!result.success) throw new Error('The parser returned an invalid scenario. You can still edit the fields below.');
+      markScenarioChanged();
       setScenario(result.data.scenario);
       setPresetId(null);
       setAppliedEnvironmentId(null);
@@ -397,6 +407,32 @@ export function Console() {
         parseRequest.current.abort = null;
       }
     }
+  }
+
+  function applyAskProposal(patch: ScenarioPatch, materialChoiceForPatch: string | null) {
+    invalidateParse();
+    markScenarioChanged();
+    if (confirmed) setInputsChanged(true);
+    setScenario((current) => ({ ...current, ...patch }));
+    if ('fuel_material_raw' in patch) {
+      setPresetId(null);
+      setMaterialChoice(materialChoiceForPatch);
+    }
+    if ('o2_pct' in patch || 'pressure_kpa' in patch) setAppliedEnvironmentId(null);
+    setConfirmed(null);
+    setMessage('');
+  }
+
+  function navigateAskView(destination: 'scenario' | 'map' | 'methods') {
+    if (destination === 'scenario') {
+      focusScenarioEditor();
+      return;
+    }
+    if (destination === 'map') {
+      showMap();
+      return;
+    }
+    window.location.assign('/methods#pipeline');
   }
 
   return (
@@ -420,7 +456,20 @@ export function Console() {
       />}
       <div className="console-panels flex flex-col gap-6 xl:grid xl:grid-cols-[400px_minmax(0,1fr)] xl:items-start">
       <Panel as="section" aria-labelledby="s1" className="reveal xl:sticky xl:top-[calc(var(--header-h,0px)+1rem)] xl:flex xl:max-h-[calc(100dvh-var(--header-h,0px)-2rem)] xl:flex-col">
-        <SectionHeader id="s1" step={t('describeStep')} title={t('missionScenario')} />
+        <SectionHeader id="s1" step={t('describeStep')} title={t('missionScenario')} aside={<AskIGNIS
+          scenario={scenario}
+          currentMaterial={material}
+          scenarioRevision={scenarioRevision}
+          confirmed={confirmed !== null}
+          retrieval={retrievalState(dataStatus, confirmed, views).state}
+          matches={views?.top_k ?? []}
+          briefing={activeBriefing}
+          briefingStatus={activeBriefStatus}
+          materials={sourceMaterials}
+          onApply={applyAskProposal}
+          onCitation={(id) => { setSelectedId(id); focusExperiment(id); }}
+          onNavigate={navigateAskView}
+        />} />
         <MissionCaption step={guidedStep === 0 ? 0 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[0].caption)} />
         <div className="grid gap-8 lg:grid-cols-2 xl:-mr-2 xl:min-h-0 xl:grid-cols-1 xl:gap-5 xl:overflow-y-auto xl:overflow-x-hidden xl:pr-2">
           <div className="flex min-w-0 flex-col gap-4">
@@ -466,7 +515,7 @@ export function Console() {
                   <div className="flex flex-col gap-2 rounded-xl border border-warn/30 bg-warn/[0.05] p-3 text-sm text-dim">
                     <p>{material.reason === 'ambiguous' ? t('chooseAmbiguousMaterial') : t('chooseCatalogMaterial')}</p>
                     {material.candidates.length > 0 ? (
-                      <select value="" onChange={(event) => { invalidateParse(); setMaterialChoice(event.target.value); setConfirmed(null); }} className="h-10 rounded-xl border border-border bg-bg px-3 text-sm text-text">
+                      <select value="" onChange={(event) => { invalidateParse(); markScenarioChanged(); setMaterialChoice(event.target.value); setConfirmed(null); }} className="h-10 rounded-xl border border-border bg-bg px-3 text-sm text-text">
                         <option value="" disabled>{t('selectMaterial')}</option>
                         {material.candidates.map((candidate) => <option key={candidate} value={candidate}>{candidate.replace(/_/g, ' ')}</option>)}
                       </select>

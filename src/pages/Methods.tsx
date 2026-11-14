@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Page, PageHeader, Panel, textLink } from '../components/ui';
 import { COPY } from '../lib/copy';
 
@@ -17,12 +18,16 @@ const principles = [
 ] as const;
 
 export function Methods() {
+  useEffect(() => {
+    if (window.location.hash === '#pipeline') document.getElementById('pipeline')?.focus({ preventScroll: true });
+  }, []);
+
   return <Page>
     <PageHeader eyebrow="Methods / evidence retrieval" title="From scenario to source"
       intro="Follow a mission question through IGNIS and see where the software checks a statement before you read it." />
     <section aria-labelledby="pipeline" className="my-10 grid items-start gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
       <Panel>
-        <h2 id="pipeline" className="text-xl font-semibold">Evidence pipeline</h2>
+        <h2 id="pipeline" tabIndex={-1} className="text-xl font-semibold">Evidence pipeline</h2>
         <svg className="mx-auto mt-5 block w-full max-w-xs" viewBox="0 0 260 318" role="img" aria-labelledby="diagram-title diagram-desc">
           <title id="diagram-title">How the mission console builds a Brief</title>
           <desc id="diagram-desc">Confirmed inputs and verified catalog cards feed deterministic retrieval. Retrieved cards and coverage feed claim validation. The console displays checked claims or the evidence-only fallback.</desc>
