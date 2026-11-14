@@ -82,7 +82,8 @@ describe('Round 6 #3: environment presets set atmosphere inputs only, no gravity
 describe('Round 6 #1: mission entry shows the availability state until a reviewed case exists', () => {
   const verified = [card({ id: 'v1', test_id: 'V1' }), card({ id: 'v2', test_id: 'V2' }), card({ id: 'v3', test_id: 'V3' })];
   const draft = card({ id: 'd1', test_id: 'D1', verified_by: null });
-  const ready: MissionCase = { preset_id: 'crew-clothing', experiment_ids: ['v1', 'v2', 'v3'], reviewed_by: 'Ada Reviewer' };
+  const reviewed_versions = Object.fromEntries(verified.map((e) => [e.id, e.updated_at]));
+  const ready: MissionCase = { preset_id: 'crew-clothing', experiment_ids: ['v1', 'v2', 'v3'], reviewed_by: 'Ada Reviewer', reviewed_versions };
 
   it('no case yet → unavailable, with the approved line', () => {
     expect(MISSION_CASE).toBeNull();
@@ -105,6 +106,14 @@ describe('Round 6 #1: mission entry shows the availability state until a reviewe
     const displaced = [...verified, ...[1, 2, 3, 4, 5].map((n) => card({ id: `x${n}`, test_id: `A${n}` }))];
     expect(missionEntry(pmma, ready).state).toBe('unavailable'); // class gate drops v3 from the preset's matches
     expect(missionEntry(displaced, ready).state).toBe('unavailable'); // five equal matches ahead push a reviewed card out
+  });
+
+  it('Round 8 · A6: bound to the reviewed content — a correction closes it, an unrelated addition does not', () => {
+    const corrected = verified.map((e) => e.id === 'v2' ? { ...e, notes: 'flow corrected', updated_at: '2026-11-15T09:00:00Z' } : e);
+    expect(missionEntry(corrected, ready).state).toBe('unavailable'); // same ID, same rank, new content → re-review
+    const unrelated = card({ id: 'n1', test_id: 'N1', fuel_material: 'nomex', material_class: 'aramid_fabric', updated_at: '2026-11-15T09:00:00Z' });
+    expect(missionEntry([...verified, unrelated], ready)).toEqual({ state: 'available', case: ready });
+    expect(missionEntry(verified, { ...ready, reviewed_versions: {} }).state).toBe('unavailable'); // never reviewed against content
   });
 });
 

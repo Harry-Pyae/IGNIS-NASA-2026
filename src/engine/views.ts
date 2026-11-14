@@ -16,6 +16,7 @@ import { eligibleCards } from '../lib/gates.js';
 import type { CoverageResult, Experiment, MatchResult, ResolvedScenario } from '../lib/types.js';
 import { retrieve } from './match.js';
 import { GRID } from './gaps.js';
+import { presetScenario, SCENARIO_PRESETS, type ScenarioPreset } from './aliases.js';
 
 /** The Evidence Map's axes are exactly the gap GRID. */
 export const onMapAxes = (o2: number, flow: number) =>
@@ -116,4 +117,48 @@ export function retrievalState(
   if (status === 'unavailable') return { state: 'unavailable' };
   if (status === 'loading' || !views) return { state: 'loading' };
   return { state: 'settled', revision: views.revision, matches: views.top_k.length };
+}
+
+/**
+ * Round 8 · A7 — what each scenario preset can actually show, computed from the verified catalog with the same
+ * resolver, gates and map partition the console uses. Data only: Coder B renders the labels (B4). Never a promise of
+ * a fixed number of results. A preset with no catalog material opens the picker (`needs_material`).
+ */
+export type PresetAvailability =
+  | { preset_id: string; state: 'needs_material' }
+  | {
+      preset_id: string;
+      state: 'ready';
+      /** verified solid runs passing the preset scenario's gates (material, form, domain) */
+      eligible: number;
+      /** …of which report the preset's own material */
+      exact: number;
+      /** …of which only share its material class (a different material) */
+      class_only: number;
+      /** map partition of the eligible runs (A4) */
+      visible: number;
+      off_axis: number;
+      missing_coordinates: number;
+    };
+
+export function presetAvailability(catalog: Experiment[], presets: readonly ScenarioPreset[] = SCENARIO_PRESETS): PresetAvailability[] {
+  const solid = catalog.filter((c) => c.verified_by != null && c.domain === 'solid_flammability');
+  return presets.map((preset) => {
+    if (!preset.material) return { preset_id: preset.id, state: 'needs_material' as const };
+    const scenario = presetScenario(preset, solid);
+    if (scenario.material.status !== 'resolved') return { preset_id: preset.id, state: 'needs_material' as const };
+    const eligible = eligibleCards(scenario, solid);
+    const exact = eligible.filter((c) => c.fuel_material === preset.material!.fuel_material).length;
+    const map = mapCoordinates(eligible);
+    return {
+      preset_id: preset.id,
+      state: 'ready' as const,
+      eligible: eligible.length,
+      exact,
+      class_only: eligible.length - exact,
+      visible: map.visible.length,
+      off_axis: map.outside.length,
+      missing_coordinates: map.missing.length,
+    };
+  });
 }

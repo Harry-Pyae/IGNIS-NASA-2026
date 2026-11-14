@@ -80,6 +80,15 @@ export function Console() {
   const [confirmed, setConfirmed] = useState<ResolvedScenario | null>(null);
   const [description, setDescription] = useState('');
   const [parsing, setParsing] = useState(false);
+  // Round 8 · A5: a parse applies only if nothing changed since it was sent (edit, preset, slider, environment,
+  // material choice, share restore or a newer parse). Superseded requests are aborted and their result, error and
+  // pending state are all ignored.
+  const parseRequest = useRef<{ generation: number; abort: AbortController | null }>({ generation: 0, abort: null });
+  const invalidateParse = useCallback(() => {
+    parseRequest.current.abort?.abort();
+    parseRequest.current = { generation: parseRequest.current.generation + 1, abort: null };
+    setParsing(false);
+  }, []);
   const [message, setMessage] = useState('');
   const [guidedStep, setGuidedStep] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -87,6 +96,7 @@ export function Console() {
   const [appliedEnvironmentId, setAppliedEnvironmentId] = useState<string | null>(null);
   const scenarioEditor = useRef<HTMLDetailsElement>(null);
   const share = useScenarioShare(catalog, ({ material, ...conditions }) => {
+    invalidateParse();
     const name = material.status === 'resolved' ? material.fuel_material : null;
     setScenario({ ...conditions, fuel_material_raw: name });
     setMaterialChoice(name);
@@ -257,6 +267,7 @@ export function Console() {
   };
 
   function editScenario(update: Partial<ParsedScenario>, materialEdited = false) {
+    invalidateParse();
     if (confirmed) setInputsChanged(true);
     setScenario((current) => ({ ...current, ...update }));
     if ('o2_pct' in update || 'pressure_kpa' in update) setAppliedEnvironmentId(null);
@@ -269,6 +280,7 @@ export function Console() {
   }
 
   function moveSlider(update: Partial<Pick<ParsedScenario, 'o2_pct' | 'flow_cm_s'>>) {
+    invalidateParse();
     const apply = () => {
       setScenario((current) => ({ ...current, ...update }));
       if ('o2_pct' in update) setAppliedEnvironmentId(null);
@@ -288,6 +300,7 @@ export function Console() {
   const activeEnvironment = ENVIRONMENTS.find((env) => env.id === appliedEnvironmentId && env.o2_pct === scenario.o2_pct && env.pressure_kpa === scenario.pressure_kpa) ?? null;
 
   function chooseEnvironment(env: EnvironmentPreset) {
+    invalidateParse();
     setAppliedEnvironmentId(env.id);
     setScenario((current) => applyEnvironment(current, env));
     setConfirmed((current) => current ? applyEnvironment(current, env) : null);
@@ -296,6 +309,7 @@ export function Console() {
   }
 
   const choosePreset = useCallback((id: string) => {
+    invalidateParse();
     const preset = SCENARIO_PRESETS.find((item) => item.id === id);
     if (!preset) return;
     const value = presetScenario(preset, sourceMaterials);
@@ -314,7 +328,7 @@ export function Console() {
       flow_cm_s: preset.flow_cm_s,
       pressure_kpa: value.pressure_kpa,
     });
-  }, [sourceMaterials]);
+  }, [invalidateParse, sourceMaterials]);
 
   const startMission = useCallback((presetId: string | null) => {
     if (!presetId || !missionCase || presetId !== missionCase.preset_id) return;
@@ -339,6 +353,11 @@ export function Console() {
 
   async function parseDescription(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    invalidateParse(); // a newer parse supersedes the previous one
+    const abort = new AbortController();
+    const generation = parseRequest.current.generation;
+    parseRequest.current.abort = abort;
+    const current = () => parseRequest.current.generation === generation;
     setParsing(true);
     setMessage('');
     setConfirmed(null);
@@ -347,8 +366,10 @@ export function Console() {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ text: description }),
+        signal: abort.signal,
       });
       const body: unknown = await response.json();
+      if (!current()) return;
       if (!response.ok) throw new Error('Scenario parsing is unavailable right now. You can still edit the fields below.');
       const result = ParseScenarioResponseSchema.safeParse(body);
       if (!result.success) throw new Error('The parser returned an invalid scenario. You can still edit the fields below.');
@@ -358,9 +379,13 @@ export function Console() {
       setMaterialChoice(null);
       setMessage(`Parsed with ${result.data.provider}. Review and edit these values before confirming.`);
     } catch (error) {
+      if (!current()) return; // superseded or aborted: its error belongs to an older form
       setMessage(error instanceof Error ? error.message : 'Could not parse that scenario. You can edit the fields below.');
     } finally {
-      setParsing(false);
+      if (current()) {
+        setParsing(false);
+        parseRequest.current.abort = null;
+      }
     }
   }
 
@@ -431,7 +456,7 @@ export function Console() {
                   <div className="flex flex-col gap-2 rounded-xl border border-warn/30 bg-warn/[0.05] p-3 text-sm text-dim">
                     <p>{material.reason === 'ambiguous' ? t('chooseAmbiguousMaterial') : t('chooseCatalogMaterial')}</p>
                     {material.candidates.length > 0 ? (
-                      <select value="" onChange={(event) => { setMaterialChoice(event.target.value); setConfirmed(null); }} className="h-10 rounded-xl border border-border bg-bg px-3 text-sm text-text">
+                      <select value="" onChange={(event) => { invalidateParse(); setMaterialChoice(event.target.value); setConfirmed(null); }} className="h-10 rounded-xl border border-border bg-bg px-3 text-sm text-text">
                         <option value="" disabled>{t('selectMaterial')}</option>
                         {material.candidates.map((candidate) => <option key={candidate} value={candidate}>{candidate.replace(/_/g, ' ')}</option>)}
                       </select>
@@ -567,6 +592,7 @@ export function Console() {
           scenario={confirmed}
           revision={views.revision}
           rankedIds={views.top_k.map(({ experiment }) => experiment.id)}
+          versions={Object.fromEntries(views.top_k.map(({ experiment }) => [experiment.id, experiment.updated_at]))}
         />}
           <MissionCaption step={guidedStep === 2 ? 2 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[2].caption)} />
           <MatchPanel matches={views?.top_k ?? []} status={dataStatus} confirmed={confirmed !== null} selectedId={selectedId} onSelect={setSelectedId} />

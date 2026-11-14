@@ -12,17 +12,23 @@ export function ShareBanner({ share }: { share: ReturnType<typeof useScenarioSha
     {status?.state === 'unavailable' && <p>The verified catalog is unavailable. Shared matches cannot be checked yet.</p>}
     {status?.state === 'current' && <p>Shared scenario is current with catalog.</p>}
     {status?.state === 'updated' && <>
-      <p>Catalog updated since this link was made.</p>
+      <p>{!status.added.length && !status.dropped.length && !status.changed?.length
+        ? 'The catalog changed since this link was made, but this scenario finds the same records.'
+        : 'The catalog changed since this link was made.'}</p>
       <ul className="mt-2 break-words">
         <li>Added IDs · {status.added.join(', ') || 'None'}</li>
         <li>Dropped IDs · {status.dropped.join(', ') || 'None'}</li>
+        <li>Cited cards updated since · {status.changed == null ? 'not recorded in this older link' : status.changed.join(', ') || 'None'}</li>
       </ul>
+      <p className="mt-2 text-dim">The earlier result can’t be rebuilt exactly; these are today’s verified records.</p>
     </>}
   </div>;
 }
 
-export function CopyShareLink({ scenario, revision, rankedIds }: {
+export function CopyShareLink({ scenario, revision, rankedIds, versions }: {
   scenario: ResolvedScenario;
+  /** A8: ranked card id → updated_at, so a reopened link can name cited cards that changed. */
+  versions?: Record<string, string>;
   revision: string;
   rankedIds: string[];
 }) {
@@ -30,7 +36,7 @@ export function CopyShareLink({ scenario, revision, rankedIds }: {
   async function copy() {
     try {
       const url = new URL('/', window.location.origin);
-      url.searchParams.set(SHARE_PARAM, encodeShare(scenario, revision, rankedIds));
+      url.searchParams.set(SHARE_PARAM, encodeShare(scenario, revision, rankedIds, versions));
       url.hash = 'console';
       await navigator.clipboard.writeText(url.href);
       setMessage('Share link copied.');
