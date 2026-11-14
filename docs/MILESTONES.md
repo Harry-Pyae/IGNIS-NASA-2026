@@ -22,6 +22,8 @@ During the event, code changes are bug fixes and runbook items only.
   BASS GMT96-T8, BASS-II GMT45-T4; NTRS 20150008962), revision `becd7b54435772eaf9f7499a69267ad5`. The real-data
   sequence passed on production the same day: step c (Groq), the warmed cache, and the forced-Gemini synthesize proof.
   Details are in `QA-LOG.md`, "Real-data production checks".
+- **Migrations 0004 and 0005 applied in production** (team lead, SQL editor, 2026-11-14). Columns confirmed by an anon
+  read; revision unchanged. Dataset provenance code merged to `main` right after.
 - **Midday:** R1's publish never reached the database. Same project (`zvzofutgfwzptlbfibpz`); all 3 seed rows still have
   `verified_by` null and the 2026-11-07 seed `updated_at`. Round 2 split in `docs/WHO-DOES-WHAT.md`. Coder A's
   dataset provenance (0005 + types + `/curate` + export + tests) is on branch `provenance`. It reaches `main` only after
