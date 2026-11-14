@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Button, Panel, Select } from '../components/ui';
+import { Button, buttonClass, Page, PageHeader, Panel, Select, textLink } from '../components/ui';
 import { useVerifiedCatalog } from '../lib/catalog';
-import { evidenceLocator, evidenceSource } from '../lib/evidenceSource';
+import { datasetCitation, evidenceLocator, evidenceSource } from '../lib/evidenceSource';
 import { COPY } from '../lib/copy';
 import { FIELD_UNITS, PARAM_LABELS, CONTINUOUS_PARAMS, type Experiment } from '../lib/types';
 
@@ -19,7 +19,9 @@ const measure = (card: Experiment, field: keyof typeof FIELD_UNITS) =>
 const citationFields = ['source_page', 'source_figure', 'source_table', 'source_section', 'ntrs_id', 'doi'] as const;
 const completeness = (card: Experiment) => citationFields.filter(field => card[field] != null).length;
 const inputClass = 'w-full rounded-xl border border-border bg-bg/70 px-3 py-2 text-text';
-const linkClass = 'text-amber underline [overflow-wrap:anywhere]';
+const linkClass = textLink;
+/** External sources open in a new tab everywhere in IGNIS. */
+const external = { target: '_blank', rel: 'noopener noreferrer' } as const;
 
 export function Library() {
   const { catalog, reload } = useVerifiedCatalog();
@@ -45,8 +47,8 @@ export function Library() {
   const settled = catalog.state === 'empty' || catalog.state === 'ready';
   const card = detail ? cards.find(item => item.id === detail) : undefined;
 
-  return <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-    <h1 className="display mb-6 text-4xl">{detail ? 'Experiment detail' : 'Evidence Library'}</h1>
+  return <Page>
+    <PageHeader eyebrow="Library / verified catalog" title={detail ? 'Experiment detail' : 'Evidence Library'} />
     {detail && <a className={linkClass} href={'/library' + query}>Back to library</a>}
     <div className="mt-5">
       {catalog.state === 'loading' && <p role="status">Loading verified catalog…</p>}
@@ -59,7 +61,7 @@ export function Library() {
         ? card ? <ExperimentDetail card={card} /> : <Panel>Not in the current IGNIS catalog</Panel>
         : <LibraryResults cards={cards} params={params} update={update} />)}
     </div>
-  </main>;
+  </Page>;
 }
 
 function LibraryResults({ cards, params, update }: {
@@ -137,8 +139,9 @@ function ExperimentDetail({ card }: { card: Experiment }) {
   const [copyStatus, setCopyStatus] = useState('');
   const source = evidenceSource(card);
   const locator = evidenceLocator(card);
+  const dataset = datasetCitation(card);
   const doi = card.doi?.replace(/^(?:https?:\/\/(?:dx\.)?doi\.org\/|doi:\s*)/i, '');
-  const citation = [card.source_title, `${card.campaign} / ${card.test_id}`, locator, source?.url,
+  const citation = [card.source_title, `${card.campaign} / ${card.test_id}`, locator, source?.url, dataset,
     card.ntrs_id && 'NTRS ' + card.ntrs_id, doi && 'DOI ' + doi].filter(Boolean).join(' · ');
   const fields = [
     ['Domain', readable(card.domain)], ['Material', readable(card.fuel_material)],
@@ -159,7 +162,7 @@ function ExperimentDetail({ card }: { card: Experiment }) {
       <h2 className="my-2 text-2xl font-semibold">{card.test_id}</h2>
       <p className="text-sm text-dim">Verified by {card.verified_by} · {card.verified_at?.slice(0, 10) ?? missing}</p>
       <table className="mt-4 w-full table-fixed text-left text-sm [overflow-wrap:anywhere]">
-        <caption className="mb-2 text-left font-semibold">Reported conditions and observations</caption>
+        <caption className="mb-2 text-left font-semibold">Reported conditions and observations <span className="console-label ml-2 font-normal text-dim">{COPY.plain.units.normalized}</span></caption>
         <tbody>{fields.map(([label, value]) => <tr className="border-t border-border" key={label}>
           <th scope="row" className="w-2/5 py-2 pr-3 font-medium">{label}</th><td className="py-2">{value}</td>
         </tr>)}</tbody>
@@ -170,18 +173,21 @@ function ExperimentDetail({ card }: { card: Experiment }) {
       </p>)}
     </Panel>
     <Panel>
-      <h2 className="text-lg font-semibold">Verbatim source observation</h2>
+      <h2 className="flex flex-wrap items-baseline gap-x-3 text-lg font-semibold">Verbatim source observation
+        <span className="console-label font-normal text-dim">{COPY.plain.units.asReported}</span>
+      </h2>
       <blockquote className="my-3 whitespace-pre-wrap border-l-2 border-border pl-4">{card.key_observation_quote}</blockquote>
-      <p className="mb-3 text-sm text-dim">The table uses normalized units. The source quote preserves units as reported.</p>
-      <p>{source ? <a className={linkClass} href={source.url}>{card.source_title}</a> : card.source_title}</p>
+      <p>{source ? <a className={linkClass} href={source.url} {...external}>{card.source_title}</a> : card.source_title}</p>
       <p className="text-sm text-dim">Locator · {locator || missing}</p>
       {card.ntrs_id && <p>{/^\d+$/.test(card.ntrs_id)
-        ? <a className={linkClass} href={'https://ntrs.nasa.gov/citations/' + card.ntrs_id}>NTRS {card.ntrs_id}</a>
+        ? <a className={linkClass} href={'https://ntrs.nasa.gov/citations/' + card.ntrs_id} {...external}>NTRS {card.ntrs_id}</a>
         : 'NTRS ' + card.ntrs_id}</p>}
       {doi && <p>{/^10\.\d{4,9}\/\S+$/.test(doi)
-        ? <a className={linkClass} href={'https://doi.org/' + doi.split('/').map(encodeURIComponent).join('/')}>DOI {doi}</a>
+        ? <a className={linkClass} href={'https://doi.org/' + doi.split('/').map(encodeURIComponent).join('/')} {...external}>DOI {doi}</a>
         : 'DOI ' + doi}</p>}
-      <Button className="mt-4" onClick={async () => {
+      {dataset && <p className="break-words text-sm text-dim [overflow-wrap:anywhere]">{dataset}</p>}
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+      <Button onClick={async () => {
         try {
           await navigator.clipboard.writeText(citation);
           setCopyStatus('Citation copied.');
@@ -189,8 +195,9 @@ function ExperimentDetail({ card }: { card: Experiment }) {
           setCopyStatus(citation);
         }
       }}>Cite this</Button>
+      <a className={buttonClass('secondary', 'md')} href={'/compare?ids=' + encodeURIComponent(card.id)}>Compare</a>
+      </div>
       <p role="status" className="mt-2 break-words text-sm">{copyStatus}</p>
     </Panel>
-    <a className={linkClass} href={'/compare?ids=' + encodeURIComponent(card.id)}>Compare</a>
   </div>;
 }

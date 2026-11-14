@@ -1,4 +1,4 @@
-import { Page, PageHeader, Panel } from '../components/ui';
+import { Page, PageHeader, Panel, textLink } from '../components/ui';
 import { COPY } from '../lib/copy';
 
 const stages = [
@@ -40,6 +40,12 @@ export function Methods() {
     <h2 className="text-2xl font-semibold">Five principles behind the Brief</h2>
     <dl className="mt-5 divide-y divide-border">{principles.map(([title, body]) => <div key={title} className="grid gap-2 py-4 sm:grid-cols-[1fr_2fr]"><dt className="font-semibold">{title}</dt><dd className="text-dim">{body}</dd></div>)}</dl>
     <p className="mt-6 border-l-2 border-raised pl-4 text-dim">{COPY.interpretationLimit}</p>
-    <a className="mt-8 inline-block text-amber underline" href="/sources">Browse the source bibliography</a>
+    <section className="mt-10" aria-labelledby="plain-words">
+      <h2 id="plain-words" className="text-2xl font-semibold">Plain words</h2>
+      <dl className="mt-5 divide-y divide-border">{COPY.glossary.map(({ term, plain }) =>
+        <div key={term} className="grid gap-2 py-4 sm:grid-cols-[1fr_2fr]"><dt className="font-semibold">{term}</dt><dd className="text-dim">{plain}</dd></div>
+      )}</dl>
+    </section>
+    <a className={`mt-8 inline-block ${textLink}`} href="/sources">Browse the source bibliography</a>
   </Page>;
 }

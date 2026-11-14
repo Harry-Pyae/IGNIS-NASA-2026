@@ -18,7 +18,7 @@
  *   summary:  loading · unavailable (not configured | request failed → retry) · ready (may be zero)
  *   catalog:  loading · unavailable (not configured | error | changing → retry) · empty · ready
  */
-import { useSyncExternalStore } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { COPY } from './copy';
 import type { CatalogStats, Experiment } from './types';
 
@@ -124,6 +124,19 @@ export function useCatalogSummary(): { summary: CatalogSummary; retry: () => voi
   return { summary, retry: summaryRetry };
 }
 const summaryRetry = () => void summaryStore.refresh();
+
+/**
+ * Re-check the lightweight revision once a minute and whenever the tab becomes visible. A new revision
+ * reloads the rows too (reconcileRevisions), so the header count and every catalog view move together.
+ */
+export function useCatalogRevisionWatch() {
+  useEffect(() => {
+    const check = () => { if (document.visibilityState === 'visible') summaryRetry(); };
+    const timer = window.setInterval(check, 60_000);
+    document.addEventListener('visibilitychange', check);
+    return () => { window.clearInterval(timer); document.removeEventListener('visibilitychange', check); };
+  }, []);
+}
 
 // ---------------------------------------------------------------------------
 // Verified rows (the console). Zod + validation load on demand.

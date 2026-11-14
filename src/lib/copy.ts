@@ -94,7 +94,21 @@ export const COPY = {
     map: {
       untested: 'Hatched: inside the catalog’s range, but no verified card at these conditions yet.',
       outside: 'Dashed: beyond the range the current IGNIS catalog covers.',
+      scenario: 'Your confirmed scenario, placed by its oxygen and airflow.',
+      prompt: 'Legend · select an item to see what it means',
     },
+    // Match Panel key: explained once above the cards, not on every card.
+    chipKeyLabel: 'What the match symbols mean',
+    chipKey: {
+      same: 'same as yours',
+      close: 'close',
+      different: 'different',
+      not_reported: 'card doesn’t report it',
+      untested: 'no card has it',
+      outside_range: 'outside the catalog’s range',
+      not_specified: 'you left it empty',
+    },
+    units: { normalized: 'normalized units', asReported: 'units as reported' },
     compared: 'How many of your conditions were compared. Empty, unreported or identical-everywhere conditions are not counted.',
     firstVisit: {
       mission: 'New here? Run the guided mission. It walks you through one real investigation.',
@@ -102,6 +116,24 @@ export const COPY = {
       dismiss: 'Dismiss',
     },
     hintButton: (label: string) => `What is ${label}?`,
+    evidenceUpdated: 'Evidence updated',
+    viewEvidence: 'View',
+    viewEvidenceAction: 'View evidence',
+    jumpToMap: 'Jump to map',
+    // Steps 03/04 before a scenario is confirmed: one slim row each (the journey's shape stays visible).
+    collapsed: {
+      matches: 'Ranked NASA experiments appear here after you confirm a scenario.',
+      matchesAction: 'Confirm a scenario',
+      brief: 'The evidence-checked brief is built from the matches above.',
+    },
+    // 05 is populated in both modes; its scope is always labeled so the two are never conflated.
+    gapScope: {
+      catalog: 'Across the whole verified catalog',
+      scenario: 'For your confirmed scenario: only verified cards that pass its material and form checks',
+    },
+    // A region's range is the outline of its untested cells; tested cells can sit inside that outline.
+    regionCells: 'None of these cells has a verified experiment in the current IGNIS catalog. The range outlines them and can include tested cells.',
+    catalogRefreshing: 'The verified catalog changed. Loading the new evidence…',
   },
   /** /methods "Plain words" section. Each entry: the term as it appears in the app, then what it means. */
   glossary: [

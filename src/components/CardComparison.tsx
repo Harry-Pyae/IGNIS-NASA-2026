@@ -3,6 +3,7 @@ import type { Experiment, ContinuousParam } from '../lib/types';
 import { FIELD_UNITS, PARAM_LABELS } from '../lib/types';
 import { evidenceLocator, evidenceSource } from '../lib/evidenceSource';
 import { COPY } from '../lib/copy';
+import { buttonClass, textLink } from './ui';
 
 const label = (c: Experiment) => c.test_id.startsWith(c.campaign) ? c.test_id : c.campaign+' '+c.test_id;
 const parameters: ContinuousParam[] = ['o2_pct','flow_cm_s','thickness_mm','pressure_kpa'];
@@ -34,9 +35,9 @@ export function CardComparison({cards, standalone = false}: {cards: Experiment[]
           {(i === 0 ? eligible : others).map(item => <option key={item.id} value={item.id}>{label(item)}</option>)}
         </select>
       </label>)}</div>
-    {!standalone && <a className="mb-4 inline-block text-sm text-amber underline" href={`/compare?ids=${two.map((card) => encodeURIComponent(card.id)).join(',')}`}>Open comparison page</a>}
+    {!standalone && <a className={buttonClass('secondary', 'sm', 'mb-4')} href={`/compare?ids=${two.map((card) => encodeURIComponent(card.id)).join(',')}`}>Open comparison page</a>}
     <table className="w-full table-fixed border-collapse text-left text-sm break-words">
-      <caption className="sr-only">Recorded conditions and observations of two matched experiments</caption>
+      <caption className="sr-only">Recorded conditions and observations of two {standalone ? 'verified' : 'matched'} experiments</caption>
       <thead><tr><th scope="col">Field</th>{two.map(c => <th scope="col" className="p-2" key={c.id}>{label(c)}</th>)}</tr></thead>
       <tbody>{fields.map(([name,read]) => {
         const values = two.map(read);
@@ -44,7 +45,7 @@ export function CardComparison({cards, standalone = false}: {cards: Experiment[]
         return <tr key={name} className={'border-t border-border '+(different ? 'bg-raised/20' : '')}><th scope="row" className="py-2 font-medium">{name}{different && <small className="block text-dim">Entries differ</small>}</th>{values.map((v,i) => <td key={i} className="p-2 tabular-nums">{v}</td>)}</tr>;
       })}<tr className="border-t border-border"><th scope="row">Source</th>{two.map(c => {
         const src = evidenceSource(c);
-        return <td key={c.id} className="p-2">{src ? <a className="text-amber underline" href={src.url}>{c.source_title}</a> : c.source_title}<small className="block">{evidenceLocator(c)}</small></td>;
+        return <td key={c.id} className="p-2">{src ? <a className={textLink} href={src.url} target="_blank" rel="noopener noreferrer">{c.source_title}</a> : c.source_title}<small className="block">{evidenceLocator(c)}</small></td>;
       })}</tr></tbody>
     </table>
   </details>;

@@ -1,5 +1,5 @@
+import { useEffect, useRef, useState } from 'react';
 import { useCatalogSummary } from '../lib/catalog';
-import { useEffect, useState } from 'react';
 import { useTheme } from '../lib/theme';
 import { ExportButton, ProvenancePill } from './CatalogStatus';
 
@@ -13,8 +13,19 @@ export function AppHeader() {
     window.addEventListener('hashchange', update);
     return () => window.removeEventListener('hashchange', update);
   }, []);
+  const header = useRef<HTMLElement>(null);
+  // --header-h: sticky blocks and scroll targets sit below this sticky header at every width.
+  useEffect(() => {
+    const el = header.current;
+    if (!el) return;
+    const set = () => document.documentElement.style.setProperty('--header-h', `${el.offsetHeight}px`);
+    set();
+    const observer = new ResizeObserver(set);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
   return (
-    <header className="app-header sticky top-0 z-40">
+    <header ref={header} className="app-header sticky top-0 z-40">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-4 sm:px-6">
         <a href="/" className="flex shrink-0 items-center gap-2.5" aria-label="IGNIS home">
           {/* Interim brand mark: 64px derivative of /art/logo-flame.webp (master untouched). One <img>, never a CSS background. */}
@@ -27,7 +38,7 @@ export function AppHeader() {
           {/* Provenance strip (§8.1 item 0). Coder B expands it into the campaign/source panel. */}
           <ProvenancePill summary={summary} retry={retry} />
           {/* §8.1 item 6: the verified-only open dataset (/api/export). */}
-          <ExportButton summary={summary} label="Export dataset" compact />
+          <ExportButton summary={summary} label="Export dataset" compact variant="primary" />
 
           {/* Theme switcher toggle */}
           <button

@@ -1,8 +1,11 @@
-import { useId, type CSSProperties } from 'react';
+import { useId, type CSSProperties, type ReactNode } from 'react';
 import { cx } from '../../lib/cx';
+import { buttonClass } from './buttonStyles';
 
 interface SliderProps {
   label: string;
+  hint?: ReactNode;
+  describedBy?: string;
   value: number | null;
   min: number;
   max: number;
@@ -23,27 +26,29 @@ interface SliderProps {
  * Semantics: it changes WHICH verified evidence is retrieved — it never paints risk zones.
  * Always pair it with COPY.sliderCaption (src/lib/copy.ts). Native range input: keyboard, touch, a11y for free.
  */
-export function Slider({ label, value, min, max, step = 1, unit, onChange, onClear, className, allowUnspecified = false, unspecifiedValue = min, unspecifiedLabel = 'Not specified', setValueLabel = 'Set value', clearValueLabel = 'Clear value' }: SliderProps) {
+export function Slider({ label, hint, describedBy, value, min, max, step = 1, unit, onChange, onClear, className, allowUnspecified = false, unspecifiedValue = min, unspecifiedLabel = 'Not specified', setValueLabel = 'Set value', clearValueLabel = 'Clear value' }: SliderProps) {
   const id = useId();
   const currentValue = value ?? min;
   const fill = ((currentValue - min) / (max - min)) * 100;
   return (
     <div className={cx('flex flex-col gap-2', className)}>
       <div className="flex items-baseline justify-between gap-3">
-        <label htmlFor={id} className="console-label text-dim">
-          {label}
-        </label>
+        <div className="flex items-center gap-2">
+          <label htmlFor={id} aria-describedby={describedBy} className="console-label text-dim">{label}</label>
+          {hint}
+        </div>
         <output htmlFor={id} className="font-mono text-sm text-text tabular-nums">
           {value == null && allowUnspecified ? unspecifiedLabel : <>{value}<span className="ml-1 text-dim">{unit}</span></>}
         </output>
         {allowUnspecified && (
-          <button type="button" className="text-xs text-dim underline underline-offset-2 hover:text-text" onClick={() => value == null ? onChange(unspecifiedValue) : onClear?.()}>
+          <button type="button" className={buttonClass('tertiary', 'sm', '!text-xs')} onClick={() => value == null ? onChange(unspecifiedValue) : onClear?.()}>
             {value == null ? setValueLabel : clearValueLabel}
           </button>
         )}
       </div>
       <input
         id={id}
+        aria-describedby={describedBy}
         type="range"
         className="ignis-range"
         min={min}
