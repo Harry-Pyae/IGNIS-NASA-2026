@@ -57,7 +57,7 @@ export function Dashboard() {
       : '/compare';
 
   return (
-    <div className="relative min-h-screen text-text transition-colors duration-500">
+    <div className="ignis-dashboard relative min-h-screen text-text transition-colors duration-500">
       {/* Abstract 3D organic ribbons and warm ambient lighting */}
       <AmbientRibbons />
 

@@ -253,3 +253,14 @@ html.light,
   --color-untested-bg: rgba(255, 255, 255, 0.28);
   --color-untested-border: rgba(234, 88, 12, 0.45);
 }
+
+html.light:has(.ignis-dashboard) {
+  --color-bg: #ffffff;
+  --dashboard-glass-tint: #f97316;
+  --color-panel: color-mix(in srgb, var(--dashboard-glass-tint, #f97316) 12%, transparent);
+  --color-border: color-mix(in srgb, var(--dashboard-glass-tint, #f97316) 28%, transparent);
+  --color-raised: color-mix(in srgb, var(--dashboard-glass-tint, #f97316) 15%, transparent);
+  /* White labels on these orange accents exceed 5:1 contrast. */
+  --color-amber: #a33a08;
+  --color-flame: #9a3412;
+}
