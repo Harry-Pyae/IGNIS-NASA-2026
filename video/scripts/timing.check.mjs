@@ -45,3 +45,13 @@ assert.equal(wordCount('[Name A] led it.'), 4);
   assert.ok(Math.abs(chunks.at(-1).toSec - 6) < 1e-9);
 }
 console.log('timing.check: OK');
+// [LIVE] lines: a spoken catalog number that no longer matches the live catalog is reported (re-record the line).
+{
+  const { liveMismatch } = await import(pathToFileURL(join(root, 'src/cuts/timing.ts')).href);
+  const catalog = { cards: 31, campaigns: 8, sources: 5, o2: [16.4, 31], kpa: [54.1, 101.325], revision: 'r', fetchedAt: '' };
+  const b = beat('pitch-21', 'x', 13, 11, 16, { live: { cards: 31, campaigns: 8, o2: [16.4, 31], kpa: [54.1, 101.325] } });
+  assert.deepEqual(liveMismatch(b, catalog), []);
+  assert.equal(liveMismatch(b, { ...catalog, cards: 32 }).length, 1);
+  assert.equal(liveMismatch(b, { ...catalog, o2: [16.4, 31.9] }).length, 1);
+}
+console.log('timing.check [LIVE]: OK');

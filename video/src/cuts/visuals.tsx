@@ -193,6 +193,7 @@ function Catalog({ manifest }: { manifest: Manifest }) {
         {stat(c?.campaigns, 'NASA campaigns', 4)}
         {stat(c?.sources, 'source reports', 8)}
       </div>
+      {c?.o2 && c.kpa && <Rise at={10}><div style={{ fontFamily: SANS, fontSize: 64, color: C.text }}>Verified evidence from {c.o2[0]}% to {c.o2[1]}% O₂ · {Math.round(c.kpa[0])}–{Math.round(c.kpa[1])} kPa</div></Rise>}
       <Rise at={12}><div style={{ fontFamily: SANS, fontSize: 56, color: C.dim }}>Open dataset: {LIVE_URL}/api/export</div></Rise>
       {c && <div style={{ ...monoLabel, fontSize: 28, color: C.faint }}>Live catalog · revision {c.revision.slice(0, 8)} · read {c.fetchedAt.slice(0, 10)}</div>}
     </AbsoluteFill>

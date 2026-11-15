@@ -1,5 +1,14 @@
 # IGNIS — state handoff (2026-11-10, console merged · preparation phase)
 
+> **2026-11-15 10:45: catalog work complete.** Live =  (ff8a7c6+). **31 verified cards, 8 NASA campaigns, 5 source
+> reports, 0 drafts**, revision : BASS, BASS-II, Saffire-I, -II, -IV, -V, -VI and USML-1 WIF. Outcomes: 15 sustained,
+> 7 extinguished, 9 did not ignite. Verified evidence spans 16.4–31 % O₂ (27 runs report it) and 54.1–101.3 kPa (21 report it);
+> source papers 1994–2024. All signing sessions are signed: SIGNING-SESSION (11), the no_ignition addendum (9), USML-1 (3),
+> Saffire VI addendum #2 (4 + Saffire II-7). Shipped today: guided tour, outcome  (migration 0006), form
+>  (USML-1), presets Cable insulation (polyethylene) and Silicone sheet (Cargo packaging moved to a Gap Radar
+> line), map O₂ axis to 32 %, co-located-run stacks, laptop breakpoint 1200 px. Open: the Moon-base preset (34 % / 8.2 psia)
+> waits for R1's signature; green-flash Beat 1 waits for R2's frame; screen-recording session after "catalog final".
+
 > **2026-11-14 evening: current state.** Live = GitHub `main` `96262b4` (`Harry-Pyae/IGNIS-NASA-2026`, public);
 > the live page serves the same asset hashes as a local build of that tree. On top of the frozen prep: Round 8
 > (`IGNIS_FIX_ROUND8.md`: Coder B's console fixes, Coder C's error boundaries / Specimen Explorer / evidence handoff,

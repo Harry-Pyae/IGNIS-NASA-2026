@@ -40,6 +40,8 @@ export interface Beat {
   chapter?: string;
   /** A fact in this line that still needs a named sign-off (R1 science/history). Pending = placeholder render. */
   signOff?: string;
+  /** [LIVE] catalog numbers this line SPEAKS. Checked against the live export at prep; a mismatch keeps the cut a placeholder. */
+  live?: { cards?: number; campaigns?: number; o2?: [number, number]; kpa?: [number, number] };
   /** Presenter note for whoever delivers the line live (not spoken, not captioned). */
   note?: string;
 }

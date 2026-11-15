@@ -5,7 +5,7 @@ Four cuts: **The Demo** (≤30.0 s, submission candidate A), **The Story** (≤3
 Both 30-second cuts end on the same end card, frame for frame, so swapping the submission is a file swap.
 
 **How to read a line:** say it plainly at a normal pace. *Italic* words carry the stress. `[Name A]` = say your own name.
-“IGNIS” is said **IG-niss**. “Saffire” is said like “sapphire”. Numbers are never read from the screen: the VO avoids catalog counts on purpose.
+“IGNIS” is said **IG-niss**. “Saffire” is said like “sapphire”. Catalog numbers are spoken only in lines marked **[LIVE]**: record those last, after “catalog final”. `npm run cuts:prep` checks every [LIVE] line against the live catalog and keeps the render a placeholder on any mismatch.
 
 ## The Demo (product-first, ≤30 s)
 
@@ -54,7 +54,7 @@ Shorter wordings, used only if the voice-fit report says that line is over budge
 
 ## Team pitch (3:00–4:00)
 
-File prefix `vo-pitch-` · 25 lines · **447 words** · planned 233.0 s · music: `the_sleeping_giant_s_breath.mp3`
+File prefix `vo-pitch-` · 25 lines · **460 words** · planned 236.0 s · music: `the_sleeping_giant_s_breath.mp3`
 
 | # | File | Line (read this) | Words | Target s | Shown while it plays |
 |---|---|---|---|---|---|
@@ -78,7 +78,7 @@ File prefix `vo-pitch-` · 25 lines · **447 words** · planned 233.0 s · music
 | 18 | `vo-pitch-18.wav` | The card says five. *Withheld*, and IGNIS shows the source row.<br><sub>**04 · Keeping it honest**</sub> | 11 | 6 | Product: caseWithheld |
 | 19 | `vo-pitch-19.wav` | Second, every card is published by a *named* human reviewer, after checking it against its source.<br><sub>**04 · Keeping it honest**</sub> | 16 | 8 | Product: verifiedBy |
 | 20 | `vo-pitch-20.wav` | Third, we never claim more than the catalog holds. Where no verified flight test exists, like cargo packaging, IGNIS *says so* instead of guessing.<br><sub>**04 · Keeping it honest**<br>Presenter note: We had a way to fill Cable insulation with silicone sheets and declined — the geometry didn’t match a cable jacket. It now holds real USML-1 wire runs (1992), labelled as older; cargo packaging has none, so it sits on the gap line.</sub> | 24 | 8 | “No matching verified evidence in the current IGNIS catalog.” |
-| 21 | `vo-pitch-21.wav` | Every verified run traces to its report, page and quote, and the whole dataset is *open* to download.<br><sub>**05 · Data and what’s next**</sub> | 18 | 10 | Live catalog numbers |
+| 21 | `vo-pitch-21.wav` | Thirty-one verified runs from eight NASA campaigns, from 16.4 to 31 percent oxygen and 54 to 101 kilopascals. Each traces to its report, page and quote, and the dataset is *open*.<br><sub>**05 · Data and what’s next**<br>**[LIVE] catalog numbers: record this line LAST**</sub> | 31 | 13 | Live catalog numbers |
 | 22 | `vo-pitch-22.wav` | Flame research in microgravity matters on Earth, too: [R1: one sourced example, one sentence].<br><sub>**05 · Data and what’s next**<br>⚠ R1: supply one sourced Earth-benefit sentence and its NASA source</sub> | 10 | 9 | “It matters on Earth, too.” |
 | 23 | `vo-pitch-23.wav` | Next: more campaigns, and *partial gravity*, with lunar flammability data from programs like FM2 and LUCI, so the same questions work for the Moon.<br><sub>**05 · Data and what’s next**<br>⚠ R1: confirm FM2 and LUCI are the right partial-gravity programs and describe them correctly</sub> | 24 | 11 | What’s next |
 | 24 | `vo-pitch-24.wav` | Thank you. Try IGNIS at the link on screen. The code and the data are *open*.<br><sub>**06 · Thank you**</sub> | 16 | 12 | URL + QR, credits, AI use, not affiliated |

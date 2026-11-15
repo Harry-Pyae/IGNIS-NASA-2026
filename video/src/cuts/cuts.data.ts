@@ -138,7 +138,7 @@ export const CUTS: CutDef[] = [
       { id: 'pitch-19', chapter: '04 · Keeping it honest', vo: 'Second, every card is published by a *named* human reviewer, after checking it against its source.', visual: { kind: 'ui', shots: ['verifiedBy'] }, targetSec: 8, minSec: 7, maxSec: 10 },
       { id: 'pitch-20', chapter: '04 · Keeping it honest', vo: 'Third, we never claim more than the catalog holds. Where no verified flight test exists, like cargo packaging, IGNIS *says so* instead of guessing.', visual: { kind: 'statement', text: COPY.absence, sub: 'Never “NASA has never tested this.”' }, note: 'We had a way to fill Cable insulation with silicone sheets and declined — the geometry didn’t match a cable jacket. It now holds real USML-1 wire runs (1992), labelled as older; cargo packaging has none, so it sits on the gap line.', targetSec: 8, minSec: 7, maxSec: 10 },
       // 05 · Data, Earth, what's next (2:50–3:30)
-      { id: 'pitch-21', chapter: '05 · Data and what’s next', vo: 'Every verified run traces to its report, page and quote, and the whole dataset is *open* to download.', visual: { kind: 'catalog' }, targetSec: 10, minSec: 9, maxSec: 12 },
+      { id: 'pitch-21', chapter: '05 · Data and what’s next', vo: 'Thirty-one verified runs from eight NASA campaigns, from 16.4 to 31 percent oxygen and 54 to 101 kilopascals. Each traces to its report, page and quote, and the dataset is *open*.', visual: { kind: 'catalog' }, live: { cards: 31, campaigns: 8, o2: [16.4, 31], kpa: [54.1, 101.325] }, targetSec: 13, minSec: 11, maxSec: 16 },
       {
         id: 'pitch-22', chapter: '05 · Data and what’s next',
         vo: 'Flame research in microgravity matters on Earth, too: [R1: one sourced example, one sentence].',

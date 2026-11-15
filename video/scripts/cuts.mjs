@@ -108,6 +108,7 @@ async function prep() {
   if (existsSync('public/capture/take.json')) manifest.capture = JSON.parse(readFileSync('public/capture/take.json', 'utf8'));
 
   // Live catalog numbers (read-only GET), so on-screen counts match the catalog at render time.
+  const range = (values) => { const v = values.filter((x) => x != null); return v.length ? [Math.min(...v), Math.max(...v)] : null; };
   if (!OFFLINE) {
     try {
       const res = await fetch(`https://${LIVE_URL}/api/export`, { signal: AbortSignal.timeout(20000) });
@@ -117,6 +118,8 @@ async function prep() {
         cards: body.count ?? rows.length,
         campaigns: new Set(rows.map((e) => e.campaign)).size,
         sources: new Set(rows.map((e) => e.ntrs_id ?? e.source_url ?? e.source_title)).size,
+        o2: range(rows.map((e) => e.o2_pct)),
+        kpa: range(rows.map((e) => e.pressure_kpa)),
         revision: body.catalog_revision ?? 'unknown',
         fetchedAt: new Date().toISOString(),
       };
@@ -166,7 +169,7 @@ function doc() {
   p('Both 30-second cuts end on the same end card, frame for frame, so swapping the submission is a file swap.');
   p();
   p('**How to read a line:** say it plainly at a normal pace. *Italic* words carry the stress. `[Name A]` = say your own name.');
-  p('“IGNIS” is said **IG-niss**. “Saffire” is said like “sapphire”. Numbers are never read from the screen: the VO avoids catalog counts on purpose.');
+  p('“IGNIS” is said **IG-niss**. “Saffire” is said like “sapphire”. Catalog numbers are spoken only in lines marked **[LIVE]**: record those last, after “catalog final”. `npm run cuts:prep` checks every [LIVE] line against the live catalog and keeps the render a placeholder on any mismatch.');
   p();
   for (const cut of CUTS) {
     const words = cut.beats.reduce((s, b) => s + timing.wordCount(b.vo), 0);
@@ -182,7 +185,7 @@ function doc() {
       const v = b.visual;
       const shown = v.kind === 'ui' ? `Product: ${v.shots.join(' → ')}` : v.kind === 'statement' ? `“${v.text}”` : v.kind === 'history' ? `${v.year} · ${v.name}` : v.kind === 'list' ? v.heading : { title: 'Title card', team: 'Team names + roles', physics: 'Earth vs orbit flame (illustration)', catalog: 'Live catalog numbers', end: 'Shared end card', close: 'URL + QR, credits, AI use, not affiliated' }[v.kind];
       const line = b.vo.replace(/\*([^*]+)\*/g, '*$1*').replace(/\|/g, '\\|');
-      const notes = [b.chapter && `**${b.chapter}**`, b.signOff && `⚠ ${b.signOff}`, b.note && `Presenter note: ${b.note}`].filter(Boolean).join('<br>');
+      const notes = [b.chapter && `**${b.chapter}**`, b.live && '**[LIVE] catalog numbers: record this line LAST**', b.signOff && `⚠ ${b.signOff}`, b.note && `Presenter note: ${b.note}`].filter(Boolean).join('<br>');
       p(`| ${n} | \`vo-${cut.id}-${n}.wav\` | ${line}${notes ? `<br><sub>${notes}</sub>` : ''} | ${timing.wordCount(b.vo)} | ${b.targetSec} | ${shown} |`);
     }
     if (cut.beats.some((b) => b.shorter)) {

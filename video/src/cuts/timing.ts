@@ -18,7 +18,7 @@ export interface Manifest {
   /** The one continuous capture take and the second each shot starts at. */
   capture: { file: string; sec: number; width: number; height: number; marks: Partial<Record<string, number>> } | null;
   /** Read from /api/export when the manifest was built. */
-  catalog: { cards: number; campaigns: number; sources: number; revision: string; fetchedAt: string } | null;
+  catalog: { cards: number; campaigns: number; sources: number; o2?: [number, number] | null; kpa?: [number, number] | null; revision: string; fetchedAt: string } | null;
   /** QR modules for the live URL, one string of 0/1 per row. */
   qr: string[] | null;
 }
@@ -173,7 +173,21 @@ export function placeholderReasons(cut: CutDef, manifest: Manifest): string[] {
     else if (!m.cleared) r.push(`music not cleared in docs/media-ledger.md: ${cut.music}`);
   }
   if (!manifest.catalog) r.push('catalog numbers not fetched (/api/export)');
+  else for (const b of cut.beats) for (const problem of liveMismatch(b, manifest.catalog)) r.push(`${b.id} [LIVE]: ${problem} — re-record the line`);
   return r;
+}
+
+/** Spoken catalog numbers that no longer match the live catalog (empty = the line is still true). */
+export function liveMismatch(beat: Beat, catalog: NonNullable<Manifest['catalog']>): string[] {
+  const out: string[] = [];
+  const live = beat.live;
+  if (!live) return out;
+  if (live.cards != null && live.cards !== catalog.cards) out.push(`says ${live.cards} verified runs, catalog has ${catalog.cards}`);
+  if (live.campaigns != null && live.campaigns !== catalog.campaigns) out.push(`says ${live.campaigns} campaigns, catalog has ${catalog.campaigns}`);
+  const same = (a: [number, number], b: [number, number] | null | undefined) => !!b && a[0] === b[0] && a[1] === b[1];
+  if (live.o2 && !same(live.o2, catalog.o2)) out.push(`says O₂ ${live.o2.join('–')} %, catalog spans ${catalog.o2?.join('–') ?? 'nothing'}`);
+  if (live.kpa && !same(live.kpa, catalog.kpa)) out.push(`says ${live.kpa.join('–')} kPa, catalog spans ${catalog.kpa?.join('–') ?? 'nothing'}`);
+  return out;
 }
 
 /** Every shot in capture order with the cuts that use it (for the shot list). */

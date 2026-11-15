@@ -3,6 +3,10 @@
 **NASA Space Apps 2026 · "Flame in Freefall" · Team AstroFlare**
 This is one self-contained file for checking progress without the repo. Coder A updates it after every patch.
 
+**2026-11-15 10:45:** catalog complete: **31 verified cards · 8 NASA campaigns · 5 source reports · 0 drafts** (revision
+), every signing session signed. Range for the deck and video: verified evidence from 16.4 % to 31 % O₂, 54–101 kPa.
+Remaining: Moon-base preset (R1 signature), green-flash Beat 1 (R2 frame by 12:30), recording session, VO.
+
 **2026-11-14 evening:** live = `main` `96262b4`, CI green. 3 verified cards; runbook steps 0, a, c, d done, f warm;
 b, e, g, h open (progress table in [EXECUTION-STATUS.md](EXECUTION-STATUS.md)).
 
