@@ -32,6 +32,7 @@ import { Tour } from '../features/tour/Tour';
 import { dropTourReplay, markTourOffered, shouldOfferTour, wantsTourReplay } from '../features/tour/tourOffer';
 import { useScrollArea } from '../lib/scrollArea';
 import { stackChipLabel, stackPoints, stackTap, tapRadius } from '../lib/mapStacks';
+import { plainClaimText } from '../lib/claimText';
 import { experimentLabel } from '../lib/runLabel';
 import { WIDE_QUERY } from '../lib/layout';
 import { GUIDED_MISSION_REQUEST, takePendingMission } from './consoleLoader';
@@ -1525,7 +1526,7 @@ function MissionBrief({
             <ul className="mt-2 flex flex-col gap-3">
               {claims.map((claim, index) => (
                 <li key={`${group.classification}-${index}`}>
-                  <p className="text-sm leading-relaxed text-text">{claim.text}</p>
+                  <p className="text-sm leading-relaxed text-text">{plainClaimText(claim.text)}</p>
                   {claim.evidence_ids.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-2">
                       {claim.evidence_ids.map((evidenceId) => {

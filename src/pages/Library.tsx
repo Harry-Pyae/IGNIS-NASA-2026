@@ -138,9 +138,14 @@ function LibraryResults({ cards, params, update, endSearch }: {
         </div>
       </fieldset>)}
     </form>
-    <p className="my-5 text-sm text-dim" role="status">
-      {format('libraryResultCount', { results: results.length, cards: cards.length, cardLabel: t(cards.length === 1 ? 'libraryCard' : 'libraryCards') })}
-    </p>
+    <div className="my-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+      <p className="text-sm text-dim" role="status">
+        {format('libraryResultCount', { results: results.length, cards: cards.length, cardLabel: t(cards.length === 1 ? 'libraryCard' : 'libraryCards') })}
+      </p>
+      {/* One step back to the full catalog; a new history entry, so Back restores the filters. */}
+      {[...params.keys()].length > 0 && <Button size="sm" variant="tertiary"
+        onClick={() => update(Object.fromEntries([...params.keys()].map((key) => [key, ''])))}>{t('libraryClearFilters')}</Button>}
+    </div>
     {invalidRange ? <Panel>{t('libraryInvalidRange')}</Panel>
       : !results.length ? <Panel>{cards.length ? t('libraryNoMatches') : t('libraryEmpty')}</Panel>
       : <>

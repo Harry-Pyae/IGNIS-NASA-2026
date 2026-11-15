@@ -252,6 +252,7 @@ const EN = {
   compareExperiment: "Experiment",
   compareUnavailableOption: "Unavailable",
   libraryResultCount: '{results} results · {cards} verified {cardLabel} so far',
+  libraryClearFilters: 'Clear all filters',
   libraryCard: 'card',
   libraryCards: 'cards',
   libraryOxygen: 'Oxygen',
