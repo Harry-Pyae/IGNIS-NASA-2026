@@ -1089,6 +1089,10 @@ export function EvidenceMap({
   const bottom = 42;
   const plotWidth = width - left - right;
   const plotHeight = height - top - bottom;
+  // The hatch mask is blurred by about a third of a cell, so a clearing reads as a soft patch, never a box.
+  const blurX = Math.min(6, plotWidth / ((GRID.flow.max - GRID.flow.min) / GRID.flow.step) / 3);
+  const blurY = Math.min(6, plotHeight / ((GRID.o2.max - GRID.o2.min) / GRID.o2.step) / 3);
+  const EDGE = 20; // > 3σ: edge cells reach past the plot, so the blur never fades the hatch along the axes
   // Axes come from the shared gap GRID, so plotted points, cells and the on-axes count can never diverge.
   const x = (flow: number) => left + ((flow - GRID.flow.min) / (GRID.flow.max - GRID.flow.min)) * plotWidth;
   const y = (o2: number) => top + ((GRID.o2.max - o2) / (GRID.o2.max - GRID.o2.min)) * plotHeight;
@@ -1143,18 +1147,17 @@ export function EvidenceMap({
                 <clipPath id="ignis-plot-clip"><rect x={left} y={top} width={plotWidth} height={plotHeight} /></clipPath>
                 {/* The hatch is ONE continuous pattern across the plot, revealed through a softened mask of the untested
                     cells: tested cells show as gentle clearings, never as opaque boxes punched through the hatch. */}
-                <filter id="ignis-soft-cells" x={left - 10} y={top - 10} width={plotWidth + 20} height={plotHeight + 20} filterUnits="userSpaceOnUse">
-                  <feGaussianBlur stdDeviation="2" />
+                <filter id="ignis-soft-cells" x={left - EDGE} y={top - EDGE} width={plotWidth + 2 * EDGE} height={plotHeight + 2 * EDGE} filterUnits="userSpaceOnUse">
+                  <feGaussianBlur stdDeviation={`${blurX.toFixed(1)} ${blurY.toFixed(1)}`} />
                 </filter>
                 {(['untested', 'outside_range'] as const).map((state) => (
-                  <mask key={state} id={`ignis-${state}-mask`} maskUnits="userSpaceOnUse" x={left - 10} y={top - 10} width={plotWidth + 20} height={plotHeight + 20}>
+                  <mask key={state} id={`ignis-${state}-mask`} maskUnits="userSpaceOnUse" x={left - EDGE} y={top - EDGE} width={plotWidth + 2 * EDGE} height={plotHeight + 2 * EDGE}>
                     <g filter="url(#ignis-soft-cells)">
                       {grid.cells.flatMap((row) => row).filter((cell) => cell.state === state).map((cell) => {
-                        // Cells on the plot's edge reach past it, so the blur never fades the hatch along the axes.
-                        const x0 = x(cell.flow_min) - (cell.flow_min <= GRID.flow.min ? 8 : 0);
-                        const x1 = x(cell.flow_max) + (cell.flow_max >= GRID.flow.max ? 8 : 0);
-                        const y0 = y(cell.o2_max) - (cell.o2_max >= GRID.o2.max ? 8 : 0);
-                        const y1 = y(cell.o2_min) + (cell.o2_min <= GRID.o2.min ? 8 : 0);
+                        const x0 = x(cell.flow_min) - (cell.flow_min <= GRID.flow.min ? EDGE : 0);
+                        const x1 = x(cell.flow_max) + (cell.flow_max >= GRID.flow.max ? EDGE : 0);
+                        const y0 = y(cell.o2_max) - (cell.o2_max >= GRID.o2.max ? EDGE : 0);
+                        const y1 = y(cell.o2_min) + (cell.o2_min <= GRID.o2.min ? EDGE : 0);
                         return <rect key={`${cell.o2_min}-${cell.flow_min}`} x={x0} y={y0} width={x1 - x0} height={y1 - y0} fill="white" />;
                       })}
                     </g>

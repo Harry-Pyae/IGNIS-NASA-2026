@@ -92,14 +92,14 @@ export function AppHeader() {
     const from = tabs.find((tab) => {
       const path = new URL(tab.href).pathname;
       return previous.pathname === path || (path !== '/' && previous.pathname.startsWith(path + '/'));
-    })?.querySelector('span');
-    const to = tabs.find((tab) => tab.getAttribute('aria-current') === 'page')?.querySelector('span');
+    });
+    const to = tabs.find((tab) => tab.getAttribute('aria-current') === 'page');
     if (!from || !to || from === to) return;
     const start = from.getBoundingClientRect();
     const end = to.getBoundingClientRect();
     const animation = to.animate(
-      [{ '--tab-offset': `${start.left - end.left}px` }, { '--tab-offset': '0px' }],
-      { duration: 200, easing: 'ease-out' },
+      [{ '--tab-offset': `${start.left - end.left}px`, '--tab-scale': String(start.width / end.width) }, { '--tab-offset': '0px', '--tab-scale': '1' }],
+      { duration: 200, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' },
     );
     return () => animation.cancel();
   }, []);
@@ -120,8 +120,8 @@ export function AppHeader() {
           {/* Round 9 shell diet: on phones Export lives on Sources (the dataset area) and the theme in a labelled menu. */}
           <div className="hidden sm:block"><ExportButton summary={summary} label="Export dataset" compact variant="primary" /></div>
           <details ref={display} className="relative sm:hidden">
-            <summary className="bubble-control flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-lg border border-control-border px-2.5 text-sm text-dim [&::-webkit-details-marker]:hidden">
-              <Icon name={theme === 'dark' ? 'moon' : 'sun'} size={16} />Display
+            <summary className="bubble-control flex min-h-11 cursor-pointer list-none items-center gap-1.5 min-w-11 justify-center rounded-lg border border-control-border px-2.5 text-sm text-dim [&::-webkit-details-marker]:hidden">
+              <Icon name={theme === 'dark' ? 'moon' : 'sun'} size={16} /><span className="max-[400px]:sr-only">Display</span>
             </summary>
             <div className="absolute top-full right-0 z-50 mt-2 rounded-xl border border-raised bg-panel p-2 shadow-lg">
               <ThemeControl name="color-theme-menu" theme={theme} setTheme={(next) => { setTheme(next); if (display.current) display.current.open = false; }} />
@@ -130,14 +130,14 @@ export function AppHeader() {
         </div>
       </div>
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-2 gap-y-1 px-4 pb-2 sm:px-6">
-        <nav aria-label="Project navigation" className="flex w-full justify-between gap-1 text-sm sm:w-auto sm:justify-start sm:gap-5">
+        <nav aria-label="Project navigation" className="project-tabs flex w-full gap-0 rounded-lg sm:gap-0.5 border border-control-border bg-panel p-0.5 text-sm sm:w-auto">
           {navigation.map(([url, label, icon, short, match]) => {
             const path = window.location.pathname.replace(/\/$/, '') || '/';
             const current = path === match || (match !== '/' && path.startsWith(match + '/'));
             return (
               <a key={url} href={url} aria-current={current ? 'page' : undefined}
-                className={`project-tab flex min-h-11 items-center justify-center gap-1.5 rounded-sm ${current ? 'text-amber' : 'text-dim hover:text-text'}`}>
-                <Icon name={icon} size={18} className="hidden sm:block" />
+                className={`project-tab pressable flex min-h-11 flex-auto items-center justify-center gap-1.5 rounded-md px-1 text-[13px] whitespace-nowrap max-[380px]:px-0.5 max-[380px]:text-xs max-[340px]:px-0 max-[340px]:text-[11px] sm:min-h-9 sm:flex-none sm:px-2.5 sm:text-sm md:px-3 ${current ? 'text-amber' : 'text-dim'}`}>
+                <Icon name={icon} size={18} className="hidden md:block" />
                 {short ? <><span className="sm:hidden">{short}</span><span className="hidden sm:inline">{label}</span></> : <span>{label}</span>}
               </a>
             );
