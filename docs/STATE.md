@@ -1,5 +1,12 @@
 # IGNIS — state handoff (2026-11-10, console merged · preparation phase)
 
+> **2026-11-15 17:13: afternoon UI pass, all live and checked on production.** Methods "How records are published"
+> (4 rules, linked from footer, Library header, every card's verified-by line; README section; /curate named, never
+> linked; no /curate screenshots: production has no drafts and creating one there is forbidden). Guided tour: hero
+> "Take the guided tour" link + 3 new steps (run switcher, Library + Compare, 60-second case), card always on screen.
+> Sliders never disabled (unset = hollow thumb); O₂/Airflow labels full contrast; modal overlays lock page scroll.
+> Header "Export dataset" is a JSON/CSV dropdown. Evidence Map radar sweep restored. `verify:live` passes.
+
 > **2026-11-15 16:20: In-app walkthrough (Help) shipped, captions only (Stage 1).** `public/media/walkthrough.mp4`,
 > 104.0 s, 1080p, 10.8 MB, no audio; 15 approved lines (core flow + run switcher, Compare, Gap Radar, 60-second case,
 > Export/Sources); all clips re-captured from production at revision `75f01fc1` with today's UI (Demo source clips kept in
