@@ -652,7 +652,7 @@ select option { background-color: var(--color-panel); color: var(--color-text); 
   background-image: linear-gradient(0deg, var(--color-hero-base),
     color-mix(in srgb, var(--color-hero-base) 64%, transparent) 35%, transparent);
 }
-@media (width < 80rem) {
+@media (width < 75rem) {
   [data-theme='light'] .home-hero {
     background-image: radial-gradient(ellipse at 100% 52%,
       var(--color-hero-scrim), transparent 75%);
@@ -677,7 +677,7 @@ select option { background-color: var(--color-panel); color: var(--color-text); 
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
-@media (min-width: 1280px) {
+@media (min-width: 75rem) {
   [data-theme='light'] .hero-caption {
     top: 1rem;
     bottom: auto;

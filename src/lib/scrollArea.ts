@@ -5,7 +5,7 @@ import { useCallback, useRef } from 'react';
  * edge fade only where content continues. Attach the returned callback ref to the scrolling element.
  *
  * - `data-more="start end"`: which edges have more content, recomputed from the scroll position on every scroll and
- *   resize (no timers). Nothing is set while the element doesn't actually overflow (e.g. the rail below 1280px).
+ *   resize (no timers). Nothing is set while the element doesn't actually overflow (e.g. the rail below xl, 1200px).
  * - `data-scrolling`: set on scroll, cleared on `scrollend`, so the idle bar can dim and return while moving.
  * - `tabindex="0"` while it overflows, so keyboard users can focus it and scroll with the arrow keys; removed when
  *   there is nothing to scroll (no dead tab stop).

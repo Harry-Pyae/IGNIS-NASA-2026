@@ -66,6 +66,9 @@
 }
 
 @theme {
+  /* xl = 75rem (1200px), not Tailwind's 80rem: a 1280px laptop with a visible scrollbar is ~1265px wide and must get
+     the desktop workbench. JS media queries use the same value (src/lib/layout.ts). */
+  --breakpoint-xl: 75rem;
   /* ---- Type scale: one step up from Tailwind's defaults (12/14px) so small text reads at a glance on a demo
      screen. Every text-xs / text-sm in the app follows; one-off pixel sizes were raised to match. ---- */
   --text-xs: 0.8125rem; /* 13px */

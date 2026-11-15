@@ -93,7 +93,7 @@ function Hero() {
           <img
             src="/art/hero-ops-room.webp"
             srcSet="/art/hero-ops-room-sm.webp 960w, /art/hero-ops-room.webp 1672w"
-            sizes="(min-width: 1280px) 100vw, 92vw"
+            sizes="(min-width: 1200px) 100vw, 92vw"
             width={1672}
             height={941}
             alt=""

@@ -48,3 +48,6 @@ desktop.ini
 /.agent-sync/
 /.scratch/
 /STATUS.md
+
+# Source PDFs for extraction: local only, never committed (link to NTRS instead)
+sources-pdfs/

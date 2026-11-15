@@ -32,6 +32,7 @@ import { Tour } from '../features/tour/Tour';
 import { dropTourReplay, markTourOffered, shouldOfferTour, wantsTourReplay } from '../features/tour/tourOffer';
 import { useScrollArea } from '../lib/scrollArea';
 import { nextInStack, stackPoints } from '../lib/mapStacks';
+import { WIDE_QUERY } from '../lib/layout';
 import { GUIDED_MISSION_REQUEST, takePendingMission } from './consoleLoader';
 
 function experimentLabel(experiment: Experiment): string {
@@ -56,8 +57,8 @@ function InputHint({ field, label }: { field: keyof typeof COPY.plain.hints; lab
   return <InfoHint id={`scenario-hint-${field}`} label={COPY.plain.hintButton(label)}>{COPY.plain.hints[field]}</InfoHint>;
 }
 
-/** ≥1280px: the two-column workbench (sticky control rail + evidence column). */
-const WIDE = '(min-width: 1280px)';
+/** ≥ xl (1200px): the two-column workbench (sticky control rail + evidence column). */
+const WIDE = WIDE_QUERY;
 const subscribeWide = (onChange: () => void) => {
   const query = window.matchMedia(WIDE);
   query.addEventListener('change', onChange);
@@ -220,11 +221,20 @@ export function Console() {
   useEffect(() => {
     if (!confirmed || !focusAfterConfirm.current) return;
     focusAfterConfirm.current = false;
-    // Below 1280px the condensed bar appears instead ("View evidence"), one tap from the evidence.
+    // Below xl the condensed bar appears instead ("View evidence"), one tap from the evidence.
     if (wide) showMatches();
   }, [confirmed, wide, showMatches]);
   // Below xl: a condensed condition bar while the controls are off screen, or after Confirm, until the map is in view.
   const [railInView, setRailInView] = useState(true);
+  // The bar belongs to the console: never pinned over the landing hero above it or the footer below.
+  const [consoleInView, setConsoleInView] = useState(false);
+  useEffect(() => {
+    const root = document.getElementById('console');
+    if (!root) return;
+    const observer = new IntersectionObserver(([entry]) => setConsoleInView(entry!.isIntersecting), { threshold: 0 });
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, []);
   useEffect(() => {
     const section = document.getElementById('s1')?.closest('section');
     if (!section) return;
@@ -515,16 +525,16 @@ export function Console() {
         </div>
       </div>}
       <Tour open={touring} onClose={() => setTouring(false)} />
-      {!wide && (confirmed !== null || (!railInView && !mapInView)) && <ConditionBar
+      {!wide && consoleInView && (confirmed !== null || (!railInView && !mapInView)) && <ConditionBar
         summary={investigationSummary(draft, confirmed, views)}
         action={confirmed ? COPY.plain.viewEvidenceAction : COPY.plain.jumpToMap}
         onAction={showMap}
       />}
       <div className="console-panels flex flex-col gap-6 xl:grid xl:grid-cols-[400px_minmax(0,1fr)] xl:items-start">
       <RecoveryBoundary label={t('missionScenario')}><Panel as="section" aria-labelledby="s1" padded={false} className="reveal self-start xl:sticky xl:top-[calc(var(--header-h,0px)+1rem)]">
-        {/* ≥1280px the rail scrolls inside its own box (the Panel keeps its border and shadow; the fades mask only this
+        {/* ≥ xl the rail scrolls inside its own box (the Panel keeps its border and shadow; the fades mask only this
             box). Its height leaves the next block half-visible at the fold (--peek), and the bottom padding keeps the
-            last control clear of the edge. Below 1280px it is ordinary page flow. */}
+            last control clear of the edge. Below xl it is ordinary page flow. */}
         <div ref={railScroll} className="scroll-area p-5 sm:p-6 xl:max-h-[calc(100dvh-var(--header-h,0px)-2rem-2px-var(--peek,0px))] xl:overflow-x-hidden xl:overflow-y-auto xl:pb-8">
         {restoredDraft && <div className="mb-3 flex flex-wrap items-center gap-2 text-sm" role="status">
           <span>{COPY.plain.draft.restored}</span>
@@ -1055,13 +1065,13 @@ export function EvidenceMap({
     (scenario.o2_pct != null && (scenario.o2_pct < envelope.o2_min || scenario.o2_pct > envelope.o2_max)) ||
     (scenario.flow_cm_s != null && (scenario.flow_cm_s < envelope.flow_min || scenario.flow_cm_s > envelope.flow_max))
   );
-  // Drawn at the box's own pixel width (≤ 760), so labels stay 11px and the map never scrolls sideways on a phone.
+  // Drawn at the box's own pixel width (≤ 960), so labels stay 11px and the map never scrolls sideways on a phone.
   const [width, setWidth] = useState(760);
   const resize = useRef<ResizeObserver | null>(null);
   const mapBox = useCallback((box: HTMLDivElement | null) => {
     resize.current?.disconnect();
     if (!box) return;
-    resize.current = new ResizeObserver(() => setWidth(Math.round(Math.min(760, Math.max(260, box.clientWidth - parseFloat(getComputedStyle(box).paddingLeft) * 2)))));
+    resize.current = new ResizeObserver(() => setWidth(Math.round(Math.min(960, Math.max(260, box.clientWidth - parseFloat(getComputedStyle(box).paddingLeft) * 2)))));
     resize.current.observe(box);
   }, []);
   const height = 330;

@@ -3,6 +3,7 @@ import { Button, buttonClass } from '../../components/ui';
 import { COPY } from '../../lib/copy';
 import { format, t, type TranslationKey } from '../../i18n';
 import { WalkthroughButton } from '../walkthrough/Walkthrough';
+import { WIDE_QUERY } from '../../lib/layout';
 
 const section = (id: string) => document.getElementById(id)?.closest('section') ?? null;
 
@@ -74,8 +75,8 @@ export function Tour({ open, onClose }: { open: boolean; onClose: () => void }) 
     card.current?.focus({ preventScroll: true });
     const target = STEPS[step]?.target();
     if (!target) { setReady(true); return; }
-    const wide = window.matchMedia('(min-width: 1280px)').matches;
-    // Below 1280px the condition bar can pin itself under the header: leave room for it.
+    const wide = window.matchMedia(WIDE_QUERY).matches;
+    // Below xl the condition bar can pin itself under the header: leave room for it.
     const top = window.scrollY + target.getBoundingClientRect().top - headerHeight() - (wide ? MARGIN : 64);
     if (Math.abs(top - window.scrollY) < 2) { setReady(true); return; }
     const settle = () => setReady(true);
