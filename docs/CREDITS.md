@@ -16,6 +16,10 @@
   post-processed programmatically (gradient rebuild and added grain). They are used for branding only, never as experiment data, and the flame illustration is captioned
   "Illustration — not NASA experiment imagery."
 
+- **Video music:** the three instrumental tracks in the video cuts are AI-generated with Google Gemini, used with the
+  team lead's confirmed permission (`docs/media-ledger.md`, Audio). The videos show only the real product UI; no NASA
+  footage is AI-generated.
+
 ## Third-party components and credits
 
 | Component | Use | License |
