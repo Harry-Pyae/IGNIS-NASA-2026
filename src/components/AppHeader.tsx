@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useCatalogSummary } from '../lib/catalog';
-import { ExportButton, ProvenancePill } from './CatalogStatus';
+import { ExportMenu, ProvenancePill } from './CatalogStatus';
 import { Icon } from './ui/Icon';
 
 /**
@@ -118,7 +118,7 @@ export function AppHeader() {
           <ProvenancePill summary={summary} retry={retry} />
           {/* §8.1 item 6: the verified-only open dataset (/api/export). */}
           {/* Round 9 shell diet: on phones Export lives on Sources (the dataset area) and the theme in a labelled menu. */}
-          <div className="hidden sm:block"><ExportButton summary={summary} label="Export dataset" compact variant="primary" /></div>
+          <div className="hidden sm:block"><ExportMenu summary={summary} label="Export dataset" /></div>
           <details ref={display} className="relative sm:hidden">
             <summary className="bubble-control flex min-h-11 cursor-pointer list-none items-center gap-1.5 min-w-11 justify-center rounded-lg border border-control-border px-2.5 text-sm text-dim [&::-webkit-details-marker]:hidden">
               <Icon name={theme === 'dark' ? 'moon' : 'sun'} size={16} /><span className="max-[400px]:sr-only">Display</span>

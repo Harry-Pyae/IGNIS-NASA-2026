@@ -854,3 +854,10 @@ html:has(dialog:modal) {
 dialog:modal {
   overscroll-behavior: contain;
 }
+
+/* Header export menu: the panel grows from its trigger (top right); the chevron turns when open. */
+.export-menu-panel { transform-origin: top right; }
+.export-menu[open] .export-menu-chevron { rotate: 180deg; }
+@media (prefers-reduced-motion: no-preference) {
+  .export-menu-chevron { transition: rotate var(--dur-interface) var(--ease-out); }
+}

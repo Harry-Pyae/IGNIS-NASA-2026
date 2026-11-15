@@ -10,7 +10,7 @@ const section = (id: string) => document.getElementById(id)?.closest('section') 
 /** One coach mark per console section, in page order. The map step spotlights the plot itself (the dots). */
 /** The biggest stack on the map (runs that share one tap target), else the plot itself. */
 const biggestStack = () => [...document.querySelectorAll<HTMLElement>('[id^="map-point-"][data-stack]')]
-  .sort((a, b) => Number(b.dataset.stack) - Number(a.dataset.stack))[0] ?? document.getElementById('evidence-plot');
+  .sort((a, b) => Number(b.dataset.stack) - Number(a.dataset.stack))[0] ?? document.getElementById('evidence-plot') ?? section('s2');
 /** A tab in the sticky header: spotlit where it is (no scroll, no clamp below the header). */
 const tab = (href: string) => document.querySelector<HTMLElement>(`header a.project-tab[href="${href}"]`);
 

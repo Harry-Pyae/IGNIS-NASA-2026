@@ -2,11 +2,11 @@
  * Live catalog status: the header provenance pill and the landing "Catalog" block.
  * Presentational — pass a CatalogSummary (from useCatalogSummary, or a fixture in /kit). OWNER: Coder A.
  */
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { type CatalogSummary, catalogLine } from '../lib/catalog';
 import { cx } from '../lib/cx';
 import { downloadCatalogExport } from '../lib/exportDownload';
-import { Badge, Button, Icon, Panel } from './ui';
+import { Badge, Button, buttonClass, Icon, Panel } from './ui';
 
 const date = (iso: string | null) =>
   iso ? new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(new Date(iso)) : '—';
@@ -138,11 +138,14 @@ export function ExportButton({
   compact = false,
   variant = 'secondary',
   format = 'json',
+  onDone,
 }: {
   summary: CatalogSummary;
   label: string;
   /** 'json' = the canonical open dataset; 'csv' = the same export flattened for spreadsheets. */
   format?: 'json' | 'csv';
+  /** Called after a successful download (the header menu closes then; a failure stays visible with its retry). */
+  onDone?: () => void;
   /** Header on small screens: icon only (the label stays for screen readers). */
   compact?: boolean;
   variant?: 'primary' | 'secondary' | 'ghost';
@@ -166,6 +169,7 @@ export function ExportButton({
     setState('busy');
     const r = await downloadCatalogExport(fetch, undefined, format);
     setState(r.ok ? 'idle' : r.reason === 'rate_limited' ? 'rate_limited' : 'failed');
+    if (r.ok) onDone?.();
   };
   return (
     <Button size="sm" variant={variant} icon="download" disabled={notConnected || state === 'busy'} title={title} onClick={run} aria-live="polite">
@@ -178,5 +182,42 @@ export function ExportButton({
         text
       )}
     </Button>
+  );
+}
+
+/**
+ * Header export: one primary "Export dataset" control that opens a small menu of downloads, JSON (canonical) and CSV
+ * (the same export, one row per run). A native <details>: Escape and a click outside close it; so does a download.
+ */
+export function ExportMenu({ summary, label }: { summary: CatalogSummary; label: string }) {
+  const menu = useRef<HTMLDetailsElement>(null);
+  useEffect(() => {
+    const close = (event: Event) => {
+      const d = menu.current;
+      if (!d?.open) return;
+      if (event instanceof KeyboardEvent) {
+        if (event.key !== 'Escape') return;
+        d.open = false;
+        d.querySelector('summary')?.focus();
+      } else if (!d.contains(event.target as Node)) d.open = false;
+    };
+    document.addEventListener('pointerdown', close);
+    document.addEventListener('keydown', close);
+    return () => { document.removeEventListener('pointerdown', close); document.removeEventListener('keydown', close); };
+  }, []);
+  const done = () => { if (menu.current) menu.current.open = false; };
+  return (
+    <details ref={menu} className="export-menu relative">
+      <summary className={buttonClass('primary', 'sm', 'list-none cursor-pointer [&::-webkit-details-marker]:hidden')} aria-label={label}>
+        <Icon name="download" size={16} />
+        <span className="hidden md:inline">{label}</span>
+        <Icon name="chevron-down" size={14} className="export-menu-chevron" />
+      </summary>
+      <div className="export-menu-panel absolute top-full right-0 z-50 mt-2 flex w-64 flex-col gap-2 rounded-xl border border-raised bg-panel p-2 shadow-lg">
+        <ExportButton summary={summary} label="JSON · canonical dataset" onDone={done} />
+        <ExportButton summary={summary} label="CSV · one row per run" format="csv" onDone={done} />
+        <p className="px-1 pt-1 text-xs leading-snug text-dim">JSON is the canonical format; the CSV flattens the same export for spreadsheets.</p>
+      </div>
+    </details>
   );
 }
