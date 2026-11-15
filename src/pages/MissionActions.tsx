@@ -14,12 +14,14 @@ export function MissionActions({ explore }: { explore: () => void }) {
       {/* Round 9 (C-3): the 60-second case is the first action; the guided mission takes over once a case is reviewed. */}
       <a className={buttonClass(MISSION_CASE ? 'secondary' : 'primary', 'lg', MISSION_CASE ? undefined : 'anim-glow')} href="/case">{COPY.landingCta.case}</a>
       <Button variant="ghost" size="lg" iconRight="arrow-right" onClick={explore}>{COPY.landingCta.explore}</Button>
-      {/* Absent until the final walkthrough video ships (src/lib/walkthrough.ts). */}
-      <WalkthroughButton size="lg" />
     </div>
     {!MISSION_CASE && <p className="mt-3 max-w-lg text-[14px] leading-snug text-dim">{COPY.missionAvailability}</p>}
-    {/* Re-entry for the first-visit tour (a text link, never a fourth CTA): ?tour=1 opens it once, then drops the param. */}
-    <a className={`mt-3 text-[14px] ${textLink} ${tapLink}`} href={`/?${TOUR_PARAM}=1#console`}>{t('tourTakeGuided')}</a>
+    {/* Supporting links, never CTAs: the walkthrough (absent until its video ships, src/lib/walkthrough.ts) and the
+        first-visit tour re-entry (?tour=1 opens it once, then drops the param). */}
+    <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-[14px]">
+      <WalkthroughButton variant="tertiary" />
+      <a className={`${textLink} ${tapLink}`} href={`/?${TOUR_PARAM}=1#console`}>{t('tourTakeGuided')}</a>
+    </div>
   </>;
 }
 
