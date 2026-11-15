@@ -6,6 +6,10 @@
 > the 5 Saffire drafts (#4, #7–10) are also loaded and signable. Drafts are invisible to the public export, so only
 > `/curate` can confirm which are still there: R1, tick each one here as you publish it.
 >
+> **Signing session (2026-11-15): use `docs/SIGNING-SESSION.md`** — one checklist per draft, easiest first, every
+> field with its verbatim quote and a PDF page link. Production check at 10:00: exactly these 11 drafts, 0 published
+> (V-2, IV-1 and Saffire I-1 were drafted 2026-11-14). V-3 / V-4 decision: `docs/PMMA-DECISION.md`.
+>
 > **Fastest wins:** the six BASS-II rows share one source table, one provenance block and one judgment (held final
 > flow), the same pattern as the published GMT45-T4. Signing them takes *Crew clothing* from 3 to 9 runs. After the
 > last publication, tell Coder A: the briefing cache must be re-warmed and the video counts refreshed.

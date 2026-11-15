@@ -1214,7 +1214,7 @@ export function EvidenceMap({
             <div ref={detail} id="map-selection" className="mt-3 rounded-xl border border-amber/45 bg-bg/55 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                <p className="console-label break-words text-amber [overflow-wrap:anywhere]">{selected.campaign} · {selected.test_id}</p>
+                <p className="console-label break-words text-amber [overflow-wrap:anywhere]">{experimentLabel(selected)}</p>
                 <p className="mt-1 text-sm text-text">{selected.outcome ?? 'Outcome not reported'} · {selected.o2_pct}% O₂ · {selected.flow_cm_s} cm/s</p>
                 </div>
                 {source && <a href={source.url} target="_blank" rel="noreferrer" className={`text-sm ${textLink}`}>{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}

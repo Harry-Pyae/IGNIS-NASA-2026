@@ -88,7 +88,8 @@ export const COPY = {
       map: (visible: number, offAxis: number, missing: number) =>
         `${visible} on map · ${offAxis} outside axes · ${missing} missing coordinates`,
       runCount: (n: number) => `${n} verified ${n === 1 ? 'run' : 'runs'}`,
-      needsMaterial: 'Choose a material',
+      // Cable insulation / Cargo packaging: no card of their material class yet. Reads as rigor, not a fault.
+      needsMaterial: 'No verified flight test of this material class in the current IGNIS catalog. Pick a material to explore.',
       noRuns: 'No compatible runs in this catalog',
       explore: 'Explore a documented case',
       library: 'Browse verified experiments',

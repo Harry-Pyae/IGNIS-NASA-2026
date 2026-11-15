@@ -258,7 +258,7 @@ function render() {
     const inApp = cut.id === 'walkthrough';
     const out = inApp && FINAL ? '../public/media/walkthrough.mp4' : `out/ignis-${cut.id}${FINAL ? '' : '-PLACEHOLDER'}.mp4`;
     mkdirSync(dirname(out), { recursive: true });
-    const args = ['render', 'src/index.ts', cut.composition, out, '--codec=h264', `--crf=${inApp ? 23 : 18}`, '--audio-codec=aac', '--concurrency=50%'];
+    const args = ['render', 'src/index.ts', cut.composition, out, '--codec=h264', `--crf=${inApp ? 23 : 18}`, '--audio-codec=aac', `--concurrency=${process.env.CUTS_CONCURRENCY ?? '50%'}`];
     if (inApp) args.push('--scale=0.75');
     if (process.env.REMOTION_BROWSER) args.push(`--browser-executable=${process.env.REMOTION_BROWSER}`);
     const r = spawnSync(process.execPath, [REMOTION, ...args], { stdio: 'inherit' });

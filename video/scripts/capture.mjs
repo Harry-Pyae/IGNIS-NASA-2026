@@ -201,7 +201,8 @@ await wait(800);
 mark('gap');
 await wait(400);
 const region = page.locator('section:has(#s5) li').first();
-if (await region.count()) await clickOn(region.locator('button').first().or(region));
+const regionButton = region.locator('button').first(); // a button since the tap-feedback round
+if (await region.count()) await clickOn((await regionButton.count()) ? regionButton : region);
 await wait(2600);
 
 // --- nasaPage: the card's own source link, opened in this tab so the take stays continuous

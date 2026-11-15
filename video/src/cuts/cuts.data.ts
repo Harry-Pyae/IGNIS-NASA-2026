@@ -31,7 +31,7 @@ export const CREDITS = {
   data: 'Data: NASA Technical Reports Server (NTRS) · NASA Physical Sciences Informatics (PSI)',
   disclaimer: 'IGNIS is an independent NASA Space Apps project. Not affiliated with or endorsed by NASA.',
   ai: 'Built with AI coding assistants (Claude Code, OpenAI Codex) under the team lead’s review. In the product, LLMs only parse scenarios and narrate retrieved evidence; the server validates every claim, and a named human verifies every card.',
-  art: 'Backgrounds and the flame artwork are AI-generated illustration, not NASA imagery.',
+  art: 'Backgrounds and the flame artwork are AI-generated illustration, not NASA imagery. Music: AI-generated (Google Gemini), used with permission.',
 } as const;
 
 const HERITAGE_SIGNOFF = 'R1: sign the heritage entry (docs/FACT-CHECK-QUEUE.md) before this line ships';
@@ -136,7 +136,7 @@ export const CUTS: CutDef[] = [
       { id: 'pitch-17', chapter: '04 · Keeping it honest', vo: 'How do we keep it honest? First, a *validator*. I claim this run used ten centimetres per second.', visual: { kind: 'ui', shots: ['caseWithheld'] }, targetSec: 8, minSec: 7, maxSec: 10, signOff: 'Check at render: GMT96-T8’s verified airflow is still 5 cm/s (the line says the card says five)' },
       { id: 'pitch-18', chapter: '04 · Keeping it honest', vo: 'The card says five. *Withheld*, and IGNIS shows the source row.', visual: { kind: 'ui', shots: ['caseWithheld'], at: 3 }, targetSec: 6, minSec: 5, maxSec: 8 },
       { id: 'pitch-19', chapter: '04 · Keeping it honest', vo: 'Second, every card is published by a *named* human reviewer, after checking it against its source.', visual: { kind: 'ui', shots: ['verifiedBy'] }, targetSec: 8, minSec: 7, maxSec: 10 },
-      { id: 'pitch-20', chapter: '04 · Keeping it honest', vo: 'Third, we never claim more than the catalog holds. No match means exactly that, *never* “NASA never tested it”.', visual: { kind: 'statement', text: COPY.absence, sub: 'Never “NASA has never tested this.”' }, targetSec: 8, minSec: 7, maxSec: 10 },
+      { id: 'pitch-20', chapter: '04 · Keeping it honest', vo: 'Third, we never claim more than the catalog holds. Two of our presets have no verified flight test yet, and IGNIS *says so* instead of guessing.', visual: { kind: 'statement', text: COPY.absence, sub: 'Never “NASA has never tested this.”' }, targetSec: 8, minSec: 7, maxSec: 10 },
       // 05 · Data, Earth, what's next (2:50–3:30)
       { id: 'pitch-21', chapter: '05 · Data and what’s next', vo: 'Every verified run traces to its report, page and quote, and the whole dataset is *open* to download.', visual: { kind: 'catalog' }, targetSec: 10, minSec: 9, maxSec: 12 },
       {
