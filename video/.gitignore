@@ -22,3 +22,6 @@ public/vo/
 public/music/
 public/capture/
 public/cuts-manifest.json
+
+# Raw screen-recording clips + deck PNGs (scripts/clips.mjs): large, travel via the team drive
+assets/real/

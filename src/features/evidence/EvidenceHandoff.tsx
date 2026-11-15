@@ -1,3 +1,4 @@
+import { experimentLabel } from '../../lib/runLabel';
 import { COPY } from '../../lib/copy';
 import { evidenceLocator, evidenceSource } from '../../lib/evidenceSource';
 import { CONTINUOUS_PARAMS, FIELD_UNITS, PARAM_LABELS, type Briefing, type MatchResult, type ResolvedScenario } from '../../lib/types';
@@ -25,7 +26,7 @@ export function EvidenceHandoff({ scenario, revision, matches, briefing, status 
     {matches.length > 0 && <ol aria-label={t('handoffRuns')}>{matches.map(({ experiment }, index) => {
       const source = evidenceSource(experiment);
       return <li key={experiment.id} className="mt-2">
-        <p>{index + 1}. {experiment.campaign} · {experiment.test_id} · {t('handoffRecordId')}: {experiment.id}</p>
+        <p>{index + 1}. {experimentLabel(experiment)} · {t('handoffRecordId')}: {experiment.id}</p>
         <p>{experiment.source_title} · {evidenceLocator(experiment) || t('handoffLocatorUnset')}</p>
         {experiment.condition_changes?.map((change, i) => <p key={i}>{COPY.changingConditions}: {change.note}</p>)}
         {source && <p>{source.url}</p>}

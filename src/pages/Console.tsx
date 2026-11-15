@@ -32,16 +32,10 @@ import { Tour } from '../features/tour/Tour';
 import { dropTourReplay, markTourOffered, shouldOfferTour, wantsTourReplay } from '../features/tour/tourOffer';
 import { useScrollArea } from '../lib/scrollArea';
 import { nextInStack, stackPoints } from '../lib/mapStacks';
+import { experimentLabel } from '../lib/runLabel';
 import { WIDE_QUERY } from '../lib/layout';
 import { GUIDED_MISSION_REQUEST, takePendingMission } from './consoleLoader';
 
-function experimentLabel(experiment: Experiment): string {
-  // Compare letters and digits only: campaign "Saffire-II" already names run "Saffire II-6" (no "Saffire-II Saffire II-6").
-  const key = (text: string) => text.toLowerCase().replace(/[^a-z0-9]/g, '');
-  return key(experiment.test_id).startsWith(key(experiment.campaign))
-    ? experiment.test_id
-    : `${experiment.campaign} ${experiment.test_id}`;
-}
 
 /** Signed environment presets only (none until R1 verifies them; the row stays hidden until then). */
 const ENVIRONMENTS = visibleEnvironmentPresets();
@@ -1257,7 +1251,7 @@ export function EvidenceMap({
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                 <p className="console-label break-words text-amber [overflow-wrap:anywhere]">{experimentLabel(selected)}</p>
-                <p className="mt-1 text-sm text-text">{selected.outcome ?? 'Outcome not reported'} · {selected.o2_pct}% O₂ · {selected.flow_cm_s} cm/s</p>
+                <p className="mt-1 text-sm text-text">{selected.outcome ? t(selected.outcome) : t('outcomeNotReported')} · {selected.o2_pct}% O₂ · {selected.flow_cm_s} cm/s</p>
                 {selectedStack && selectedStack.length > 1 && <p className="mt-1 text-sm text-dim">{format('mapStackPosition', { i: selectedStack.findIndex((experiment) => experiment.id === selected.id) + 1, n: selectedStack.length })}</p>}
                 </div>
                 {source && <a href={source.url} target="_blank" rel="noreferrer" className={`text-sm ${textLink}`}>{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}

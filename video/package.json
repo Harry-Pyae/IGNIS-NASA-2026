@@ -15,7 +15,8 @@
     "cuts:render": "node scripts/cuts.mjs render",
     "cuts:studio": "node scripts/cuts.mjs studio",
     "cuts:capture": "node scripts/capture.mjs",
-    "cuts:check": "node scripts/timing.check.mjs"
+    "cuts:check": "node scripts/timing.check.mjs",
+    "cuts:clips": "node scripts/clips.mjs"
   },
   "dependencies": {
     "@react-three/fiber": "8.18.0",

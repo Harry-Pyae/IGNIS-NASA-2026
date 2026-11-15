@@ -1,3 +1,4 @@
+import { experimentLabel } from '../lib/runLabel';
 import { t } from '../i18n';
 import { useEffect, useState } from 'react';
 import { CardComparison } from '../components/CardComparison';
@@ -42,7 +43,7 @@ export function Compare() {
         <div className="mb-4 grid gap-3 sm:grid-cols-2">
           {pair.map((id, side) => {
             const options = eligible.filter(card => card.id !== pair[1 - side] || card.id === id)
-              .map(card => ({ value: card.id, label: `${card.campaign} · ${card.test_id}` }));
+              .map(card => ({ value: card.id, label: experimentLabel(card) }));
             if (id && !options.some(option => option.value === id)) options.unshift({ value: id, label: `${t('compareUnavailableOption')} · ${id}` });
             return <Select key={side} label={`${t('compareExperiment')} ${side + 1}`} placeholder={t('compareChoose')} placeholderDisabled
               value={id} options={options} onChange={event => select(side, event.target.value)} />;
