@@ -1,9 +1,13 @@
 # IGNIS — state handoff (2026-11-10, console merged · preparation phase)
 
+> **2026-11-15 15:45: UI polish for the local judges, live.** Navbar = segmented control; map clearings blurred by a
+> third of a cell (no boxes); mobile header fits 320–430 px; map tap targets never overlap (runs within 24 px share one
+> stack + switcher, "N runs at or near this point — pick one:"). Commits `3635258`, `e8f10f8`; `verify:live` passes.
+
 > **2026-11-15 14:30: DEMO SHIPPED — submission cut FROZEN.** Final Demo <https://youtu.be/SA0A5cdz4hE> (29.973 s,
 > 2560×1440, −17.0 LUFS; VO = the team lead's second take, split into `vo-demo-01…08`), linked in the submission form;
 > the 1080p copy is embedded in the local-stage deck. No re-render, caption edit or `cuts.data.ts` change to the Demo
-> without the team lead's explicit say-so. **Queue (in order):** 1) clip 12-share re-capture; 2) voiced walkthrough
+> without the team lead's explicit say-so. **Queue (in order):** 1) ~~clip 12-share re-capture~~ done 14:15 (all 18 clips at `75f01fc1`); 2) voiced walkthrough
 > render once `vo-walk-01…09` land; 3) Story unlock if R1 signs Apollo 1 / Mir; 4) final QA sweep; 5) freeze report 18:00.
 
 > **2026-11-15 13:10: DATA RESTORE COMPLETE — catalog final.** All 31 cards republished by the team lead, 0 source
