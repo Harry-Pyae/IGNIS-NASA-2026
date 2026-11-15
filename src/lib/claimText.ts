@@ -7,4 +7,7 @@ const OUTCOME = /\boutcome (sustained|extinguished|transition|partial|no_ignitio
  * plain label instead ("outcome: Did not ignite"). The claim and its validated refs are unchanged.
  */
 export const plainClaimText = (text: string) =>
-  text.replace(OUTCOME, (_, code: 'sustained' | 'extinguished' | 'transition' | 'partial' | 'no_ignition') => `outcome: ${t(code)}`);
+  text
+    .replace(OUTCOME, (_, code: 'sustained' | 'extinguished' | 'transition' | 'partial' | 'no_ignition') => `outcome: ${t(code)}`)
+    // Stored identifiers such as cotton_fiberglass read as words ("cotton fiberglass"); values and IDs are untouched.
+    .replace(/\b[a-z]+(?:_[a-z]+)+\b/g, (word) => word.replace(/_/g, ' '));
