@@ -875,7 +875,8 @@ function MapLegend({ outcomeColor }: { outcomeColor: (outcome: Experiment['outco
     { key: 'outside' as const, label: t('outsideCatalogRange'), swatch: <i aria-hidden className="h-3 w-4 rounded-sm border border-dashed border-faint/60 bg-faint/10" />, caption: COPY.plain.map.outside },
   ];
   const caption = items.find((item) => item.key === active)?.caption ?? COPY.mapScope;
-  // Two groups, so what can be pressed never sits beside what can't: explained items are bordered buttons;
+  // Two groups, so what can be pressed never sits beside what can't: explained items are quiet toggles (dotted
+  // underline = "tap for its meaning", not primary actions);
   // items without approved copy are a plain key below.
   const explained = items.filter((item) => item.caption);
   const keyOnly = items.filter((item) => !item.caption);
@@ -888,8 +889,8 @@ function MapLegend({ outcomeColor }: { outcomeColor: (outcome: Experiment['outco
           {explained.map((item) => (
             <button key={item.key} type="button" aria-pressed={active === item.key} aria-controls="map-legend-caption"
               onClick={() => setActive((current) => current === item.key ? null : item.key)}
-              className="bubble-control pressable inline-flex min-h-9 items-center gap-2 rounded-full border border-border px-3 text-sm text-text can-hover:hover:border-raised aria-pressed:border-amber/60 aria-pressed:bg-amber/[0.08]">
-              {item.swatch}{item.label}
+              className="pressable inline-flex min-h-9 items-center gap-2 rounded-lg px-2 text-sm text-text can-hover:hover:bg-raised/25 aria-pressed:bg-amber/[0.12]">
+              {item.swatch}<span className="underline decoration-faint decoration-dotted underline-offset-4">{item.label}</span>
             </button>
           ))}
         </div>

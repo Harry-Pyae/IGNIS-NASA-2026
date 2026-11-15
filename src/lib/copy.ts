@@ -11,7 +11,7 @@ export const COPY = {
   elevatedO2: (pct: number) => `Elevated oxygen: ${pct}% O₂ is above the 21% of Earth-normal air.`,
   absence: 'No matching verified evidence in the current IGNIS catalog.',
   gapNote:
-    'Gaps are not necessarily unsafe — they have no matching verified evidence in the current IGNIS catalog. IGNIS lists them as candidate areas for further study.',
+    'A gap is not a finding of safety or danger: it only means no matching verified evidence in the current IGNIS catalog. IGNIS lists gaps as candidate areas for further study.',
   claimsGuarantee:
     'Observed and supported statements cite retrieved experiments, and the server checks each cited value against its card. Gaps are marked separately.',
   interpretationLimit: 'Interpretation of the cited experiments, not a direct observation. Checked references do not establish causation or equivalence between tests.',
