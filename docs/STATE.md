@@ -1,5 +1,12 @@
 # IGNIS — state handoff (2026-11-10, console merged · preparation phase)
 
+> **2026-11-15 22:25: final visual pass + voiced walkthrough.** Slices S1–S6 + landing + Help shipped (`1500e35` →
+> `87e3c6c`): plain outcome labels everywhere (map labels, Gap Radar, Brief), i18n for Sources/console copy, Compare a11y,
+> /kit noindex, honest 60-second-case degrade, "Explore a documented case" opens the case, plain step progression
+> 01–05, quiet legend, gap caveat "not a finding of safety or danger", Library "Clear all filters", one primary + one
+> secondary hero CTA, curator notes set apart on Help. Walkthrough: team lead's voice (take 6, all 15 lines fit, 104.0 s,
+> −16.25 LUFS), clips re-captured 22:05 at `75f01fc1` from the polished UI. The Demo stays frozen and untouched.
+
 > **2026-11-15 17:13: afternoon UI pass, all live and checked on production.** Methods "How records are published"
 > (4 rules, linked from footer, Library header, every card's verified-by line; README section; /curate named, never
 > linked; no /curate screenshots: production has no drafts and creating one there is forbidden). Guided tour: hero

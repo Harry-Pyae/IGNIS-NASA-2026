@@ -153,13 +153,12 @@ export const CUTS: CutDef[] = [
     // switches the button on (src/lib/walkthrough.ts); placeholders stay in out/.
     id: 'walkthrough',
     composition: 'CutWalkthrough',
-    title: 'In-app walkthrough (Help, 90–120 s, 1080p, captions only)',
+    title: 'In-app walkthrough (Help, 90–120 s, 1080p, team-lead voice + captions)',
     lengthSec: { min: 90, max: 120 },
     music: null,
-    silent: true,
     captionBand: true,
     balancedCaptions: true,
-    // Approved 2026-11-15 (team lead): one line per feature, captions only (Stage 1). All clips are the post-restore capture
+    // Approved 2026-11-15 (team lead): one line per feature. Stage 2: team lead's voice (take 6), captions unchanged. All clips are the post-restore capture
     // at catalog revision 75f01fc1 with today's UI. GMT96-T8 (line 10) checked live at render: verified airflow 5 cm/s.
     beats: [
       { id: 'walkthrough-01', vo: 'Here is how IGNIS answers a question, using only verified NASA experiments.', visual: { kind: 'statement', text: 'How IGNIS answers a question', sub: 'Every value traces to a verified NASA card.' }, targetSec: 5, minSec: 5, maxSec: 5 },
