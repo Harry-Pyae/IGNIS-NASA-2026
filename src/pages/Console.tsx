@@ -364,6 +364,14 @@ export function Console() {
 
   const retrievalLabel = material.status !== 'resolved' ? COPY.plain.retrieval.choose
     : confirmed === draft && views ? COPY.plain.retrieval.view : COPY.plain.retrieval.find;
+  // "Explore a documented case": once the chosen preset has rendered, confirm it (same path as the confirm button).
+  const exploreAfterPreset = useRef(false);
+  useEffect(() => {
+    if (!exploreAfterPreset.current || material.status !== 'resolved') return;
+    exploreAfterPreset.current = false;
+    retrieve();
+  });
+
   function retrieve() {
     if (material.status !== 'resolved') {
       focusScenarioEditor();
@@ -611,8 +619,10 @@ export function Console() {
                 const documented = availability.find(item => item.preset_id === presetId && item.state === 'ready' && item.eligible > 0)
                   ?? availability.find(item => item.state === 'ready' && item.eligible > 0);
                 if (!documented) return;
+                // Label and result agree: open the case (preset + retrieval), not just a silent preset selection.
+                // Retrieval runs after the preset renders (effect below) and moves focus to the results itself.
                 choosePreset(documented.preset_id);
-                document.getElementById('confirm-scenario')?.focus();
+                exploreAfterPreset.current = true;
               }}>{COPY.plain.presets.explore}</Button>
             )}
             <details ref={scenarioEditor} data-peek className="rounded-xl border border-border bg-bg/35 p-3">
