@@ -137,9 +137,12 @@ export function ExportButton({
   label,
   compact = false,
   variant = 'secondary',
+  format = 'json',
 }: {
   summary: CatalogSummary;
   label: string;
+  /** 'json' = the canonical open dataset; 'csv' = the same export flattened for spreadsheets. */
+  format?: 'json' | 'csv';
   /** Header on small screens: icon only (the label stays for screen readers). */
   compact?: boolean;
   variant?: 'primary' | 'secondary' | 'ghost';
@@ -155,11 +158,13 @@ export function ExportButton({
         ? 'The export could not be downloaded — try again'
         : verified === 0
           ? 'Downloads the schema README with 0 verified experiments — the catalog is still in verification'
-          : 'Download every verified card with its NASA source provenance (.json)';
+          : format === 'csv'
+            ? 'One row per verified run, for spreadsheets (.csv, UTF-8). The JSON export is the canonical format.'
+            : 'Download every verified card with its NASA source provenance (.json, the canonical format)';
   const text = state === 'busy' ? 'Preparing…' : state === 'failed' || state === 'rate_limited' ? 'Export failed — retry' : label;
   const run = async () => {
     setState('busy');
-    const r = await downloadCatalogExport();
+    const r = await downloadCatalogExport(fetch, undefined, format);
     setState(r.ok ? 'idle' : r.reason === 'rate_limited' ? 'rate_limited' : 'failed');
   };
   return (

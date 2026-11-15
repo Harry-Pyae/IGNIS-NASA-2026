@@ -332,7 +332,10 @@ function Footer() {
         </div>
         <div className="flex flex-col items-start gap-3 md:items-end">
           {/* Open dataset export (§8.1 item 6): verified cards only, honest README-only file when empty. */}
-          <ExportButton summary={summary} label={t('openDataset')} />
+          <div className="flex flex-wrap gap-2 md:justify-end">
+            <ExportButton summary={summary} label={t('openDataset')} />
+            <ExportButton summary={summary} label="CSV" format="csv" />
+          </div>
           <a href="/methods#plain-words" className={textLink}>Plain words</a>
           <a href="#top" className="console-label text-dim transition-colors duration-200 can-hover:hover:text-text">
             {t('backToTop')}

@@ -46,7 +46,11 @@ export function SourceList({catalog, summary, retry}: {catalog: VerifiedCatalog;
   return <Page>
     <PageHeader help="helpSources" eyebrow="Sources / verified catalog" title="Source bibliography"
       intro="These are the papers and datasets cited by published experiment cards. Counts refer to cards in the current catalog." />
-    <ExportButton summary={summary} label="Export verified dataset (.json)"/>
+    <div className="flex flex-wrap items-center gap-2">
+      <ExportButton summary={summary} label="Export verified dataset (.json)"/>
+      <ExportButton summary={summary} label="Spreadsheet (.csv)" format="csv"/>
+    </div>
+    <p className="mt-2 text-sm text-dim">JSON is the canonical format. The CSV flattens the same export into one row per run for spreadsheets; empty cells mean the source did not report that value.</p>
     <section className="mt-8" aria-labelledby="challenge-resources">
       <h2 id="challenge-resources" className="mb-2 text-xl font-semibold">Official challenge resources</h2>
       <a className={textLink} href="https://www.spaceappschallenge.org/2026/challenges/flame-in-freefall/?tab=resources"
