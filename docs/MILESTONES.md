@@ -3,6 +3,13 @@
 **NASA Space Apps 2026 · "Flame in Freefall" · Team AstroFlare**
 This is one self-contained file for checking progress without the repo. Coder A updates it after every patch.
 
+**2026-11-15 13:05 — data restore:** 12 cards were found edited off their sources (O₂/flow, II-5 class/form) and are
+back to source values as drafts; **19 of 31 public** until the team lead republishes them (SIGNING-SESSION-RESTORE.md).
+A source-value guard now runs in CI and in `verify:live`. Map crowding fixed in the UI (stack switcher, soft hatch). The
+deck stats line below was read at the falsified revision: its ranges come from untouched cards (16.4 % and 31 % O₂,
+54.1–101.3 kPa), but **re-read it from `/api/export` after the republish** before it ships. Re-capture and the final
+Demo render follow the republish; The Story waits on R1's heritage signatures.
+
 **2026-11-15 10:45:** catalog complete: **31 verified cards · 8 NASA campaigns · 5 source reports · 0 drafts** (revision
 `a0363adf…`), every signing session signed. Range for the deck and video: verified evidence from 16.4 % to 31 % O₂, 54–101 kPa.
 Remaining: Moon-base preset (R1 signature), green-flash Beat 1 (R2 frame by 12:30), recording session, VO.

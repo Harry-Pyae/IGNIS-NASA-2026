@@ -3,7 +3,8 @@
 **Challenge:** Flame in Freefall · **Team:** AstroFlare · **Freeze:** 2026-11-15 18:00
 
 Every number in this file must match the live export at the final edit (`GET /api/export`); the checklist at the
-bottom records that check. Numbers below were read from revision `a0363adf…` on 2026-11-15.
+bottom records that check. Numbers below were read from revision `a0363adf…` on 2026-11-15, **before the data restore**: re-read every one from the
+live export once all 31 cards are republished (the restore changed 21 field values, not the ranges' end points).
 
 ## Links
 
@@ -13,8 +14,8 @@ bottom records that check. Numbers below were read from revision `a0363adf…` o
 | The 60-second case | <https://ignis-nasa-2026.vercel.app/case> |
 | Open dataset (JSON) | <https://ignis-nasa-2026.vercel.app/api/export> |
 | Source code (Apache-2.0) | <https://github.com/Harry-Pyae/IGNIS-NASA-2026> |
-| Submission video (≤ 30.0 s) | `video/out/ignis-demo.mp4` or `video/out/ignis-story.mp4` (final render, after VO) — upload link: **TODO** |
-| Live-presentation walkthrough (silent, 80 s) | `video/assets/real/captures/ignis-silent-walkthrough.mp4` (team drive) |
+| Submission video (≤ 30.0 s) | **The Demo** (casual VO, `vo-demo-01…08`), final render after the data restore + re-capture; The Story is the backup only once R1 signs its heritage facts — upload link: **TODO** |
+| Live-presentation walkthrough (silent, 80 s) + voiced (~1:42) | **Re-render pending:** the current files were recorded at the off-source revision `a0363adf` and must not be shown; both are rebuilt from the post-restore re-capture |
 
 ## Submission text
 

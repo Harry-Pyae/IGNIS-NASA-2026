@@ -1,5 +1,17 @@
 # IGNIS — state handoff (2026-11-10, console merged · preparation phase)
 
+> **2026-11-15 13:05: DATA RESTORE in progress — 19 of 31 cards public.** 12 published cards had O₂/flow (and II-5
+> class/form) edited off their sources to spread the map. All 21 fields are back to source values as **drafts**
+> (revision `a0363adf…` → `1db4eaa3…`); the team lead re-verifies and republishes them from
+> [SIGNING-SESSION-RESTORE.md](SIGNING-SESSION-RESTORE.md) (batches R1–R3). Guard: `tests/fixtures/source-values.json` +
+> `tests/source-values.test.ts`; `npm run verify:live` fails on any off-source or unlisted published card (passes 19/19).
+> Map crowding solved honestly in the UI (`51d5faf`): stack run switcher + clickable hover list, continuous soft-masked
+> hatch. Video: every clip/PNG/walkthrough recorded at `a0363adf` is invalid; the re-capture is staged to start when all
+> 31 cards are source-true again, and the render gates block `--final` until then. Final submission cut = The Demo
+> (casual VO, 8 lines, planned 29.97 s, `vo-demo-01…08`). **The Story stays watermarked** until R1 signs the Apollo 1
+> and Mir heritage entries (FACT-CHECK-QUEUE.md). Open: Moon-base preset signature (R1), green-flash quote (R1) + frame
+> (R2: `GREEN_FLASH` still null at 12:30), 3-stranger test (R3).
+
 > **2026-11-15 10:45: catalog work complete.** Live = `main` (`36f43e9`). **31 verified cards, 8 NASA campaigns, 5 source
 > reports, 0 drafts**, revision `a0363adf…`: BASS, BASS-II, Saffire-I, -II, -IV, -V, -VI and USML-1 WIF. Outcomes: 15 sustained,
 > 7 extinguished, 9 did not ignite. Verified evidence spans 16.4–31 % O₂ (27 runs report it) and 54.1–101.3 kPa (21 report it);
