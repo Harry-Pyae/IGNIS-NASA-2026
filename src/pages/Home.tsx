@@ -335,7 +335,7 @@ function Footer() {
           {/* Open dataset export (§8.1 item 6): verified cards only, honest README-only file when empty. */}
           <div className="flex flex-wrap gap-2 md:justify-end">
             <ExportButton summary={summary} label={t('openDataset')} />
-            <ExportButton summary={summary} label="Spreadsheet (.csv)" format="csv" />
+            <ExportButton summary={summary} label={t('sourcesExportCsv')} format="csv" />
           </div>
           <a href="/methods#plain-words" className={`${textLink} ${tapLink}`}>Plain words</a>
           <a href="/methods#publishing" className={`${textLink} ${tapLink}`}>{t('verificationLink')}</a>

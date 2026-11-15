@@ -1,5 +1,5 @@
 import { experimentLabel } from '../lib/runLabel';
-import { t } from '../i18n';
+import { format, t } from '../i18n';
 import { useEffect, useState } from 'react';
 import { CardComparison } from '../components/CardComparison';
 import { Button, Page, PageHeader, Panel, Select } from '../components/ui';
@@ -40,7 +40,7 @@ export function Compare() {
         <Button size="sm" onClick={reload}>{t('retry')}</Button>
       </div>}
       {settled && <>
-        <div className="mb-4 grid gap-3 sm:grid-cols-2">
+        <div role="group" aria-label={t('compareChooseTwo')} className="mb-4 grid gap-3 sm:grid-cols-2">
           {pair.map((id, side) => {
             const options = eligible.filter(card => card.id !== pair[1 - side] || card.id === id)
               .map(card => ({ value: card.id, label: experimentLabel(card) }));
@@ -55,7 +55,9 @@ export function Compare() {
             {missing.map((id) => <li key={id}>{id}</li>)}
           </ul>
         </div>}
-        {cards.length < 2 && <p>{t('compareDistinct')}</p>}
+        {cards.length < 2 && <p role="status">{t('compareDistinct')}</p>}
+        {/* Screen readers hear which pair is shown after each change (the table itself is not re-read). */}
+        <p role="status" className="sr-only">{cards.length >= 2 ? format('compareNow', { a: experimentLabel(cards[0]!), b: experimentLabel(cards[1]!) }) : ''}</p>
         {cards.length >= 2 && <CardComparison cards={cards} standalone />}
       </>}
     </Panel>

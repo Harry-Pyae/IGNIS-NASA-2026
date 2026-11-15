@@ -56,3 +56,13 @@ describe('green-flash beat gate', () => {
     expect(readFileSync('docs/media-ledger.md', 'utf8')).toContain(GREEN_FLASH.ledger_id);
   });
 });
+
+describe('the 60-second case degrades honestly', () => {
+  it('poses the two-run question only when both verified runs are present', async () => {
+    const { caseComplete } = await import('../src/lib/caseContent');
+    const { card } = await import('./helpers');
+    expect(caseComplete([card(), card()])).toBe(true);
+    expect(caseComplete([card()])).toBe(false);
+    expect(caseComplete([])).toBe(false);
+  });
+});

@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import {
   Badge,
   Button,
@@ -148,6 +148,12 @@ function Block({ title, children }: { title: string; children: ReactNode }) {
 }
 
 export function Kit() {
+  // Internal design kit: reachable by URL for the team, never indexed or linked from the public site.
+  useEffect(() => {
+    const meta = Object.assign(document.createElement('meta'), { name: 'robots', content: 'noindex, nofollow' });
+    document.head.append(meta);
+    return () => meta.remove();
+  }, []);
   const [o2, setO2] = useState(21);
   const [active, setActive] = useState('Cabin wall panel (PMMA)');
   return (

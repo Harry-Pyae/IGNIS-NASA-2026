@@ -85,3 +85,6 @@ export function renderableGreenFlash(entry: GreenFlashBeat | null = GREEN_FLASH)
   if (!STILL_PATH.test(entry.still_url) || entry.still_url.includes('..') || !entry.still_alt.trim() || !entry.still_credit.trim()) return null;
   return entry;
 }
+
+/** The two-run question needs BOTH verified runs; with one missing it is never posed over a single card. */
+export const caseComplete = (runs: readonly unknown[]) => runs.length === CASE_RUNS.length;

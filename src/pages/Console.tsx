@@ -1244,7 +1244,7 @@ export function EvidenceMap({
                 const others = otherRuns(stack);
                 const badgeDy = ay - 10 - 8 < top ? 10 : -10; // above-right, or below-right where the plot's top edge would clip it
                 const shown = stack.find((experiment) => experiment.id === selectedId) ?? anchor;
-                const label = (experiment: Experiment) => `${experimentLabel(experiment)}, ${experiment.outcome ?? t('outcomeUnreported')}, ${experiment.o2_pct}% oxygen, ${experiment.flow_cm_s} centimeters per second airflow`;
+                const label = (experiment: Experiment) => format('mapPointLabel', { run: experimentLabel(experiment), outcome: experiment.outcome ? t(experiment.outcome) : t('outcomeUnreported'), o2: String(experiment.o2_pct), flow: String(experiment.flow_cm_s) });
                 return (
                   <g
                     key={anchor.id}
@@ -1381,7 +1381,7 @@ export function MatchPanel({ matches, status, confirmed, scenario, selectedId, o
 
   return (
     <div>
-    <p className="mb-3 text-sm leading-relaxed text-dim">{COPY.matchOrder} <a href="/methods" className={textLink}>How matching works and what it does not tell you</a></p>
+    <p className="mb-3 text-sm leading-relaxed text-dim">{COPY.matchOrder} <a href="/methods" className={textLink}>{t('matchHowWorks')}</a></p>
     <div className="mb-4 rounded-xl border border-border bg-bg/35 px-4 py-3">
       <ul aria-label={COPY.plain.chipKeyLabel} className="flex flex-wrap gap-x-5 gap-y-1.5 text-[14px] text-dim">
         {(Object.keys(COPY.plain.chipKey) as (keyof typeof COPY.plain.chipKey)[]).map((status) => (
@@ -1554,7 +1554,7 @@ export function EvidenceOnlyFallback({ matches }: { matches: MatchResult[] }) {
         <article key={experiment.id} className="min-w-0 break-words rounded-xl border border-border bg-bg/45 p-3 [overflow-wrap:anywhere]">
           <p className="text-sm font-medium text-text">{experimentLabel(experiment)}</p>
           <p className="mt-1 text-sm text-dim">
-          {experiment.outcome ?? t('outcomeNotReported')} · {experiment.o2_pct == null ? t('oxygenNotReported') : `${experiment.o2_pct}% O₂`} · {experiment.flow_cm_s == null ? t('airflowNotReported') : `${experiment.flow_cm_s} cm/s`}
+          {experiment.outcome ? t(experiment.outcome) : t('outcomeNotReported')} · {experiment.o2_pct == null ? t('oxygenNotReported') : `${experiment.o2_pct}% O₂`} · {experiment.flow_cm_s == null ? t('airflowNotReported') : `${experiment.flow_cm_s} cm/s`}
           </p>
           <p className="mt-2 text-sm text-dim">{experiment.source_title}</p>
           {evidenceLocator(experiment) && <p className="mt-1 text-xs text-dim">{evidenceLocator(experiment)}</p>}

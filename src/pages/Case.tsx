@@ -1,7 +1,7 @@
 import { useId, useRef, useState, type FormEvent } from 'react';
 import { Badge, Button, buttonClass, Page, PageHeader, Panel, textLink } from '../components/ui';
 import { format, t } from '../i18n';
-import { CASE_RUNS, CASE_SOURCE, renderableGreenFlash, sourceRowFor, type GreenFlashBeat } from '../lib/caseContent';
+import { CASE_RUNS, CASE_SOURCE, caseComplete, renderableGreenFlash, sourceRowFor, type GreenFlashBeat } from '../lib/caseContent';
 import { useVerifiedCatalog } from '../lib/catalog';
 import { ClaimCheckResponseSchema, type ClaimCheckResponse, type Experiment } from '../lib/types';
 
@@ -30,6 +30,10 @@ export function Case() {
             </Panel>
           )
           : runs.length === 0 ? <Panel role="status"><p className="text-text">{t('caseRunsMissing')}</p></Panel>
+          : !caseComplete(runs) ? <Panel role="status">
+              <p className="text-text">{t('caseRunsIncomplete')}</p>
+              <ul className="mt-3 flex flex-wrap gap-3">{runs.map((card) => <li key={card.id}><a className={buttonClass('secondary', 'md')} href={`/library/${encodeURIComponent(card.id)}`}>{card.test_id}</a></li>)}</ul>
+            </Panel>
           : <>
             <Runs runs={runs} />
             <ClaimCheck runs={runs} />
