@@ -133,6 +133,8 @@ export function Tour({ open, onClose }: { open: boolean; onClose: () => void }) 
       else if (vh - below >= h + GAP + MARGIN) { x = clamp(left, MARGIN, vw - w - MARGIN); y = below + GAP; }
       else if (top - headerHeight() >= h + GAP + MARGIN) { x = clamp(left, MARGIN, vw - w - MARGIN); y = top - GAP - h; }
       else { x = clamp(left, MARGIN, vw - w - MARGIN); y = vh - h - MARGIN; } // over the bottom of a tall section
+      // Whatever the target does (still scrolling into view, off screen on a slow load), the card stays on screen.
+      y = clamp(y, MARGIN, vh - h - MARGIN);
       c.style.transform = `translate(${x}px, ${y}px)`;
     };
     place();
