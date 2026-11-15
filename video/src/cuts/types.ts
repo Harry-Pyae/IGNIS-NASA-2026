@@ -40,6 +40,8 @@ export interface Beat {
   chapter?: string;
   /** A fact in this line that still needs a named sign-off (R1 science/history). Pending = placeholder render. */
   signOff?: string;
+  /** Presenter note for whoever delivers the line live (not spoken, not captioned). */
+  note?: string;
 }
 
 export interface CutDef {

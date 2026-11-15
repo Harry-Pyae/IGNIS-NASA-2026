@@ -1,12 +1,14 @@
-# Signing session — addendum: `no_ignition` runs
+# Signing session — addendum: 9 new drafts (`no_ignition` runs + PMMA V-3 / V-4)
 
 Generated 2026-11-15 by Coder A's agent. Unlocked by the team-lead decision to add the outcome `no_ignition` (“ignition
 attempted; the sample did not ignite”, migration 0006, applied to production by the team lead). Same rules as
 [SIGNING-SESSION.md](SIGNING-SESSION.md): every value quoted verbatim with a PDF page link; nothing is verified until a
 named human checks it and publishes under their own full name.
 
-**Status: prepared, NOT yet saved as drafts.** The records are ready locally; they are written to production as drafts
-only on the team lead's go-ahead. Pre-check (mechanical, not a sign-off): the three BASS-II rows match the p.9
+**Status: all 9 saved as drafts in production 2026-11-15 (verified_by empty, invisible to the public).** Reopen each from
+**Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate). Rulings (decisions log, DECISIONS-ROUND6
+“Submission-day rulings”): silicone `no_ignition` approved, silicone class stays `other`, V-3/V-4 approved as in
+docs/PMMA-DECISION.md. Pre-check (mechanical, not a sign-off): the three BASS-II rows match the p.9
 appendix column by column (ID, width, flow, O₂; comment cells in row order); every Saffire-II quote matches the NTRS
 text of the deck word for word.
 
@@ -14,7 +16,7 @@ text of the deck word for word.
 
 ### A1. BASS-II GMT175-T9
 
-Saved as a draft only after you approve: then reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate) · source [NTRS 20150008962](https://ntrs.nasa.gov/citations/20150008962)
+`1066b996-88fc-4db1-939c-d26d9db2e17e` · saved as a draft; reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate) · source [NTRS 20150008962](https://ntrs.nasa.gov/citations/20150008962)
 
 | ✓ | Field | Draft value | Check it against |
 |---|---|---|---|
@@ -37,7 +39,7 @@ Saved as a draft only after you approve: then reopen it from **Drafts to verify*
 
 ### A2. BASS-II GMT175-T10
 
-Saved as a draft only after you approve: then reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate) · source [NTRS 20150008962](https://ntrs.nasa.gov/citations/20150008962)
+`9c9a370b-54e7-4c91-aeaa-0574777942ed` · saved as a draft; reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate) · source [NTRS 20150008962](https://ntrs.nasa.gov/citations/20150008962)
 
 | ✓ | Field | Draft value | Check it against |
 |---|---|---|---|
@@ -60,7 +62,7 @@ Saved as a draft only after you approve: then reopen it from **Drafts to verify*
 
 ### A3. BASS-II GMT178-T12
 
-Saved as a draft only after you approve: then reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate) · source [NTRS 20150008962](https://ntrs.nasa.gov/citations/20150008962)
+`739183b6-1f9b-4d4b-b86e-de1e7d5aaf85` · saved as a draft; reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate) · source [NTRS 20150008962](https://ntrs.nasa.gov/citations/20150008962)
 
 | ✓ | Field | Draft value | Check it against |
 |---|---|---|---|
@@ -85,16 +87,17 @@ Saved as a draft only after you approve: then reopen it from **Drafts to verify*
 
 One shared judgment for all four: after the igniter switched off, “a tiny gas phase flame remained but did not spread
 and quickly extinguished”. `no_ignition` reads the sample as never catching; if you read that flame as the sample
-igniting, park these instead of choosing `extinguished`. Also new: catalog material `silicone`, pressure not stated.
+igniting, park these instead of choosing `extinguished`. **Ruling 2026-11-15: `no_ignition` approved** (NASA: “none of the silicone
+samples burned”); confirm per card. New catalog material `silicone`, class `other`; pressure not stated (null).
 
 ### A4. Saffire II-1
 
-Saved as a draft only after you approve: then reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate) · source [NTRS 20170008805](https://ntrs.nasa.gov/citations/20170008805)
+`c169dd2d-a12c-4af3-a201-cd4f044804ef` · saved as a draft; reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate) · source [NTRS 20170008805](https://ntrs.nasa.gov/citations/20170008805)
 
 | ✓ | Field | Draft value | Check it against |
 |---|---|---|---|
 | ☐ | `fuel_material` | **silicone** | [p.9](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=9): “silicone sheets” (new catalog material `silicone`) |
-| ☐ | `material_class` | **other** | Left `other`: you decide whether a silicone sheet is `insulation` (that class feeds the Cable insulation preset) |
+| ☐ | `material_class` | **other** | Stays `other` (ruling 2026-11-15: a sheet can't stand in for a cable jacket; the Cable insulation preset stays empty) |
 | ☐ | `fuel_form` | **flat_sheet** |  |
 | ☐ | `thickness_mm` | **0.27** | [p.9](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=9): “Samples 2-1 to 2-4 were silicone sheets 0.27, 0.61, 1.03, and 0.37 mm thick.” · Table I [p.29](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=29) |
 | ☐ | `o2_pct` | **22.1** | [p.9](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=9): “Initial oxygen concentration 22.1% (ISS reading, …)” |
@@ -112,12 +115,12 @@ Saved as a draft only after you approve: then reopen it from **Drafts to verify*
 
 ### A5. Saffire II-2
 
-Saved as a draft only after you approve: then reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate) · source [NTRS 20170008805](https://ntrs.nasa.gov/citations/20170008805)
+`c205269b-a6d5-44ab-bc72-b96c5f2a7037` · saved as a draft; reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate) · source [NTRS 20170008805](https://ntrs.nasa.gov/citations/20170008805)
 
 | ✓ | Field | Draft value | Check it against |
 |---|---|---|---|
 | ☐ | `fuel_material` | **silicone** | [p.9](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=9): “silicone sheets” (new catalog material `silicone`) |
-| ☐ | `material_class` | **other** | Left `other`: you decide whether a silicone sheet is `insulation` (that class feeds the Cable insulation preset) |
+| ☐ | `material_class` | **other** | Stays `other` (ruling 2026-11-15: a sheet can't stand in for a cable jacket; the Cable insulation preset stays empty) |
 | ☐ | `fuel_form` | **flat_sheet** |  |
 | ☐ | `thickness_mm` | **0.61** | [p.9](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=9): “Samples 2-1 to 2-4 were silicone sheets 0.27, 0.61, 1.03, and 0.37 mm thick.” · Table I [p.29](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=29) |
 | ☐ | `o2_pct` | **22.1** | [p.9](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=9): “Initial oxygen concentration 22.1% (ISS reading, …)” |
@@ -135,12 +138,12 @@ Saved as a draft only after you approve: then reopen it from **Drafts to verify*
 
 ### A6. Saffire II-3
 
-Saved as a draft only after you approve: then reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate) · source [NTRS 20170008805](https://ntrs.nasa.gov/citations/20170008805)
+`9706e9e9-d448-453d-ad20-39f3f94d5b16` · saved as a draft; reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate) · source [NTRS 20170008805](https://ntrs.nasa.gov/citations/20170008805)
 
 | ✓ | Field | Draft value | Check it against |
 |---|---|---|---|
 | ☐ | `fuel_material` | **silicone** | [p.9](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=9): “silicone sheets” (new catalog material `silicone`) |
-| ☐ | `material_class` | **other** | Left `other`: you decide whether a silicone sheet is `insulation` (that class feeds the Cable insulation preset) |
+| ☐ | `material_class` | **other** | Stays `other` (ruling 2026-11-15: a sheet can't stand in for a cable jacket; the Cable insulation preset stays empty) |
 | ☐ | `fuel_form` | **flat_sheet** |  |
 | ☐ | `thickness_mm` | **1.03** | [p.9](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=9): “Samples 2-1 to 2-4 were silicone sheets 0.27, 0.61, 1.03, and 0.37 mm thick.” · Table I [p.29](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=29) |
 | ☐ | `o2_pct` | **22.1** | [p.9](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=9): “Initial oxygen concentration 22.1% (ISS reading, …)” |
@@ -158,12 +161,12 @@ Saved as a draft only after you approve: then reopen it from **Drafts to verify*
 
 ### A7. Saffire II-4
 
-Saved as a draft only after you approve: then reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate) · source [NTRS 20170008805](https://ntrs.nasa.gov/citations/20170008805)
+`2a3c3f96-170e-4ab7-a8e7-e78ec5f83d15` · saved as a draft; reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate) · source [NTRS 20170008805](https://ntrs.nasa.gov/citations/20170008805)
 
 | ✓ | Field | Draft value | Check it against |
 |---|---|---|---|
 | ☐ | `fuel_material` | **silicone** | [p.9](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=9): “silicone sheets” (new catalog material `silicone`) |
-| ☐ | `material_class` | **other** | Left `other`: you decide whether a silicone sheet is `insulation` (that class feeds the Cable insulation preset) |
+| ☐ | `material_class` | **other** | Stays `other` (ruling 2026-11-15: a sheet can't stand in for a cable jacket; the Cable insulation preset stays empty) |
 | ☐ | `fuel_form` | **flat_sheet** |  |
 | ☐ | `thickness_mm` | **0.37** | [p.9](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=9): “Samples 2-1 to 2-4 were silicone sheets 0.27, 0.61, 1.03, and 0.37 mm thick.” · Table I [p.29](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=29) |
 | ☐ | `o2_pct` | **22.1** | [p.9](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=9): “Initial oxygen concentration 22.1% (ISS reading, …)” |
@@ -178,6 +181,52 @@ Saved as a draft only after you approve: then reopen it from **Drafts to verify*
 | ☐ | `key_observation_quote` | “Results were convincing although rather anticlimactic as none of the silicone samples burned. When the igniter was powered off, a tiny gas phase flame remained but did not spread and quickly extinguished.” | the outcome locator above |
 
 **Decide before publishing:** Sample 2-4 burned DOWNWARD (opposed flow), unlike 2-1 to 2-3.
+
+☐ Publish in /curate under your own full name.
+
+## Batch C — Saffire V-3 and V-4 (PMMA, approved package)
+
+Both: the flow was 20 cm/s, reduced to 5 cm/s and held 300 s, then the fan was turned off and the flame went out
+immediately. Outcome `sustained` with that change recorded; the card must read **“Burned at the test flows …;
+extinguished when ventilation stopped”**, never “extinguished at 20 cm/s”. Full sentences: docs/PMMA-DECISION.md.
+
+### C1. Saffire V-3
+
+`2d48fc4c-a661-4819-9b29-f0064bc2c236` · saved as a draft · source [NTRS 20210011521](https://ntrs.nasa.gov/citations/20210011521)
+
+| ✓ | Field | Draft value | Check it against |
+|---|---|---|---|
+| ☐ | `fuel_material` | **PMMA** | Table 1, [p.3](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=3): “1 sided PMMA” |
+| ☐ | `material_class` | **thermoplastic** |  |
+| ☐ | `fuel_form` | **thick_slab** | Figure 3 legend, [p.4](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=4): “1-sided PMMA (0.5 cm thick.)” |
+| ☐ | `thickness_mm` | **5** | Figure 3 legend, [p.4](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=4) |
+| ☐ | `o2_pct` | **25.4** | Table 1, [p.3](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=3): Oxygen Concentration (mol %) (entered as vol %) |
+| ☐ | `flow_cm_s` | **20** | Table 1, [p.3](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=3): 20 cm/s, **Concurrent** (stored: initial) |
+| ☐ | `pressure_kpa` | **71.3** | Table 1, [p.3](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=3) |
+| ☐ | `outcome` | **sustained** | [p.5](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=5): “… reduced from the starting condition of 20 cm/s to 5 cm/s and held at 5 cm/s for 300 seconds.” · “Consequently, when the fan was turned off in Saffire V-3 and V-4, the sample extinguished immediately (Figures 5 and 6).” |
+| ☐ | `condition_changes` | flow_cm_s 20 → 0, stored **initial**; note: “Burned at the test flows (20 cm/s, then reduced to 5 cm/s and held 300 s); extinguished when ventilation stopped (p.5).” | [p.5](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=5) + Figure 5 caption, [p.6](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=6) |
+| ☐ | `key_observation_quote` | “Consequently, when the fan was turned off in Saffire V-3 and V-4, the sample extinguished immediately (Figures 5 and 6).” | [p.5](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=5) |
+
+☐ Publish in /curate under your own full name.
+
+### C2. Saffire V-4
+
+`492742a9-e2e1-4ec7-b30c-3f2132487f16` · saved as a draft · source [NTRS 20210011521](https://ntrs.nasa.gov/citations/20210011521)
+
+| ✓ | Field | Draft value | Check it against |
+|---|---|---|---|
+| ☐ | `fuel_material` | **PMMA** | Table 1, [p.3](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=3): “Structured PMMA” |
+| ☐ | `material_class` | **thermoplastic** |  |
+| ☐ | `fuel_form` | **thick_slab** | Figure 3 legend, [p.4](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=4): “Structured PMMA (1 cm thick.)”; Figure 11, [p.9](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=9): “Opposed flame spread on ribbed PMMA” |
+| ☐ | `thickness_mm` | **10** | Figure 3 legend, [p.4](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=4) |
+| ☐ | `o2_pct` | **25.7** | Table 1, [p.3](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=3): Oxygen Concentration (mol %) (entered as vol %) |
+| ☐ | `flow_cm_s` | **20** | Table 1, [p.3](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=3): 20 cm/s, **Opposed** (stored: initial) |
+| ☐ | `pressure_kpa` | **72.6** | Table 1, [p.3](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=3) |
+| ☐ | `outcome` | **sustained** | [p.5](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=5): “… reduced from the starting condition of 20 cm/s to 5 cm/s and held at 5 cm/s for 300 seconds.” · “Consequently, when the fan was turned off in Saffire V-3 and V-4, the sample extinguished immediately (Figures 5 and 6).” |
+| ☐ | `condition_changes` | flow_cm_s 20 → 0, stored **initial**; note: “Burned at the test flows (20 cm/s, then reduced to 5 cm/s and held 300 s); extinguished when ventilation stopped (p.5).” | [p.5](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=5) + Figure 6 caption, [p.6](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=6) |
+| ☐ | `key_observation_quote` | “Evident is the rapid extinction after 300 seconds of cooling at low air flow (5 cm/s) before the flow was stopped completely.” | Figure 6 caption, [p.6](https://ntrs.nasa.gov/api/citations/20210011521/downloads/ICES%202021-266%200503-2021%20final.pdf#page=6) |
+
+**Check before publishing:** form `thick_slab` (ribbed / structured 10 mm slab) and OPPOSED flow — both corrected from the Round 8 extraction.
 
 ☐ Publish in /curate under your own full name.
 

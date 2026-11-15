@@ -173,3 +173,24 @@ Color always has a text or shape counterpart.
   - **A8:** share links carry the ranked cards' versions, so a reopened link reports a cited card updated since,
     and never claims an exact rebuild.
   - **C1 (error boundaries)** was not done as Coder A's fallback, because Coder C is active.
+
+## Submission-day rulings (2026-11-15, team lead)
+
+1. **Outcome `no_ignition` added** ("ignition attempted; the sample did not ignite"). Migration 0006 (applied to
+   production by the team lead), types, map marker, legend, badge, library filter, export, claim validator. An
+   observation like any other outcome: retrievable, no special ranking, and its grid cell counts as tested.
+2. **Saffire V-3 / V-4 (PMMA) approved** as in `docs/PMMA-DECISION.md`: outcome `sustained` with the flow change
+   20 → 5 (held 300 s) → 0 recorded, and the wording "Burned at the test flows; extinguished when ventilation
+   stopped." Never "extinguished at 20 cm/s". V-4 is a ribbed / structured 10 mm `thick_slab` in **opposed** flow
+   (Table 1), not a flat sheet.
+3. **Silicone sheets 2-1…2-4: `no_ignition` approved.** NASA's own summary is "none of the silicone samples
+   burned"; each card carries the full tiny-flame quote verbatim so the nuance stays visible. Confirmed per card at
+   signing.
+4. **Silicone `material_class` stays `other`.** The Cable insulation preset is not filled with sheet samples, by
+   the same logic as the Round 8 ruling: a rod can't stand in for a cable jacket, and neither can a sheet. The preset
+   keeps its empty-state copy ("No verified flight test of this material class in the current IGNIS catalog. Pick a
+   material to explore."), and the pitch says so: "we had a way to fill this preset and declined — the geometry
+   didn't match."
+5. **Still parked:** rows with no stated outcome; "Reused" samples (a prior burn alters the sample); "No Blow-off"
+   (a reading is proposed in `docs/R1-QUEUE.md`, not published); Saffire IV-2 (`partial` only once it has an
+   approved definition).

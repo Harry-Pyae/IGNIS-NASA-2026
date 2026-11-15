@@ -182,7 +182,7 @@ function doc() {
       const v = b.visual;
       const shown = v.kind === 'ui' ? `Product: ${v.shots.join(' → ')}` : v.kind === 'statement' ? `“${v.text}”` : v.kind === 'history' ? `${v.year} · ${v.name}` : v.kind === 'list' ? v.heading : { title: 'Title card', team: 'Team names + roles', physics: 'Earth vs orbit flame (illustration)', catalog: 'Live catalog numbers', end: 'Shared end card', close: 'URL + QR, credits, AI use, not affiliated' }[v.kind];
       const line = b.vo.replace(/\*([^*]+)\*/g, '*$1*').replace(/\|/g, '\\|');
-      const notes = [b.chapter && `**${b.chapter}**`, b.signOff && `⚠ ${b.signOff}`].filter(Boolean).join('<br>');
+      const notes = [b.chapter && `**${b.chapter}**`, b.signOff && `⚠ ${b.signOff}`, b.note && `Presenter note: ${b.note}`].filter(Boolean).join('<br>');
       p(`| ${n} | \`vo-${cut.id}-${n}.wav\` | ${line}${notes ? `<br><sub>${notes}</sub>` : ''} | ${timing.wordCount(b.vo)} | ${b.targetSec} | ${shown} |`);
     }
     if (cut.beats.some((b) => b.shorter)) {
