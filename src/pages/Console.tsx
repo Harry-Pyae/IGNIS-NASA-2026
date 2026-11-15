@@ -14,7 +14,7 @@ import { pickMaterial, presetScenario, resolveMaterial, SCENARIO_PRESETS } from 
 import { applyEnvironment, isElevatedO2, visibleEnvironmentPresets, type EnvironmentPreset } from '../engine/environments';
 import { briefingKey, currentBriefing, evidenceViews, investigationSummary, mapCoordinates, onMapAxes, presetAvailability, retrievalState } from '../engine/views';
 import { datasetCitation, evidenceLocator, evidenceSource } from '../lib/evidenceSource';
-import { FIELD_UNITS, PARAM_LABELS, ParsedScenarioSchema, ParseScenarioResponseSchema, SynthesizeResponseSchema, type Briefing, type ContinuousParam, type Experiment, type MatchResult, type ParsedScenario, type ResolvedScenario } from '../lib/types';
+import { FIELD_UNITS, FuelFormSchema, PARAM_LABELS, ParsedScenarioSchema, ParseScenarioResponseSchema, SynthesizeResponseSchema, type Briefing, type ContinuousParam, type Experiment, type MatchResult, type ParsedScenario, type ResolvedScenario } from '../lib/types';
 import { gapGrid, gapRadar, GRID, type GapRadar as GapRadarData, type GapRegion } from '../engine/gaps';
 import { whyMatched } from '../engine/match';
 import { MatchInspection, NoMatchInspection } from '../features/evidence/MatchInspection';
@@ -31,10 +31,13 @@ import { CONSOLE_DRAFT_KEY } from '../lib/consoleDraft';
 import { Tour } from '../features/tour/Tour';
 import { dropTourReplay, markTourOffered, shouldOfferTour, wantsTourReplay } from '../features/tour/tourOffer';
 import { useScrollArea } from '../lib/scrollArea';
+import { nextInStack, stackPoints } from '../lib/mapStacks';
 import { GUIDED_MISSION_REQUEST, takePendingMission } from './consoleLoader';
 
 function experimentLabel(experiment: Experiment): string {
-  return experiment.test_id.toLowerCase().startsWith(experiment.campaign.toLowerCase())
+  // Compare letters and digits only: campaign "Saffire-II" already names run "Saffire II-6" (no "Saffire-II Saffire II-6").
+  const key = (text: string) => text.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return key(experiment.test_id).startsWith(key(experiment.campaign))
     ? experiment.test_id
     : `${experiment.campaign} ${experiment.test_id}`;
 }
@@ -587,6 +590,7 @@ export function Console() {
                         : t(dataStatus === 'loading' ? 'waitingCatalog' : 'matchCatalogUnavailable')}
                     </p>
                     {documented && presetId === preset.id && <p className="px-1 text-xs leading-snug text-dim">{COPY.plain.presets.map(documented.visible, documented.off_axis, documented.missing_coordinates)}</p>}
+                    {preset.note && <p className="px-1 text-xs leading-snug text-faint">{preset.note}</p>}
                   </div>;
                 })}
                 <PresetChip data-peek active={presetId === null} onClick={() => {
@@ -627,7 +631,7 @@ export function Console() {
                     <span className="console-label text-dim">{t('form')}</span>
                     <select aria-describedby="scenario-hint-material" value={scenario.fuel_form ?? ''} onChange={(event) => editScenario({ fuel_form: (event.target.value || null) as ParsedScenario['fuel_form'] })} className="h-10 rounded-xl border border-border bg-bg/70 px-3 text-sm text-text focus:border-amber">
                       <option value="">{t('notSpecified')}</option>
-                      {['flat_sheet', 'rod', 'fabric', 'thick_slab'].map((form) => <option key={form} value={form}>{form.replace('_', ' ')}</option>)}
+                      {FuelFormSchema.options.map((form) => <option key={form} value={form}>{form.replace('_', ' ')}</option>)}
                     </select>
                   </label>
                 </div>
@@ -794,6 +798,7 @@ export function Console() {
         <SectionHeader help="helpGaps" id="s5" step={t('gapStep')} title={t('evidenceGapRadar')} />
         <MissionCaption step={guidedStep === 4 ? 4 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[4].caption)} />
         <GapRadarPanel data={radar} status={dataStatus} scenarioActive={confirmed !== null} outlined={outlinedRegion} onRegion={chooseRegion} />
+        <p className="mt-4 border-l-2 border-warn/50 pl-3 text-sm leading-relaxed text-dim">{COPY.plain.notInCatalog}</p>
       </Panel></RecoveryBoundary>
       </div>
       </div>
@@ -1025,6 +1030,14 @@ export function EvidenceMap({
     onSelect(next);
     setAnnouncement(next && card ? format('mapSelected', { run: experimentLabel(card) }) : t('mapSelectionCleared'));
   };
+  // A stack of co-located runs: each tap (or Enter) steps to the next run, and past the last one clears the selection.
+  const chooseIn = (stack: Experiment[]) => {
+    if (stack.length === 1) return choose(stack[0]!.id);
+    const next = nextInStack(stack, selectedId);
+    reveal.current = next !== null;
+    onSelect(next?.id ?? null);
+    setAnnouncement(next ? format('mapStackSelected', { run: experimentLabel(next), i: stack.indexOf(next) + 1, n: stack.length }) : t('mapSelectionCleared'));
+  };
   useEffect(() => {
     if (!reveal.current || !selectedId) return;
     reveal.current = false;
@@ -1061,6 +1074,8 @@ export function EvidenceMap({
   // Axes come from the shared gap GRID, so plotted points, cells and the on-axes count can never diverge.
   const x = (flow: number) => left + ((flow - GRID.flow.min) / (GRID.flow.max - GRID.flow.min)) * plotWidth;
   const y = (o2: number) => top + ((GRID.o2.max - o2) / (GRID.o2.max - GRID.o2.min)) * plotHeight;
+  const stacks = stackPoints(plotted, (experiment) => [x(experiment.flow_cm_s!), y(experiment.o2_pct!)]);
+  const selectedStack = stacks.find((stack) => stack.some((experiment) => experiment.id === selectedId));
   const ticks = (min: number, max: number, step: number) => Array.from({ length: Math.floor((max - min) / step) + 1 }, (_, i) => min + i * step);
   const outcomeColor = (outcome: Experiment['outcome']) => {
     if (outcome === 'sustained') return 'var(--color-flame)';
@@ -1115,11 +1130,6 @@ export function EvidenceMap({
                   strokeWidth=".5"
                 />
               ))}
-              </g>
-              <g clipPath="url(#ignis-plot-clip)" aria-hidden="true" pointerEvents="none">
-                <foreignObject x={left} y={top} width={plotWidth} height={plotHeight}>
-                  <div className="map-radar anim-radar" />
-                </foreignObject>
               </g>
               {grid.envelope && (
                 <rect
@@ -1176,25 +1186,44 @@ export function EvidenceMap({
                   <line className="anim-ants" key={`match-${experiment.id}`} x1={x(scenario.flow_cm_s!)} y1={y(scenario.o2_pct!)} x2={x(experiment.flow_cm_s!)} y2={y(experiment.o2_pct!)} stroke="var(--color-amber)" strokeWidth="1.2" strokeDasharray="4 5" opacity=".7" />
                 )
               ))}
-              {plotted.map((experiment,i) => (
-                <g
-                  key={experiment.id}
-                  id={`map-point-${experiment.id}`}
-                  role="button"
-                  tabIndex={0}
-                  aria-pressed={selectedId === experiment.id}
-                  aria-label={`${experimentLabel(experiment)}, ${experiment.outcome ?? t('outcomeUnreported')}, ${experiment.o2_pct}% oxygen, ${experiment.flow_cm_s} centimeters per second airflow`}
-                  onClick={() => choose(experiment.id)}
-                  onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); choose(experiment.id); } }}
-                  className="cursor-pointer focus-visible:outline focus-visible:outline-1 focus-visible:outline-amber"
-                >
-                  <circle cx={x(experiment.flow_cm_s!)} cy={y(experiment.o2_pct!)} r="18" fill="transparent" />
-                  {matchIds.has(experiment.id) && <circle cx={x(experiment.flow_cm_s!)} cy={y(experiment.o2_pct!)} r="9" fill="none" stroke="var(--color-text)" strokeWidth="1.25" />}
-                  {selectedId === experiment.id && <circle cx={x(experiment.flow_cm_s!)} cy={y(experiment.o2_pct!)} r="13" fill="none" stroke="var(--color-amber)" strokeWidth="2" />}
-                  <g className="anim-dot-in map-dot" style={{'--i':i} as CSSProperties}><g className={experiment.outcome === 'sustained' && matchIds.has(experiment.id) ? 'anim-flicker' : undefined}><OutcomeMark outcome={experiment.outcome} x={x(experiment.flow_cm_s!)} y={y(experiment.o2_pct!)} color={outcomeColor(experiment.outcome)} /></g></g>
-                  <title>{experiment.test_id} · {experiment.outcome ?? t('outcomeNotReported')} · {experiment.o2_pct}% O₂ · {experiment.flow_cm_s} cm/s</title>
-                </g>
-              ))}
+              {stacks.map((stack, i) => {
+                // One tap target per stack. Every member is drawn at its own stored position; the selected one on top.
+                const anchor = stack[0]!;
+                const ax = x(anchor.flow_cm_s!);
+                const ay = y(anchor.o2_pct!);
+                const shown = stack.find((experiment) => experiment.id === selectedId) ?? anchor;
+                const label = (experiment: Experiment) => `${experimentLabel(experiment)}, ${experiment.outcome ?? t('outcomeUnreported')}, ${experiment.o2_pct}% oxygen, ${experiment.flow_cm_s} centimeters per second airflow`;
+                return (
+                  <g
+                    key={anchor.id}
+                    id={`map-point-${anchor.id}`}
+                    data-stack={stack.length > 1 ? stack.length : undefined}
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={stack.some((experiment) => experiment.id === selectedId)}
+                    aria-label={stack.length === 1 ? label(anchor) : format('mapStackLabel', { n: stack.length, runs: stack.map(experimentLabel).join(', ') })}
+                    onClick={() => chooseIn(stack)}
+                    onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); chooseIn(stack); } }}
+                    className="cursor-pointer focus-visible:outline focus-visible:outline-1 focus-visible:outline-amber"
+                  >
+                    <circle cx={ax} cy={ay} r="18" fill="transparent" />
+                    {[...stack.filter((experiment) => experiment !== shown), shown].map((experiment) => {
+                      const ex = x(experiment.flow_cm_s!);
+                      const ey = y(experiment.o2_pct!);
+                      return <g key={experiment.id}>
+                        {matchIds.has(experiment.id) && <circle cx={ex} cy={ey} r="9" fill="none" stroke="var(--color-text)" strokeWidth="1.25" />}
+                        {selectedId === experiment.id && <circle cx={ex} cy={ey} r="13" fill="none" stroke="var(--color-amber)" strokeWidth="2" />}
+                        <g className="anim-dot-in map-dot" style={{'--i':i} as CSSProperties}><g className={experiment.outcome === 'sustained' && matchIds.has(experiment.id) ? 'anim-flicker' : undefined}><OutcomeMark outcome={experiment.outcome} x={ex} y={ey} color={outcomeColor(experiment.outcome)} /></g></g>
+                      </g>;
+                    })}
+                    {stack.length > 1 && <g aria-hidden="true" pointerEvents="none">
+                      <circle cx={ax + 10} cy={ay - 10} r="7.5" fill="var(--color-bg)" stroke="var(--color-dim)" strokeWidth="1" />
+                      <text x={ax + 10} y={ay - 6.6} textAnchor="middle" fontSize="10" fontWeight="600" fill="var(--color-text)">{stack.length}</text>
+                    </g>}
+                    <title>{stack.map((experiment) => `${experiment.test_id} · ${experiment.outcome ?? t('outcomeNotReported')} · ${experiment.o2_pct}% O₂ · ${experiment.flow_cm_s} cm/s`).join('\n')}</title>
+                  </g>
+                );
+              })}
               </g>
               {scenario?.o2_pct != null && scenario.flow_cm_s != null && onMapAxes(scenario.o2_pct, scenario.flow_cm_s) && (
                 <g className="scenario-glide" style={{transform: `translate(${x(scenario.flow_cm_s)}px, ${y(scenario.o2_pct)}px)`}} pointerEvents="none" aria-label={`Scenario marker: ${scenario.flow_cm_s} centimeters per second airflow, ${scenario.o2_pct}% oxygen`}>
@@ -1219,6 +1248,7 @@ export function EvidenceMap({
                 <div>
                 <p className="console-label break-words text-amber [overflow-wrap:anywhere]">{experimentLabel(selected)}</p>
                 <p className="mt-1 text-sm text-text">{selected.outcome ?? 'Outcome not reported'} · {selected.o2_pct}% O₂ · {selected.flow_cm_s} cm/s</p>
+                {selectedStack && selectedStack.length > 1 && <p className="mt-1 text-sm text-dim">{format('mapStackPosition', { i: selectedStack.findIndex((experiment) => experiment.id === selected.id) + 1, n: selectedStack.length })}</p>}
                 </div>
                 {source && <a href={source.url} target="_blank" rel="noreferrer" className={`text-sm ${textLink}`}>{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}
               </div>

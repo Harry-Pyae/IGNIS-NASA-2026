@@ -46,6 +46,8 @@ export const MATERIAL_LABELS: Record<string, string> = {
   PMMA: 'PMMA',
   nomex: 'Nomex',
   cotton_fiberglass: 'Cotton-fiberglass fabric',
+  polyethylene: 'Polyethylene',
+  silicone: 'Silicone',
 };
 export const CLASS_LABELS: Record<MaterialClass, string> = {
   thermoplastic: 'thermoplastic',
@@ -69,6 +71,8 @@ export interface ScenarioPreset {
   flow_cm_s: number | null;
   thickness_mm: number | null;
   pressure_kpa: number | null;
+  /** One plain line under the tile (e.g. where an older campaign's evidence comes from). */
+  note?: string;
 }
 
 const CABIN_AIR = { o2_pct: 21, flow_cm_s: null, thickness_mm: null, pressure_kpa: 101.325 } as const;
@@ -84,12 +88,15 @@ export const SCENARIO_PRESETS: readonly ScenarioPreset[] = [
     ...CABIN_AIR,
   },
   {
+    // Decision 2026-11-15: the USML-1 Wire Insulation Flammability runs (polyethylene on a nichrome core) enter scope as
+    // a deliberate campaign + geometry extension. Silicone sheets were declined for this tile: wrong geometry.
     id: 'cable-insulation',
-    label: 'Cable insulation',
-    material: null,
-    material_class: 'insulation',
-    fuel_form: null,
+    label: 'Cable insulation (polyethylene)',
+    material: { fuel_material: 'polyethylene', material_class: 'insulation' },
+    material_class: null,
+    fuel_form: 'insulated_wire',
     ...CABIN_AIR,
+    note: 'Evidence from USML-1, a 1992 Space Shuttle glovebox experiment: decades older than BASS and Saffire.',
   },
   {
     id: 'crew-clothing',
@@ -99,8 +106,16 @@ export const SCENARIO_PRESETS: readonly ScenarioPreset[] = [
     fuel_form: 'fabric',
     ...CABIN_AIR,
   },
-  // ponytail: no catalog packaging material yet; R1 names one, then this gets an explicit mapping.
-  { id: 'cargo-packaging', label: 'Cargo packaging', material: null, material_class: null, fuel_form: null, ...CABIN_AIR },
+  // Decision 2026-11-15: no verified flight test of a packaging material was found (searched: docs/R1-QUEUE.md), so the
+  // Cargo packaging tile became a gap line under the Gap Radar and this neutral material tile took its place.
+  {
+    id: 'silicone-sheet',
+    label: 'Silicone sheet',
+    material: { fuel_material: 'silicone', material_class: 'other' },
+    material_class: null,
+    fuel_form: 'flat_sheet',
+    ...CABIN_AIR,
+  },
 ];
 
 const norm = (s: string) =>

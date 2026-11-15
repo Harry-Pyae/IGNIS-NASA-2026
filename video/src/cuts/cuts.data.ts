@@ -136,7 +136,7 @@ export const CUTS: CutDef[] = [
       { id: 'pitch-17', chapter: '04 · Keeping it honest', vo: 'How do we keep it honest? First, a *validator*. I claim this run used ten centimetres per second.', visual: { kind: 'ui', shots: ['caseWithheld'] }, targetSec: 8, minSec: 7, maxSec: 10, signOff: 'Check at render: GMT96-T8’s verified airflow is still 5 cm/s (the line says the card says five)' },
       { id: 'pitch-18', chapter: '04 · Keeping it honest', vo: 'The card says five. *Withheld*, and IGNIS shows the source row.', visual: { kind: 'ui', shots: ['caseWithheld'], at: 3 }, targetSec: 6, minSec: 5, maxSec: 8 },
       { id: 'pitch-19', chapter: '04 · Keeping it honest', vo: 'Second, every card is published by a *named* human reviewer, after checking it against its source.', visual: { kind: 'ui', shots: ['verifiedBy'] }, targetSec: 8, minSec: 7, maxSec: 10 },
-      { id: 'pitch-20', chapter: '04 · Keeping it honest', vo: 'Third, we never claim more than the catalog holds. Two of our presets have no verified flight test yet, and IGNIS *says so* instead of guessing.', visual: { kind: 'statement', text: COPY.absence, sub: 'Never “NASA has never tested this.”' }, note: 'We had a way to fill the Cable insulation preset (four silicone sheet samples) and declined — the geometry didn’t match a cable jacket.', targetSec: 8, minSec: 7, maxSec: 10 },
+      { id: 'pitch-20', chapter: '04 · Keeping it honest', vo: 'Third, we never claim more than the catalog holds. Where no verified flight test exists, like cargo packaging, IGNIS *says so* instead of guessing.', visual: { kind: 'statement', text: COPY.absence, sub: 'Never “NASA has never tested this.”' }, note: 'We had a way to fill Cable insulation with silicone sheets and declined — the geometry didn’t match a cable jacket. It now holds real USML-1 wire runs (1992), labelled as older; cargo packaging has none, so it sits on the gap line.', targetSec: 8, minSec: 7, maxSec: 10 },
       // 05 · Data, Earth, what's next (2:50–3:30)
       { id: 'pitch-21', chapter: '05 · Data and what’s next', vo: 'Every verified run traces to its report, page and quote, and the whole dataset is *open* to download.', visual: { kind: 'catalog' }, targetSec: 10, minSec: 9, maxSec: 12 },
       {
@@ -148,7 +148,7 @@ export const CUTS: CutDef[] = [
       {
         id: 'pitch-23', chapter: '05 · Data and what’s next',
         vo: 'Next: more campaigns, and *partial gravity*, with lunar flammability data from programs like FM2 and LUCI, so the same questions work for the Moon.',
-        visual: { kind: 'list', heading: 'What’s next', items: ['More verified campaigns: Saffire, SoFIE / MIST', 'Partial-gravity data: FM2 and LUCI (R1 to confirm)', 'A reviewed Burmese interface'] },
+        visual: { kind: 'list', heading: 'What’s next', items: ['More verified campaigns: Saffire, SoFIE / MIST', 'Cargo packaging materials: no verified flight test in the catalog yet','Partial-gravity data: FM2 and LUCI (R1 to confirm)', 'A reviewed Burmese interface'] },
         targetSec: 11, minSec: 10, maxSec: 13, signOff: 'R1: confirm FM2 and LUCI are the right partial-gravity programs and describe them correctly',
       },
       // 06 · Thank you (3:30–4:00)

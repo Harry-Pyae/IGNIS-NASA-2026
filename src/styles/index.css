@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 @import './tokens.css';
 
-.brief-print-only, .map-radar, .map-pulse { display: none; }
+.brief-print-only, .map-pulse { display: none; }
 
 /* Internal scroll boxes (useScrollArea, src/lib/scrollArea.ts): a thin designed bar, never a hidden one, and an edge fade
    only on the side where content continues. The bar is dim at rest and full while hovered, focused or scrolling; under
@@ -126,7 +126,6 @@ select option { background-color: var(--color-panel); color: var(--color-text); 
 @media (prefers-reduced-motion: no-preference) {
   .map-dot, .map-pulse { transform-box: fill-box; transform-origin: center; }
   .map-pulse { display: inline; }
-  .map-radar { display: block; width: 100%; height: 100%; background: conic-gradient(from 0deg, transparent 310deg, color-mix(in srgb,var(--color-amber) 11%,transparent) 360deg); }
   .scenario-glide { transition: transform var(--dur-glide) var(--ease-out); }
   .map-hatching { animation: hatch-in 180ms ease-out backwards; animation-delay: calc(400ms + var(--dots) * var(--stagger-dot)); }
   @keyframes hatch-in { from { opacity: 0; } }

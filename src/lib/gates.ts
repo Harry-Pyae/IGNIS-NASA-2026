@@ -14,6 +14,7 @@ const FORM_COMPAT: Record<FuelForm, readonly FuelForm[]> = {
   thick_slab: ['thick_slab', 'flat_sheet'],
   rod: ['rod'],
   fabric: ['fabric'],
+  insulated_wire: ['insulated_wire'], // never a rod or a sheet (Round 8 ruling; decision 2026-11-15)
 };
 
 export type GateCard = Pick<Experiment, 'id' | 'domain' | 'fuel_material' | 'material_class' | 'fuel_form'>;

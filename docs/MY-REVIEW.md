@@ -415,7 +415,7 @@ every row needs an R3 translation with both ticks before Burmese can ship. New i
 
 ## 1c. Submission day: guided tour + walkthrough (18 keys)
 
-Added 2026-11-15 to `src/i18n/index.ts` (404 keys in total after §1d). Same rules as §1. Also translate the label template
+Added 2026-11-15 to `src/i18n/index.ts` (407 keys in total after §1e). Same rules as §1. Also translate the label template
 “Watch the {n}-second walkthrough” (`COPY.plain.walkthrough.label`) and “Recorded on catalog revision {revision}.”
 
 | Key | English | R3 translation | Native ✓ | Scientific ✓ | Notes |
@@ -449,6 +449,20 @@ Added 2026-11-15 (team-lead decision, migration 0006). Same rules as §1.
 | glossary · Did not ignite | Ignition was attempted and the sample never caught. It is an observation at those conditions, not a gap. |  |  |  |  |
 | map legend · no_ignition | Did not ignite — ignition was attempted and the sample never caught. |  |  |  |  |
 | preset · needsMaterial | No verified flight test of this material class in the current IGNIS catalog. Pick a material to explore. |  |  |  | replaces “Choose a material” |
+
+## 1e. Map stacks, presets and the cargo gap (3 keys + 4 strings)
+
+Added 2026-11-15. Same rules as §1.
+
+| Key | English | R3 translation | Native ✓ | Scientific ✓ | Notes |
+|---|---|---|---|---|---|
+| `mapStackLabel` | {n} runs at this point: {runs}. Press to step through them. |  |  |  |  |
+| `mapStackSelected` | Selected {run} — {i} of {n} runs at this point. Press again for the next, details below |  |  |  |  |
+| `mapStackPosition` | Run {i} of {n} at this point. Tap the point again for the next. |  |  |  |  |
+| gap radar · notInCatalog | Cargo packaging: no verified flight test of a packaging material in the current IGNIS catalog. A candidate area for further study. |  |  |  |  |
+| preset label | Cable insulation (polyethylene) |  |  |  | was “Cable insulation” |
+| preset label | Silicone sheet |  |  |  | replaces “Cargo packaging” |
+| preset note | Evidence from USML-1, a 1992 Space Shuttle glovebox experiment: decades older than BASS and Saffire. |  |  |  |  |
 
 ## 2. Glossary (terms from her strings)
 

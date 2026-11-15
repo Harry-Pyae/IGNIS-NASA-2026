@@ -43,13 +43,17 @@ describe('alias resolver (§5a)', () => {
     expect(pickMaterial('cabin wall', 'PMMA', catalog)).toMatchObject({ status: 'resolved', material_class: 'thermoplastic', via: 'picker' });
     expect(pickMaterial('x', 'unobtainium', catalog).status).toBe('unresolved');
   });
-  it('presets carry explicit mappings; unmapped presets go to the picker', () => {
+  it('presets carry explicit mappings', () => {
     const [wall, cable] = SCENARIO_PRESETS;
     expect(presetScenario(wall!, catalog)).toMatchObject({
       material: { status: 'resolved', fuel_material: 'PMMA', material_class: 'thermoplastic', via: 'preset' },
       fuel_form: 'flat_sheet',
     });
-    expect(presetScenario(cable!, catalog).material).toMatchObject({ status: 'unresolved', candidates: ['kapton'] });
+    // Decision 2026-11-15: the cable preset maps to USML-1 polyethylene wire insulation, its own form.
+    expect(presetScenario(cable!, catalog)).toMatchObject({
+      material: { status: 'resolved', fuel_material: 'polyethylene', material_class: 'insulation', via: 'preset' },
+      fuel_form: 'insulated_wire',
+    });
   });
 });
 

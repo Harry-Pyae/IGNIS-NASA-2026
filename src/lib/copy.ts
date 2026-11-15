@@ -180,6 +180,8 @@ export const COPY = {
     viewEvidenceAction: 'View evidence',
     jumpToMap: 'Jump to map',
     // Steps 03/04 before a scenario is confirmed: one slim row each (the journey's shape stays visible).
+    // Gap Radar: a material class the catalog has no flight test of, kept visible (it moved here from a preset tile).
+    notInCatalog: 'Cargo packaging: no verified flight test of a packaging material in the current IGNIS catalog. A candidate area for further study.',
     collapsed: {
       matches: 'Ranked NASA experiments appear here after you confirm a scenario.',
       matchesAction: 'Confirm a scenario',

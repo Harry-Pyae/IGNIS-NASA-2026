@@ -21,7 +21,8 @@ themselves on every publish):
 |---|---|---|
 | Crew clothing (cotton blend) | **The only preset with runs: all 3 cards.** The current demo scenario. | The six BASS-II drafts (all cotton_fiberglass, 16.9–17.5 % O₂, low final flow) would take it to 9 runs and fill the low-oxygen corner of the map. The Saffire SIBAL drafts join it only if R1 records SIBAL as cotton_fiberglass. |
 | Cabin wall panel (PMMA) | No compatible runs | A published PMMA card (Saffire IV-2, V-3 or V-4 after R1's outcome decision). |
-| Cable insulation · Cargo packaging | Open the material picker | R1 sends Coder A a verified card's exact `fuel_material` (AGENTS.md open handoff). |
+| Cable insulation (polyethylene) | Mapped to the new form `insulated_wire` (decision 2026-11-15); runs only once the USML-1 WIF drafts are published | USML-1 WIF-A, -B, -D (1992 Shuttle glovebox; O₂ and pressure not stated, so not plotted) |
+| Silicone sheet (replaced Cargo packaging) | Four Saffire-II silicone `no_ignition` drafts | Their publication. Cargo packaging moved to a Gap Radar line: no packaging flight test was found |
 
 **Recommendation for R3 (to confirm with R1):** keep *Crew clothing* as the demo scenario. It is the only one with
 evidence today, and every BASS-II draft R1 signs strengthens it without changing the script. Re-read this table after

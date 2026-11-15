@@ -194,3 +194,15 @@ Color always has a text or shape counterpart.
 5. **Still parked:** rows with no stated outcome; "Reused" samples (a prior burn alters the sample); "No Blow-off"
    (a reading is proposed in `docs/R1-QUEUE.md`, not published); Saffire IV-2 (`partial` only once it has an
    approved definition).
+6. **USML-1 Wire Insulation Flammability (WIF) enters scope** as a deliberate campaign + geometry extension: new form
+   `insulated_wire` (Zod + form gate; the DB has no form constraint, so no migration). Only the insulation is the fuel;
+   the wire core and the igniter wire are apparatus. A rod or a sheet never stands in for it. The Cable insulation
+   preset maps to polyethylene `insulated_wire` and says plainly that the evidence is from USML-1, a 1992 Space Shuttle
+   glovebox experiment, decades older than BASS and Saffire. Source NTRS 20030075805: three runs drafted (WIF-A, -B, -D,
+   `docs/SIGNING-SESSION-USML1.md`); WIF-C parked (flame held at the igniter, never spread). O₂ and pressure are not
+   stated in the source and stay null, so these runs are retrievable but not plotted.
+7. **Cargo packaging → Silicone sheet.** A source hunt found no in-scope flight run of a packaging-class material
+   (searched list in `docs/R1-QUEUE.md` §3). The tile is replaced by "Silicone sheet" (the four Saffire-II silicone
+   `no_ignition` runs; neutral name, class `other`, no insulation claim). The honest statement moved, it didn't
+   disappear: a line under the Gap Radar reads "Cargo packaging: no verified flight test of a packaging material in the
+   current IGNIS catalog. A candidate area for further study.", and the pitch roadmap lists it.

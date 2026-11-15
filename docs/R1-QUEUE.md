@@ -153,6 +153,22 @@ Extractor found no stated outcome. Source (NTRS 20210011521): the 2-sided PMMA f
 > - **Saffire IV-2:** “burned, did not spread appreciably” — see the decision note in [PMMA-DECISION.md](PMMA-DECISION.md#parked-saffire-iv-2): `partial` fits only once the catalog has an approved definition of `partial`.
 > - **Saffire-II 2-7 (PMMA lead + Nomex):** two materials with two outcomes on one sample; not one card.
 > - **Saffire-II 2-8 / 2-9 (PMMA slabs):** results are in a companion paper we have not sourced.
+>
+> **USML-1 WIF (decision 2026-11-15):** WIF-A, WIF-B, WIF-D drafted ([SIGNING-SESSION-USML1.md](SIGNING-SESSION-USML1.md)).
+> **WIF-C parked:** ignited in still air; the flame stayed at the (energized) igniter and "did not spread beyond the
+> blackened surface downstream" (p.7). No outcome category fits, and a flame held by apparatus is weak evidence.
+>
+> **Cargo packaging source hunt (2026-11-15): none found.** Searched: NTRS full text of Saffire I/II (20170008805),
+> Saffire IV/V (20210011521) and the BASS/BASS-II appendix (20150008962); NTRS abstracts of the four Saffire VI papers
+> (20240002981, 20240007488, 20250002675, 20260001992: PMMA and cotton / cotton-fiberglass only), the Saffire status
+> papers (20170000230, 20150000894) and SoFIE (20200000361); NTRS keyword searches for cargo bag, Nomex bag,
+> polyurethane foam and packaging foam flammability in microgravity (no flight-run hits). Not searched: the PSI
+> combustion index (no programmatic access from here).
+>
+> **Candidate, not packaging (proposal for R1):** Saffire-II sample 2-7, Nomex® HT90-40, "a meta-aramid fabric commonly
+> used on the ISS": "Despite this significant heating load, the fabric was not ignited." (2017 deck, slide 25). It is now
+> cardable as `no_ignition` for the Nomex alone (the PMMA lead was the pilot flame, i.e. the ignition source). The
+> source never calls it packaging, so it does not fill the Cargo packaging gap.
 
 ### Saffire-II (NTRS 20170008805)
 

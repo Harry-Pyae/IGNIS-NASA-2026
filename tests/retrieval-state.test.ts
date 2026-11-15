@@ -51,7 +51,7 @@ describe('A4 · one map accounting: summary counts come from the map\'s own part
 });
 
 describe('A7 · preset availability from the real catalog', () => {
-  it('counts eligible / exact / class-only / map partition per preset; no material → needs_material', async () => {
+  it('counts eligible / exact / class-only / map partition per preset; every preset mapped', async () => {
     const { presetAvailability } = await import('../src/engine/views');
     const fabric = [
       card({ id: 'f1', o2_pct: 21, flow_cm_s: 10 }),
@@ -64,8 +64,16 @@ describe('A7 · preset availability from the real catalog', () => {
     expect(byId['crew-clothing']).toMatchObject({ state: 'ready', exact: 2, visible: 1, missing_coordinates: 1 });
     const crew = byId['crew-clothing']!;
     if (crew.state === 'ready') expect(crew.eligible).toBe(crew.exact + crew.class_only);
-    expect(byId['cable-insulation']).toEqual({ preset_id: 'cable-insulation', state: 'needs_material' });
-    expect(byId['cargo-packaging']).toEqual({ preset_id: 'cargo-packaging', state: 'needs_material' });
+    // Every preset is mapped now (decision 2026-11-15): no evidence reads as 0 runs, never as a picker.
+    expect(byId['cable-insulation']).toMatchObject({ state: 'ready', eligible: 0 });
+    expect(byId['silicone-sheet']).toMatchObject({ state: 'ready', eligible: 0 });
+    expect(byId['cargo-packaging']).toBeUndefined();
+    // Only an insulated wire counts for cable insulation: an insulation rod never stands in for it.
+    const wires = [
+      card({ id: 'w1', fuel_material: 'polyethylene', material_class: 'insulation', fuel_form: 'insulated_wire', o2_pct: null, flow_cm_s: 10 }),
+      card({ id: 'k1', fuel_material: 'kapton', material_class: 'insulation', fuel_form: 'rod' }),
+    ];
+    expect(presetAvailability(wires).find((p) => p.preset_id === 'cable-insulation')).toMatchObject({ state: 'ready', eligible: 1, exact: 1, missing_coordinates: 1 });
     expect(presetAvailability([]).find((p) => p.preset_id === 'crew-clothing')).toMatchObject({ state: 'ready', eligible: 0 });
   });
 });

@@ -14,7 +14,9 @@ import { z } from 'zod';
 export const DomainSchema = z.enum(['solid_flammability', 'smoke_detection']);
 export const MaterialClassSchema = z.enum(['thermoplastic', 'fabric', 'aramid_fabric', 'insulation', 'other']);
 /** Not a DB constraint (§4 comment only) — enforced here so §5 form gates stay total. */
-export const FuelFormSchema = z.enum(['flat_sheet', 'rod', 'fabric', 'thick_slab']);
+// insulated_wire (decision 2026-11-15): an insulation layer on a wire core (USML-1 WIF). Only the insulation is the fuel;
+// the core and any igniter wire are apparatus. Its own form: a rod or a sheet never stands in for a cable.
+export const FuelFormSchema = z.enum(['flat_sheet', 'rod', 'fabric', 'thick_slab', 'insulated_wire']);
 // no_ignition (team lead decision 2026-11-15, migration 0006): ignition attempted, the sample did not ignite. An
 // observation like the others: retrievable, and it counts as tested at its conditions (never a gap).
 export const OutcomeSchema = z.enum(['sustained', 'extinguished', 'transition', 'partial', 'no_ignition']);
