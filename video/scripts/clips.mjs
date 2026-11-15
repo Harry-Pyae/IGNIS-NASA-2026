@@ -29,6 +29,13 @@ const byTest = (needle) => exported.experiments.find((e) => e.test_id.includes(n
 const t7 = byTest('GMT96-T7');
 const t8 = byTest('GMT96-T8');
 const log = { url: BASE, catalogRevision: exported.catalog_revision, count: exported.count, startedAt: new Date().toISOString(), clips: {}, notes: [], synthesize: {} };
+// Deviations from the recording sheet, accepted by the team lead (2026-11-15), recorded in every session log.
+log.accepted = [
+  '06-evidence-chain: the automated take lingers on the NTRS record page (the canonical citation target). ALSO NEEDED: one manual human take of 06 with the actual NASA PDF open on screen (a teammate records just that clip by hand).',
+  '12-share: the share link opens in the same tab (one tab per clip), showing the scenario restored.',
+  '15-export: the dataset really downloads (saved beside the screenshots); a headless recorder has no download bar to film.',
+  '17-mobile: an emulated 390 px portrait phone view, not a physical device.',
+];
 
 const browser = await chromium.launch({ channel: 'msedge' });
 

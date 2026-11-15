@@ -59,19 +59,21 @@ export const ENVIRONMENT_PRESETS: readonly EnvironmentPreset[] = [
     id: 'exploration-atmosphere',
     // Source-specific label (Round 6 #3): a proposed habitat atmosphere, not an established operating environment.
     label: 'Proposed exploration atmosphere (Moon base)',
-    o2_pct: 30, // PLACEHOLDER (unsourced practice-build figure)
-    pressure_kpa: 70.3, // PLACEHOLDER: 10.2 psi
-    pressure_original: { value: 10.2, unit: 'psi' },
-    context: 'Proposed exploration habitats lower the pressure and raise the oxygen fraction to shorten spacesuit pre-breathe.',
+    // Prepared 2026-11-15 from NTRS 20180004258 (FISO deck), slide 4: "Future exploration atmospheres extend to 34% O2,
+    // 8.2 psia". The former 30 % / 10.2 psi is the Shuttle pre-EVA atmosphere per the same slide. Hidden until R1 signs.
+    o2_pct: 34,
+    pressure_kpa: 56.5, // 8.2 psia × 6.89476 = 56.54 kPa
+    pressure_original: { value: 8.2, unit: 'psi' },
+    context: 'Future exploration cabins may run at up to 34% oxygen at 8.2 psia, beyond the conditions in the verified catalog.',
     verification: {
       status: 'placeholder',
       check:
-        'Both figures. The practice build used 30% O₂ / 10.2 psi; the NASA Exploration Atmospheres Working Group final report is ' +
-        'recalled as recommending about 34% O₂ at 8.2 psia, and 10.2 psi as the Shuttle pre-EVA staging pressure at a different ' +
-        'O₂ fraction. Use whichever values the source states, with its exact wording for the context sentence.',
+        '34% O₂ at 8.2 psia (56.5 kPa) and the context sentence, against slide 4 of NTRS 20180004258: "Future exploration ' +
+        'atmospheres extend to 34% O2, 8.2 psia" (the same slide: "This has historically been 30% O2, 10.2 psia (shuttle pre-EVA ' +
+        'atm)"). NASA/TP-2010-216134 is the Working Group report behind it. To sign: status verified, source_url, your full name.',
       source_to_confirm:
-        'NASA/TP-2010-216134, "Recommendations for Exploration Spacecraft Internal Atmospheres: The Final Report of the NASA ' +
-        'Exploration Atmospheres Working Group" (NTRS).',
+        'NTRS 20180004258, "Spacecraft Fire Safety: Protecting Vehicles and Crews on Long-Duration Exploration Missions" (FISO), ' +
+        'slide 4; NASA/TP-2010-216134 (Exploration Atmospheres Working Group final report).',
       source_url: null,
       verified_by: null,
     },

@@ -88,3 +88,21 @@ Generated 2026-11-15 by Coder A's agent. Evidence source #1: [NTRS 20240002981](
 ## Context entries from #2 (R1 signs; nothing from #2 becomes a card)
 
 Drafted as context (not evidence) in `docs/FACT-CHECK-QUEUE.md`: NASA-STD-6001 Test 1 (the 15 cm criterion) and the exploration atmosphere bound (34 % O₂ / 8.2 psia). Each needs R1's sign-off with its slide locator before it renders.
+
+### S5. Saffire II-7 — Nomex HT90-40 (2017 deck, not Saffire VI)
+
+`cb94165a-4de1-4a40-868f-23ce9a50c7b1` · saved as a draft; reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate) · source [NTRS 20170008805](https://ntrs.nasa.gov/citations/20170008805)
+
+| ✓ | Field | Draft value | Check it against |
+|---|---|---|---|
+| ☐ | `fuel_material` | **nomex_fabric** (aramid_fabric) | [p.9](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=9): “… the remainder Nomex® fabric (HT 90-40).” · [p.24](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=24): “a meta-aramid fabric commonly used on the ISS called Nomex® HT90-40” |
+| ☐ | `thickness_mm` | **0.37** | Table I [p.29](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=29): “2-7 PMMA & Nomex 5 cm 0.85 & 0.37 mm 5 & 24 cm” |
+| ☐ | `o2_pct` | **22.1** | [p.9](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=9): “Initial oxygen concentration 22.1% (ISS reading …)” |
+| ☐ | `flow_cm_s` | **20** (concurrent, upward) | [p.9](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=9): “20 cm/s flow for all tests except for Sample 2-6” · “All upward burns except Sample 2-4” |
+| ☐ | `pressure_kpa` | *null — not stated* | |
+| ☐ | `ignition_method` | **pilot flame from the burning 0.8 mm PMMA lead (~2 min)** | [p.25](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=25): “It took about two minutes for the PMMA to be consumed, all the while the flame plume was extending over and heating the base of the Nomex® fabric.” |
+| ☐ | `outcome` | **no_ignition** | [p.25](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=25): “Despite this significant heating load, the fabric was not ignited.” · conclusions [p.27](https://ntrs.nasa.gov/api/citations/20170008805/downloads/20170008805.pdf#page=27) |
+
+**Decide before publishing:** the PMMA lead is treated as the ignition source (pilot flame), like an igniter, and only the Nomex is carded. This card does not say Nomex is cargo-bag material: that needs the separate R1 CTB source.
+
+☐ Publish in /curate under your own full name.
