@@ -31,7 +31,7 @@ import { CONSOLE_DRAFT_KEY } from '../lib/consoleDraft';
 import { Tour } from '../features/tour/Tour';
 import { dropTourReplay, markTourOffered, shouldOfferTour, wantsTourReplay } from '../features/tour/tourOffer';
 import { useScrollArea } from '../lib/scrollArea';
-import { nextInStack, stackPoints } from '../lib/mapStacks';
+import { stackChipLabel, stackPoints, stackTap } from '../lib/mapStacks';
 import { experimentLabel } from '../lib/runLabel';
 import { WIDE_QUERY } from '../lib/layout';
 import { GUIDED_MISSION_REQUEST, takePendingMission } from './consoleLoader';
@@ -1034,14 +1034,28 @@ export function EvidenceMap({
     onSelect(next);
     setAnnouncement(next && card ? format('mapSelected', { run: experimentLabel(card) }) : t('mapSelectionCleared'));
   };
-  // A stack of co-located runs: each tap (or Enter) steps to the next run, and past the last one clears the selection.
+  // A stack of co-located runs: a tap (or Enter) opens its first run and the card lists every run in it; a second tap
+  // clears. Any run is one click away, from the card's switcher or the hover list, so nobody cycles blind.
+  const pickInStack = (run: Experiment, stack: Experiment[], scroll: boolean) => {
+    reveal.current = scroll;
+    onSelect(run.id);
+    setHovered(null);
+    setAnnouncement(format('mapStackSelected', { run: experimentLabel(run), i: stack.indexOf(run) + 1, n: stack.length }));
+  };
   const chooseIn = (stack: Experiment[]) => {
     if (stack.length === 1) return choose(stack[0]!.id);
-    const next = nextInStack(stack, selectedId);
-    reveal.current = next !== null;
-    onSelect(next?.id ?? null);
-    setAnnouncement(next ? format('mapStackSelected', { run: experimentLabel(next), i: stack.indexOf(next) + 1, n: stack.length }) : t('mapSelectionCleared'));
+    const next = stackTap(stack, selectedId);
+    if (next) return pickInStack(next, stack, true);
+    onSelect(null);
+    setAnnouncement(t('mapSelectionCleared'));
   };
+  // Hover list for a stack (mouse only; touch and keyboard use the card's switcher). A short grace period lets the
+  // pointer travel from the point into the list without it closing.
+  const [hovered, setHovered] = useState<number | null>(null);
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const hoverOpen = (index: number) => { clearTimeout(hoverTimer.current); setHovered(index); };
+  const hoverClose = () => { clearTimeout(hoverTimer.current); hoverTimer.current = setTimeout(() => setHovered(null), 160); };
+  useEffect(() => () => clearTimeout(hoverTimer.current), []);
   useEffect(() => {
     if (!reveal.current || !selectedId) return;
     reveal.current = false;
@@ -1078,8 +1092,17 @@ export function EvidenceMap({
   // Axes come from the shared gap GRID, so plotted points, cells and the on-axes count can never diverge.
   const x = (flow: number) => left + ((flow - GRID.flow.min) / (GRID.flow.max - GRID.flow.min)) * plotWidth;
   const y = (o2: number) => top + ((GRID.o2.max - o2) / (GRID.o2.max - GRID.o2.min)) * plotHeight;
-  const stacks = stackPoints(plotted, (experiment) => [x(experiment.flow_cm_s!), y(experiment.o2_pct!)]);
+  // Runs in a stack read in natural order (II-1 · II-2 · II-3 · II-7); a tap opens the first.
+  const stacks = stackPoints(plotted, (experiment) => [x(experiment.flow_cm_s!), y(experiment.o2_pct!)])
+    .map((stack) => [...stack].sort((a, b) => a.test_id.localeCompare(b.test_id, undefined, { numeric: true })));
   const selectedStack = stacks.find((stack) => stack.some((experiment) => experiment.id === selectedId));
+  // Where the stack hover list sits, in % of the plot: below the point unless it is low on the plot, kept inside the edges.
+  const hoverStack = hovered != null ? stacks[hovered] : undefined;
+  const hoverAt = hoverStack && (() => {
+    const px = (x(hoverStack[0]!.flow_cm_s!) / width) * 100;
+    const py = (y(hoverStack[0]!.o2_pct!) / height) * 100;
+    return { px, py, below: py < 60, edge: px < 25 ? 12 : px > 75 ? 88 : 50 };
+  })();
   const ticks = (min: number, max: number, step: number) => Array.from({ length: Math.floor((max - min) / step) + 1 }, (_, i) => min + i * step);
   const outcomeColor = (outcome: Experiment['outcome']) => {
     if (outcome === 'sustained') return 'var(--color-flame)';
@@ -1110,30 +1133,38 @@ export function EvidenceMap({
       ) : (
         <>
           <div ref={mapBox} id="evidence-plot" className="evidence-plot scroll-mt-[calc(var(--header-h,0px)+3.5rem)] rounded-xl border border-border bg-bg/45 p-2 sm:p-4 xl:scroll-mt-[calc(var(--header-h,0px)+1rem)]">
+            <div className="relative">
             <svg viewBox={`0 0 ${width} ${height}`} role="group" aria-label={t('mapAccessibility')} className="block h-auto max-h-[70vh] w-full">
               <title>{t('mapVerifiedTitle')}</title>
               <defs>
                 <pattern id="ignis-untested-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                  <rect width="6" height="6" fill="var(--color-bg)" fillOpacity=".45" />
                   <line x1="0" y1="0" x2="0" y2="6" stroke="var(--plot-hatch)" strokeOpacity="var(--plot-hatch-opacity)" strokeWidth="1.3" />
                 </pattern>
                 <clipPath id="ignis-plot-clip"><rect x={left} y={top} width={plotWidth} height={plotHeight} /></clipPath>
+                {/* The hatch is ONE continuous pattern across the plot, revealed through a softened mask of the untested
+                    cells: tested cells show as gentle clearings, never as opaque boxes punched through the hatch. */}
+                <filter id="ignis-soft-cells" x={left - 10} y={top - 10} width={plotWidth + 20} height={plotHeight + 20} filterUnits="userSpaceOnUse">
+                  <feGaussianBlur stdDeviation="2" />
+                </filter>
+                {(['untested', 'outside_range'] as const).map((state) => (
+                  <mask key={state} id={`ignis-${state}-mask`} maskUnits="userSpaceOnUse" x={left - 10} y={top - 10} width={plotWidth + 20} height={plotHeight + 20}>
+                    <g filter="url(#ignis-soft-cells)">
+                      {grid.cells.flatMap((row) => row).filter((cell) => cell.state === state).map((cell) => {
+                        // Cells on the plot's edge reach past it, so the blur never fades the hatch along the axes.
+                        const x0 = x(cell.flow_min) - (cell.flow_min <= GRID.flow.min ? 8 : 0);
+                        const x1 = x(cell.flow_max) + (cell.flow_max >= GRID.flow.max ? 8 : 0);
+                        const y0 = y(cell.o2_max) - (cell.o2_max >= GRID.o2.max ? 8 : 0);
+                        const y1 = y(cell.o2_min) + (cell.o2_min <= GRID.o2.min ? 8 : 0);
+                        return <rect key={`${cell.o2_min}-${cell.flow_min}`} x={x0} y={y0} width={x1 - x0} height={y1 - y0} fill="white" />;
+                      })}
+                    </g>
+                  </mask>
+                ))}
               </defs>
-              <g className="map-hatching" style={{'--dots': plotted.length} as CSSProperties}>
-              {grid.cells.flatMap((row) => row).map((cell) => cell.state === 'tested' ? null : (
-                <rect
-                  key={`${cell.o2_min}-${cell.flow_min}`}
-                  x={x(cell.flow_min)}
-                  y={y(cell.o2_max)}
-                  width={x(cell.flow_max) - x(cell.flow_min)}
-                  height={y(cell.o2_min) - y(cell.o2_max)}
-                  fill={cell.state === 'untested' ? 'url(#ignis-untested-hatch)' : 'var(--color-faint)'}
-                  fillOpacity={cell.state === 'outside_range' ? '.07' : '1'}
-                  stroke={cell.state === 'outside_range' ? 'var(--color-faint)' : 'none'}
-                  strokeDasharray={cell.state === 'outside_range' ? '2 3' : undefined}
-                  strokeWidth=".5"
-                />
-              ))}
+              <g className="map-hatching" style={{'--dots': plotted.length} as CSSProperties} clipPath="url(#ignis-plot-clip)" pointerEvents="none">
+                <rect x={left} y={top} width={plotWidth} height={plotHeight} fill="var(--plot-hatch-wash)" mask="url(#ignis-untested-mask)" />
+                <rect x={left} y={top} width={plotWidth} height={plotHeight} fill="url(#ignis-untested-hatch)" mask="url(#ignis-untested-mask)" />
+                <rect x={left} y={top} width={plotWidth} height={plotHeight} fill="var(--color-faint)" fillOpacity=".08" mask="url(#ignis-outside_range-mask)" />
               </g>
               {grid.envelope && (
                 <rect
@@ -1207,6 +1238,8 @@ export function EvidenceMap({
                     aria-pressed={stack.some((experiment) => experiment.id === selectedId)}
                     aria-label={stack.length === 1 ? label(anchor) : format('mapStackLabel', { n: stack.length, runs: stack.map(experimentLabel).join(', ') })}
                     onClick={() => chooseIn(stack)}
+                    onPointerEnter={(event) => { if (stack.length > 1 && event.pointerType === 'mouse') hoverOpen(i); }}
+                    onPointerLeave={() => { if (stack.length > 1) hoverClose(); }}
                     onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); chooseIn(stack); } }}
                     className="cursor-pointer focus-visible:outline focus-visible:outline-1 focus-visible:outline-amber"
                   >
@@ -1224,7 +1257,7 @@ export function EvidenceMap({
                       <circle cx={ax + 10} cy={ay - 10} r="7.5" fill="var(--color-bg)" stroke="var(--color-dim)" strokeWidth="1" />
                       <text x={ax + 10} y={ay - 6.6} textAnchor="middle" fontSize="10" fontWeight="600" fill="var(--color-text)">{stack.length}</text>
                     </g>}
-                    <title>{stack.map((experiment) => `${experiment.test_id} · ${experiment.outcome ?? t('outcomeNotReported')} · ${experiment.o2_pct}% O₂ · ${experiment.flow_cm_s} cm/s`).join('\n')}</title>
+                    {stack.length === 1 && <title>{`${anchor.test_id} · ${anchor.outcome ? t(anchor.outcome) : t('outcomeNotReported')} · ${anchor.o2_pct}% O₂ · ${anchor.flow_cm_s} cm/s`}</title>}
                   </g>
                 );
               })}
@@ -1237,6 +1270,28 @@ export function EvidenceMap({
                 </g>
               )}
             </svg>
+            {/* Hover list for a stack (mouse only): every co-located run, each one click from being opened. */}
+            {hoverStack && hoverAt && hovered != null && (
+                <div
+                  className="absolute z-10"
+                  style={{ left: `${hoverAt.px}%`, top: `${hoverAt.py}%`, transform: `translate(-${hoverAt.edge}%, ${hoverAt.below ? '18px' : 'calc(-100% - 18px)'})` }}
+                  onPointerEnter={() => hoverOpen(hovered)}
+                  onPointerLeave={hoverClose}
+                >
+                  <div role="group" aria-label={format('mapStackSwitcher', { n: hoverStack.length })} className="map-popover w-max max-w-[22rem] rounded-lg border border-border bg-panel p-1.5 shadow-lg" style={{ transformOrigin: `${hoverAt.edge}% ${hoverAt.below ? 'top' : 'bottom'}` }}>
+                    <p className="px-2 pb-1 pt-0.5 text-xs text-dim">{format('mapStackSwitcher', { n: hoverStack.length })}</p>
+                    {hoverStack.map((run) => (
+                      <button key={run.id} type="button" aria-pressed={run.id === selectedId} onClick={() => pickInStack(run, hoverStack, true)}
+                        className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-text hover:bg-raised aria-pressed:bg-amber/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber">
+                        <svg aria-hidden="true" viewBox="0 0 20 20" className="size-4 shrink-0"><OutcomeMark outcome={run.outcome} x={10} y={10} color={outcomeColor(run.outcome)} /></svg>
+                        <span className="whitespace-nowrap font-medium">{stackChipLabel(run.test_id)}</span>
+                        <span className="text-dim">{run.outcome ? t(run.outcome) : t('outcomeNotReported')} · {run.o2_pct}% O₂ · {run.flow_cm_s} cm/s</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+            )}
+            </div>
           </div>
           <p id="map-announce" aria-live="polite" className="sr-only">{announcement}</p>
           <div aria-live="polite">
@@ -1252,7 +1307,19 @@ export function EvidenceMap({
                 <div>
                 <p className="console-label break-words text-amber [overflow-wrap:anywhere]">{experimentLabel(selected)}</p>
                 <p className="mt-1 text-sm text-text">{selected.outcome ? t(selected.outcome) : t('outcomeNotReported')} · {selected.o2_pct}% O₂ · {selected.flow_cm_s} cm/s</p>
-                {selectedStack && selectedStack.length > 1 && <p className="mt-1 text-sm text-dim">{format('mapStackPosition', { i: selectedStack.findIndex((experiment) => experiment.id === selected.id) + 1, n: selectedStack.length })}</p>}
+                {selectedStack && selectedStack.length > 1 && (
+                  <div role="group" aria-label={format('mapStackSwitcher', { n: selectedStack.length })} className="mt-2">
+                    <p className="text-sm text-dim">{format('mapStackSwitcher', { n: selectedStack.length })}</p>
+                    <div className="mt-1.5 flex flex-wrap gap-1.5">
+                      {selectedStack.map((run) => (
+                        <Button key={run.id} size="sm" aria-pressed={run.id === selected.id} aria-label={experimentLabel(run)} onClick={() => pickInStack(run, selectedStack, false)}>
+                          <svg aria-hidden="true" viewBox="0 0 20 20" className="size-3.5"><OutcomeMark outcome={run.outcome} x={10} y={10} color={outcomeColor(run.outcome)} /></svg>
+                          {stackChipLabel(run.test_id)}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 </div>
                 {source && <a href={source.url} target="_blank" rel="noreferrer" className={`text-sm ${textLink}`}>{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}
               </div>

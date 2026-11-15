@@ -136,6 +136,8 @@
   --plot-grid: var(--color-border);
   --plot-hatch: var(--color-faint);
   --plot-hatch-opacity: .38;
+  /* A faint wash under the hatch, so untested area reads as one soft field (no per-cell boxes). */
+  --plot-hatch-wash: rgb(12 15 22 / 0.35);
   /* ---- Motion durations (§8.3 motion inventory — exact mockup timings) ---- */
   --dur-radar: 8s; /* radar sweep, linear */
   --dur-pulse: 2.4s; /* scenario-marker pulse rings, two rings staggered -1.2s */
@@ -215,8 +217,9 @@
   --shadow-inset: rgb(32 40 51 / 0.05);
   --shadow-header: rgb(161 75 18 / 0.32);
   --plot-grid: #acb6c3;
-  --plot-hatch: #526175;
-  --plot-hatch-opacity: .62;
+  --plot-hatch: #6b5440;
+  --plot-hatch-opacity: .34;
+  --plot-hatch-wash: transparent;
 }
 
 /*

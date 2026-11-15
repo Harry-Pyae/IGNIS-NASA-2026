@@ -1,6 +1,6 @@
 /**
- * Runs drawn within `radius` px of each other on the Evidence Map share one tap target (a "stack"): one tap or Enter
- * steps through them, a badge shows how many there are. Every run is still DRAWN at its own stored position: nothing
+ * Runs drawn within `radius` px of each other on the Evidence Map share one tap target (a "stack"): a tap or Enter opens
+ * the first run, the detail card lists every run in the stack as a switcher, and a badge shows how many there are. Every run is still DRAWN at its own stored position: nothing
  * is jittered or moved. Pixel-based on purpose, so a phone (narrower plot) groups what it can't separate.
  * ponytail: greedy O(n²) grouping, fine for catalogs of hundreds of plotted runs.
  */
@@ -15,9 +15,13 @@ export function stackPoints<T>(points: readonly T[], at: (point: T) => readonly 
   return stacks.map((stack) => stack.members);
 }
 
-/** The next run to select in a stack: the first, then each in turn, then none (a last tap clears, like a single dot). */
-export function nextInStack<T extends { id: string }>(stack: readonly T[], selectedId: string | null): T | null {
-  const index = stack.findIndex((item) => item.id === selectedId);
-  if (index < 0) return stack[0] ?? null;
-  return stack[index + 1] ?? null;
+/** What a tap on a stack selects: its first run, or nothing when one of its runs is already open (a second tap clears,
+ * like a single dot). The detail card's switcher reaches every other run directly, so nobody cycles blind. */
+export function stackTap<T extends { id: string }>(stack: readonly T[], selectedId: string | null): T | null {
+  return stack.some((item) => item.id === selectedId) ? null : (stack[0] ?? null);
+}
+
+/** The short name a stack switcher chip shows: the test id without its campaign ("Saffire II-3" → "II-3"). */
+export function stackChipLabel(testId: string): string {
+  return testId.trim().split(/\s+/).at(-1) ?? testId;
 }

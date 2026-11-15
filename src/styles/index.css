@@ -129,6 +129,9 @@ select option { background-color: var(--color-panel); color: var(--color-text); 
   .scenario-glide { transition: transform var(--dur-glide) var(--ease-out); }
   .map-hatching { animation: hatch-in 180ms ease-out backwards; animation-delay: calc(400ms + var(--dots) * var(--stagger-dot)); }
   @keyframes hatch-in { from { opacity: 0; } }
+  /* Stack hover list: grows from the point it belongs to (transform-origin set inline). */
+  .map-popover { transition: opacity 150ms var(--ease-out), transform 150ms var(--ease-out); }
+  @starting-style { .map-popover { opacity: 0; transform: scale(0.97); } }
   .match-cards article { transition: transform var(--dur-hover) var(--ease-out), border-color var(--dur-hover); }
   @media (hover: hover) and (pointer: fine) {
     .match-cards article:hover { transform: translateY(-2px); border-color: var(--color-amber); }

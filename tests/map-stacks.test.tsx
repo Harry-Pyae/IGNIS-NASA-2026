@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { nextInStack, stackPoints } from '../src/lib/mapStacks';
+import { stackChipLabel, stackPoints, stackTap } from '../src/lib/mapStacks';
 import { EvidenceMap } from '../src/pages/Console';
 import { card } from './helpers';
 
@@ -14,11 +14,12 @@ describe('co-located runs on the Evidence Map', () => {
     expect(stackPoints([{ x: 0, y: 0 }, { x: 3, y: 4 }, { x: 40, y: 0 }], at).map((s) => s.length)).toEqual([2, 1]);
   });
 
-  it('steps through a stack and clears after the last run', () => {
-    expect(nextInStack(silicone, null)?.id).toBe('si-1');
-    expect(nextInStack(silicone, 'si-2')?.id).toBe('si-3');
-    expect(nextInStack(silicone, 'si-4')).toBeNull();
-    expect(nextInStack(silicone, 'elsewhere')?.id).toBe('si-1');
+  it('a tap opens the first run of a stack, and a second tap clears it (no blind cycling)', () => {
+    expect(stackTap(silicone, null)?.id).toBe('si-1');
+    expect(stackTap(silicone, 'elsewhere')?.id).toBe('si-1');
+    expect(stackTap(silicone, 'si-3')).toBeNull();
+    expect(stackChipLabel('Saffire II-7')).toBe('II-7');
+    expect(stackChipLabel('BASS-II GMT175-T9')).toBe('GMT175-T9');
   });
 
   it('renders one tap target with a count badge, every mark at its own stored position', () => {
@@ -26,10 +27,21 @@ describe('co-located runs on the Evidence Map', () => {
     expect(html.match(/id="map-point-/g)).toHaveLength(2); // the stack + the lone run
     expect(html).toContain('id="map-point-si-1"');
     expect(html).toContain('data-stack="4"');
-    expect(html).toContain('4 runs at this point: Saffire II-1, Saffire II-2, Saffire II-3, Saffire II-4. Press to step through them.');
+    expect(html).toContain('4 runs at this point: Saffire II-1, Saffire II-2, Saffire II-3, Saffire II-4. Press to open them.');
     expect(html).toContain('>4</text>');
-    expect(html).toContain('Run 3 of 4 at this point. Tap the point again for the next.');
+    // The detail card lists every co-located run as a switcher: one chip per run, the open one pressed.
+    expect(html).toContain('4 runs at this point — pick one:');
+    for (const n of [1, 2, 3, 4]) expect(html).toMatch(new RegExp(`aria-pressed="${n === 3}" aria-label="Saffire II-${n}"`));
+    expect(html).not.toContain('Tap the point again');
     expect(html.match(/<path d="M /g)!.length).toBeGreaterThanOrEqual(4); // four hexagons drawn, none moved or hidden from the DOM
+  });
+
+  it('draws the untested hatch as one continuous masked layer, not one box per cell', () => {
+    const html = renderToStaticMarkup(<EvidenceMap experiments={[...silicone, alone]} scenario={null} matches={[]} status="connected" selectedId={null} onSelect={() => {}} />);
+    expect(html.split('fill="url(#ignis-untested-hatch)"')).toHaveLength(2); // exactly one hatched layer
+    expect(html).toContain('mask="url(#ignis-untested-mask)"');
+    expect(html).toContain('<feGaussianBlur');
+    expect(html).not.toContain('stroke-dasharray="2 3"'); // no dashed per-cell boxes for out-of-range cells
   });
 
   it('draws no decorative radar wedge inside the plot', () => {
