@@ -34,7 +34,7 @@ export function Slider({ label, hint, describedBy, value, min, max, step = 1, un
     <div className={cx('flex flex-col gap-2', className)}>
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <div className="flex items-center gap-2">
-          <label htmlFor={id} aria-describedby={describedBy} className="console-label text-dim">{label}</label>
+          <label htmlFor={id} aria-describedby={describedBy} className="console-label text-text">{label}</label>
           {hint}
         </div>
         <output htmlFor={id} className="whitespace-nowrap font-mono text-sm text-text tabular-nums">
