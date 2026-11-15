@@ -16,6 +16,13 @@ const principles = [
   [t('methodsPrinciples7'), t('methodsPrinciples8')],
 ] as const;
 
+// How a card becomes public (named reviewer, RLS, quote + locator, source-value checks). /curate is named, never linked.
+const publishing = () => [
+  [t('methodsPublish0'), t('methodsPublish1')],
+  [t('methodsPublish2'), t('methodsPublish3')],
+  [t('methodsPublish4'), t('methodsPublish5')],
+  [t('methodsPublish6'), t('methodsPublish7')],
+] as const;
 export function Methods() {
   return <Page>
     <PageHeader help="helpMethods" eyebrow={t('methodsEyebrow')} title={t('methodsTitle')}
@@ -36,6 +43,14 @@ export function Methods() {
       <ol className="space-y-5">{stages.map(([title, body], i) => <li key={title} className="border-l border-raised pl-5">
         <h3 className="font-semibold"><span className="mr-3 font-mono text-amber">0{i+1}</span>{title}</h3><p className="mt-1 text-dim">{body}</p>
       </li>)}</ol>
+    </section>
+    <section className="mb-10 scroll-mt-[calc(var(--header-h,0px)+1rem)]" id="publishing" aria-labelledby="publishing-title">
+      <h2 id="publishing-title" className="text-2xl font-semibold">{t('methodsPublishTitle')}</h2>
+      <p className="mt-2 text-dim">{t('methodsPublishIntro')}</p>
+      <ol className="mt-5 divide-y divide-border">{publishing().map(([title, body], i) => <li key={title} className="grid gap-2 py-4 sm:grid-cols-[1fr_2fr]">
+        <p className="font-semibold"><span className="console-label mr-2 text-amber">{String(i + 1).padStart(2, '0')}</span>{title}</p><p className="text-dim">{body}</p>
+      </li>)}</ol>
+      <p className="mt-4 border-l-2 border-raised pl-4 text-dim">{t('methodsPublishCurate')}</p>
     </section>
     <h2 className="text-2xl font-semibold">{t('methodsPrinciples')}</h2>
     <dl className="mt-5 divide-y divide-border">{principles.map(([title, body]) => <div key={title} className="grid gap-2 py-4 sm:grid-cols-[1fr_2fr]"><dt className="font-semibold">{title}</dt><dd className="text-dim">{body}</dd></div>)}</dl>

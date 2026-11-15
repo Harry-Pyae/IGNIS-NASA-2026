@@ -68,7 +68,8 @@ export function Library() {
 
   return <Page>
     <PageHeader help={detail ? 'helpDetail' : 'helpLibrary'} eyebrow={t('libraryEyebrow')} title={detail ? t('libraryDetail') : t('libraryTitle')} />
-    {detail && <a className={linkClass} href={'/library' + query}>{t('libraryBack')}</a>}
+    {detail ? <a className={linkClass} href={'/library' + query}>{t('libraryBack')}</a>
+      : <a className={linkClass} href="/methods#publishing">{t('verificationLink')}</a>}
     <div className="mt-5">
       {catalog.state === 'loading' && <p role="status">{t('libraryLoading')}</p>}
       {catalog.state === 'unavailable' && <Panel>
@@ -181,7 +182,7 @@ function ExperimentDetail({ card, specimen }: { card: Experiment; specimen: bool
       </figure>}
       <p className="console-label text-amber">{card.campaign}</p>
       <h2 className="my-2 text-2xl font-semibold">{card.test_id}</h2>
-      <p className="text-sm text-dim">{t('libraryVerifiedBy')} {card.verified_by} · {card.verified_at?.slice(0, 10) ?? missing}</p>
+      <p className="text-sm text-dim">{t('libraryVerifiedBy')} {card.verified_by} · {card.verified_at?.slice(0, 10) ?? missing} · <a className={textLink} href="/methods#publishing">{t('verificationLink')}</a></p>
       {specimen && <a className={linkClass} href={`/?specimen=${encodeURIComponent(card.id)}#evidence-map`}>{t('specimenLocate')}</a>}
       <table className="mt-4 w-full table-fixed text-left text-sm [overflow-wrap:anywhere]">
         <caption className="mb-2 text-left font-semibold">{t('libraryConditions')} <span className="console-label ml-2 font-normal text-dim">{COPY.plain.units.normalized}</span></caption>

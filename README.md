@@ -29,6 +29,17 @@ The platform is frozen for the event. The remaining work is catalog verification
 
 Background music AI-generated (disclosed); recording and narration human-made.
 
+## Verification pipeline
+
+A card reaches the public catalog only through four rules ([Methods → How records are published](https://ignis-nasa-2026.vercel.app/methods#publishing)):
+
+1. **A named human reviewer.** Every published card names the person who checked it against its NASA source (`verified_by`); nothing is published anonymously or automatically.
+2. **Drafts stay private.** The database's row-level security policy lets the public read published cards only (`verified_by is not null`), so drafts never reach the console, the library or the export.
+3. **A verbatim quote and its locator.** Every published card carries a verbatim quote from its NASA source and where to find it: the report link, plus the page, figure or table where the source gives one. Values the source does not report stay empty.
+4. **Checked against the source values.** The test suite compares the catalog's values with their recorded NASA source values on every change (`tests/source-values.test.ts`), and `npm run verify:live` does the same against the public catalog; any difference, or a published card with no recorded source values, fails.
+
+The curator console (`/curate`) is restricted to named reviewers.
+
 ## Event and submission
 
 **Official event: Saturday 14 November through Sunday 15 November 2026.** The team plans to upload a new submission repository to GitHub during the official timer.

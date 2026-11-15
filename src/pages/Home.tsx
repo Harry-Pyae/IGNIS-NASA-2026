@@ -337,6 +337,7 @@ function Footer() {
             <ExportButton summary={summary} label="CSV" format="csv" />
           </div>
           <a href="/methods#plain-words" className={textLink}>Plain words</a>
+          <a href="/methods#publishing" className={textLink}>{t('verificationLink')}</a>
           <a href="#top" className="console-label text-dim transition-colors duration-200 can-hover:hover:text-text">
             {t('backToTop')}
           </a>
