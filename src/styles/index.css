@@ -824,3 +824,11 @@ select option { background-color: var(--color-panel); color: var(--color-text); 
   .tour-card { transition: opacity 150ms var(--ease-out); }
 }
 .walkthrough-dialog::backdrop { background: color-mix(in srgb, var(--color-bg) 80%, transparent); }
+
+/* Evidence Map targets: no rectangular focus box (a stack spans several marks). Keyboard focus rings the tap circle of
+   the run carrying the count badge; pointer taps show nothing extra (the selection ring already marks the open run). */
+.map-target { outline: none; }
+.map-target:focus-visible circle[data-focus-ring] {
+  stroke: var(--color-focus);
+  stroke-width: 1.5;
+}

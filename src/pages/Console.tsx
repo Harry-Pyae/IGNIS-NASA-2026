@@ -31,7 +31,7 @@ import { CONSOLE_DRAFT_KEY } from '../lib/consoleDraft';
 import { Tour } from '../features/tour/Tour';
 import { dropTourReplay, markTourOffered, shouldOfferTour, wantsTourReplay } from '../features/tour/tourOffer';
 import { useScrollArea } from '../lib/scrollArea';
-import { stackChipLabel, stackPoints, stackTap } from '../lib/mapStacks';
+import { stackChipLabel, stackPoints, stackTap, tapRadius } from '../lib/mapStacks';
 import { experimentLabel } from '../lib/runLabel';
 import { WIDE_QUERY } from '../lib/layout';
 import { GUIDED_MISSION_REQUEST, takePendingMission } from './consoleLoader';
@@ -1100,11 +1100,17 @@ export function EvidenceMap({
   const stacks = stackPoints(plotted, (experiment) => [x(experiment.flow_cm_s!), y(experiment.o2_pct!)])
     .map((stack) => [...stack].sort((a, b) => a.test_id.localeCompare(b.test_id, undefined, { numeric: true })));
   const selectedStack = stacks.find((stack) => stack.some((experiment) => experiment.id === selectedId));
+  const at = (experiment: Experiment) => [x(experiment.flow_cm_s!), y(experiment.o2_pct!)] as const;
+  // A stack's badge (and hover list) sits on its top-most run, so it never covers the runs below it.
+  const badgeRun = (stack: Experiment[]) => stack.reduce((topmost, experiment) => (at(experiment)[1] < at(topmost)[1] ? experiment : topmost));
+  // Each drawn run gets its own tap area, sized so it can never overlap another stack's (stacks are ≥ 24 px apart).
+  const otherRuns = (stack: Experiment[]) => stacks.filter((other) => other !== stack).flat().map(at);
   // Where the stack hover list sits, in % of the plot: below the point unless it is low on the plot, kept inside the edges.
   const hoverStack = hovered != null ? stacks[hovered] : undefined;
   const hoverAt = hoverStack && (() => {
-    const px = (x(hoverStack[0]!.flow_cm_s!) / width) * 100;
-    const py = (y(hoverStack[0]!.o2_pct!) / height) * 100;
+    const [hx, hy] = at(badgeRun(hoverStack));
+    const px = (hx / width) * 100;
+    const py = (hy / height) * 100;
     return { px, py, below: py < 60, edge: px < 25 ? 12 : px > 75 ? 88 : 50 };
   })();
   const ticks = (min: number, max: number, step: number) => Array.from({ length: Math.floor((max - min) / step) + 1 }, (_, i) => min + i * step);
@@ -1227,8 +1233,9 @@ export function EvidenceMap({
               {stacks.map((stack, i) => {
                 // One tap target per stack. Every member is drawn at its own stored position; the selected one on top.
                 const anchor = stack[0]!;
-                const ax = x(anchor.flow_cm_s!);
-                const ay = y(anchor.o2_pct!);
+                const [ax, ay] = at(badgeRun(stack));
+                const others = otherRuns(stack);
+                const badgeDy = ay - 10 - 8 < top ? 10 : -10; // above-right, or below-right where the plot's top edge would clip it
                 const shown = stack.find((experiment) => experiment.id === selectedId) ?? anchor;
                 const label = (experiment: Experiment) => `${experimentLabel(experiment)}, ${experiment.outcome ?? t('outcomeUnreported')}, ${experiment.o2_pct}% oxygen, ${experiment.flow_cm_s} centimeters per second airflow`;
                 return (
@@ -1244,9 +1251,12 @@ export function EvidenceMap({
                     onPointerEnter={(event) => { if (stack.length > 1 && event.pointerType === 'mouse') hoverOpen(i); }}
                     onPointerLeave={() => { if (stack.length > 1) hoverClose(); }}
                     onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); chooseIn(stack); } }}
-                    className="cursor-pointer focus-visible:outline focus-visible:outline-1 focus-visible:outline-amber"
+                    className="map-target cursor-pointer"
                   >
-                    <circle cx={ax} cy={ay} r="18" fill="transparent" />
+                    {stack.map((experiment) => {
+                      const xy = at(experiment);
+                      return <circle key={`hit-${experiment.id}`} data-hit data-focus-ring={xy[0] === ax && xy[1] === ay ? '' : undefined} cx={xy[0]} cy={xy[1]} r={tapRadius(xy, others)} fill="transparent" />;
+                    })}
                     {[...stack.filter((experiment) => experiment !== shown), shown].map((experiment) => {
                       const ex = x(experiment.flow_cm_s!);
                       const ey = y(experiment.o2_pct!);
@@ -1257,8 +1267,8 @@ export function EvidenceMap({
                       </g>;
                     })}
                     {stack.length > 1 && <g aria-hidden="true" pointerEvents="none">
-                      <circle cx={ax + 10} cy={ay - 10} r="7.5" fill="var(--color-bg)" stroke="var(--color-dim)" strokeWidth="1" />
-                      <text x={ax + 10} y={ay - 6.6} textAnchor="middle" fontSize="10" fontWeight="600" fill="var(--color-text)">{stack.length}</text>
+                      <circle cx={ax + 10} cy={ay + badgeDy} r="7.5" fill="var(--color-bg)" stroke="var(--color-dim)" strokeWidth="1" />
+                      <text x={ax + 10} y={ay + badgeDy + 3.4} textAnchor="middle" fontSize="10" fontWeight="600" fill="var(--color-text)">{stack.length}</text>
                     </g>}
                     {stack.length === 1 && <title>{`${anchor.test_id} · ${anchor.outcome ? t(anchor.outcome) : t('outcomeNotReported')} · ${anchor.o2_pct}% O₂ · ${anchor.flow_cm_s} cm/s`}</title>}
                   </g>
