@@ -10,7 +10,7 @@ Generated 2026-11-15 by Coder A's agent. Evidence source #1: [NTRS 20240002981](
 
 ### S1. Saffire VI-2
 
-`DRAFT-ID` · reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate)
+`998dbea7-18da-415e-96c6-232394b820dc` · saved as a draft; reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate)
 
 | ✓ | Field | Draft value | Check it against |
 |---|---|---|---|
@@ -29,7 +29,7 @@ Generated 2026-11-15 by Coder A's agent. Evidence source #1: [NTRS 20240002981](
 
 ### S2. Saffire VI-3
 
-`DRAFT-ID` · reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate)
+`72c878b8-2bc0-4ca2-9ec4-3f09deccc7aa` · saved as a draft; reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate)
 
 | ✓ | Field | Draft value | Check it against |
 |---|---|---|---|
@@ -49,7 +49,7 @@ Generated 2026-11-15 by Coder A's agent. Evidence source #1: [NTRS 20240002981](
 
 ### S3. Saffire VI-4
 
-`DRAFT-ID` · reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate)
+`47c61540-e407-4d27-b5d1-cf72d4330608` · saved as a draft; reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate)
 
 | ✓ | Field | Draft value | Check it against |
 |---|---|---|---|
@@ -68,7 +68,7 @@ Generated 2026-11-15 by Coder A's agent. Evidence source #1: [NTRS 20240002981](
 
 ### S4. Saffire VI-1
 
-`DRAFT-ID` · reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate)
+`a77322e5-ced8-4341-8b29-819b50a1f16e` · saved as a draft; reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate)
 
 | ✓ | Field | Draft value | Check it against |
 |---|---|---|---|
