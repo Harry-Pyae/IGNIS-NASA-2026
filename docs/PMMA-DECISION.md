@@ -66,9 +66,20 @@ flame burned at both test flows; it went out only when ventilation stopped.
 | Saffire V-3 | | | |
 | Saffire V-4 | | | |
 
+**Approved by the team lead, 2026-11-15** (both runs, as above). Drafts are saved to production only on the
+team lead's go-ahead.
+
 ## Parked: Saffire IV-2
 
 “grew to 9.5 cm after 400 seconds” (p.9), survived “the 15 second interval of no flow” (p.5) and grew until soot
 reduced the air flow; leading-edge regression only, it “did not spread appreciably” (p.8). Burning without
 appreciable spread fits none of `sustained`, `extinguished`, `transition`, `partial` without interpretation, so it
 stays out of the catalog.
+
+**Decision note — does `partial` honestly fit? (proposal, not a draft).** The catalog's outcome enum has carried
+`partial` since migration 0001, but it has never had an approved definition (`src/lib/copy.ts` deliberately leaves it
+unexplained, and no card uses it). IV-2 fits `partial` only if `partial` is defined as **“the sample ignited and
+burned, but the flame did not spread across it”**: the source supports each part of that (grew to 9.5 cm, p.9;
+survived 15 s with no flow, p.5; “did not spread appreciably”, p.8). Recommendation: keep IV-2 parked today. If the
+team approves that definition (R1 sign-off + one plain-words line), IV-2 can be drafted as `partial` with that
+definition shown; until then any choice would be an interpretation stored as an observation.

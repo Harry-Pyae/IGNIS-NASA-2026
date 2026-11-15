@@ -10,6 +10,8 @@ const VARIANTS: Record<Variant, string> = {
   extinguished: 'text-blue border-blue-badge/60 bg-blue-badge/18',
   transition: 'text-violet border-violet-badge/60 bg-violet-badge/18',
   partial: 'text-warn border-warn/45 bg-warn/12',
+  // Slate grey-blue: an observation, never safety (green/red) coding.
+  no_ignition: 'text-dim border-faint/55 bg-faint/12',
   neutral: 'text-dim border-border bg-panel',
   amber: 'text-amber border-amber/45 bg-amber/12',
   success: 'text-success border-success/40 bg-success/10',
@@ -22,6 +24,7 @@ const DEFAULT_TEXT: Partial<Record<Variant, string>> = {
   extinguished: 'Extinguished',
   transition: 'Transition',
   partial: 'Partial',
+  no_ignition: 'Did not ignite',
   live: 'Live retrieval',
 };
 

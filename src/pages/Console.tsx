@@ -834,7 +834,7 @@ function MissionCaption({ step, onStep, text }: { step: number | null; onStep: (
   );
 }
 
-type LegendKey = 'sustained' | 'extinguished' | 'transition' | 'partial' | 'scenario' | 'untested' | 'outside';
+type LegendKey = 'sustained' | 'extinguished' | 'transition' | 'partial' | 'no_ignition' | 'scenario' | 'untested' | 'outside';
 
 /**
  * The legend is the vocabulary, so it explains itself: pick an item and its meaning replaces the caption below.
@@ -844,7 +844,7 @@ type LegendKey = 'sustained' | 'extinguished' | 'transition' | 'partial' | 'scen
  */
 function MapLegend({ outcomeColor }: { outcomeColor: (outcome: Experiment['outcome']) => string }) {
   const [active, setActive] = useState<LegendKey | null>(null);
-  const outcomes = (['sustained', 'extinguished', 'transition', 'partial'] as const).map((outcome) => ({
+  const outcomes = (['sustained', 'extinguished', 'transition', 'partial', 'no_ignition'] as const).map((outcome) => ({
     key: outcome as LegendKey, label: t(outcome),
     swatch: <svg aria-hidden="true" viewBox="0 0 20 20" className="size-5"><OutcomeMark outcome={outcome} x={10} y={10} color={outcomeColor(outcome)} /></svg>,
     caption: (COPY.plain.outcomes as Partial<Record<string, string>>)[outcome] ?? null,
@@ -989,6 +989,8 @@ function OutcomeMark({ outcome, x, y, color }: { outcome: Experiment['outcome'];
   if (outcome === 'extinguished') return <rect x={x - 5} y={y - 5} width={10} height={10} {...style} />;
   if (outcome === 'transition') return <path d={`M ${x} ${y - 7} L ${x + 6} ${y} L ${x} ${y + 7} L ${x - 6} ${y} Z`} {...style} />;
   if (outcome === 'partial') return <path d={`M ${x} ${y - 7} L ${x + 6} ${y + 5} L ${x - 6} ${y + 5} Z`} {...style} />;
+  // Did not ignite: a hexagon, its own shape (not the scenario ring, not a safety cross).
+  if (outcome === 'no_ignition') return <path d={`M ${x - 3.5} ${y - 6} L ${x + 3.5} ${y - 6} L ${x + 7} ${y} L ${x + 3.5} ${y + 6} L ${x - 3.5} ${y + 6} L ${x - 7} ${y} Z`} {...style} />;
   return <circle cx={x} cy={y} r={5.5} {...style} />;
 }
 
@@ -1065,6 +1067,7 @@ export function EvidenceMap({
     if (outcome === 'extinguished') return 'var(--color-blue)';
     if (outcome === 'transition') return 'var(--color-violet)';
     if (outcome === 'partial') return 'var(--color-success)';
+    if (outcome === 'no_ignition') return 'color-mix(in srgb, var(--color-blue) 40%, var(--color-faint))'; // slate grey-blue
     return 'var(--color-faint)';
   };
 

@@ -80,6 +80,7 @@ const EN = {
   extinguished: 'Extinguished',
   transition: 'Transition',
   partial: 'Partial',
+  no_ignition: 'Did not ignite',
   outcomeNotReported: 'Outcome not reported',
   scenario: 'Scenario',
   untestedCell: 'Untested cell',

@@ -415,7 +415,7 @@ every row needs an R3 translation with both ticks before Burmese can ship. New i
 
 ## 1c. Submission day: guided tour + walkthrough (18 keys)
 
-Added 2026-11-15 to `src/i18n/index.ts` (403 keys in total). Same rules as §1. Also translate the label template
+Added 2026-11-15 to `src/i18n/index.ts` (404 keys in total after §1d). Same rules as §1. Also translate the label template
 “Watch the {n}-second walkthrough” (`COPY.plain.walkthrough.label`) and “Recorded on catalog revision {revision}.”
 
 | Key | English | R3 translation | Native ✓ | Scientific ✓ | Notes |
@@ -438,6 +438,17 @@ Added 2026-11-15 to `src/i18n/index.ts` (403 keys in total). Same rules as §1. 
 | `walkthroughCaptioned` | Captions are burned into the video, so it works without sound. Transcript in Help. |  |  |  |  |
 | `walkthroughClose` | Close video |  |  |  |  |
 | `walkthroughTranscript` | Walkthrough transcript |  |  |  |  |
+
+## 1d. Outcome no_ignition (1 key + 1 glossary term)
+
+Added 2026-11-15 (team-lead decision, migration 0006). Same rules as §1.
+
+| Key | English | R3 translation | Native ✓ | Scientific ✓ | Notes |
+|---|---|---|---|---|---|
+| `no_ignition` | Did not ignite |  |  |  |  |
+| glossary · Did not ignite | Ignition was attempted and the sample never caught. It is an observation at those conditions, not a gap. |  |  |  |  |
+| map legend · no_ignition | Did not ignite — ignition was attempted and the sample never caught. |  |  |  |  |
+| preset · needsMaterial | No verified flight test of this material class in the current IGNIS catalog. Pick a material to explore. |  |  |  | replaces “Choose a material” |
 
 ## 2. Glossary (terms from her strings)
 

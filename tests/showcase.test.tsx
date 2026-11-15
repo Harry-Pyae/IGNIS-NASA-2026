@@ -13,7 +13,7 @@ const sources = (catalog: VerifiedCatalog) => render(<SourceList catalog={catalo
 
 it('methods and the unknown-route recovery page work without a catalog', () => {
   const html = render(<Methods/>);
-  expect(html.match(/<dt\b/g)).toHaveLength(18);
+  expect(html.match(/<dt\b/g)).toHaveLength(19); // +1 glossary term: Did not ignite (outcome no_ignition, 2026-11-15)
   expect(html).toContain('role="img"');
   expect(html).toContain('Invalid statements are withheld');
   expect(html).toContain('href="/sources"');

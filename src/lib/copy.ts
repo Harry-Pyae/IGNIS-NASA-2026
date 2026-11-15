@@ -117,6 +117,7 @@ export const COPY = {
     outcomes: {
       sustained: 'The flame kept burning during the recorded run.',
       extinguished: 'The flame went out during the recorded run.',
+      no_ignition: 'Did not ignite — ignition was attempted and the sample never caught.',
     },
     brief: {
       OBSERVED: 'What the cited NASA experiment recorded.',
@@ -202,6 +203,7 @@ export const COPY = {
     { term: 'Compared on N of M', plain: 'How many of your conditions could actually be compared with the experiments retrieved.' },
     { term: 'Observed', plain: 'A statement of what the cited experiment recorded, checked against its card.' },
     { term: 'Supported', plain: 'Our interpretation of the cited experiments. It is labelled as interpretation and does not establish cause.' },
+    { term: 'Did not ignite', plain: 'Ignition was attempted and the sample never caught. It is an observation at those conditions, not a gap.' },
     { term: 'Untested', plain: 'Inside the catalog’s range, but no verified card at these conditions in the current IGNIS catalog.' },
     { term: 'Outside catalog range', plain: 'Beyond the lowest or highest value any verified card reports. Nearby cards are not evidence there.' },
     { term: 'Not reported', plain: 'The experiment’s source does not state this value, so it stays empty rather than guessed.' },

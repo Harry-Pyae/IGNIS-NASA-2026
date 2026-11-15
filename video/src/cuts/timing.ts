@@ -76,7 +76,9 @@ export function layoutCut(cut: CutDef, manifest: Manifest, fps = 30): CutLayout 
   // Short of the window: hold every beat longer, in proportion, up to its maxSec. A ≤30 s cut fills to the cap
   // through its end card instead, so the URL stays up for the remaining time.
   if (max <= 30) {
-    const spare = snap(max - sum());
+    // One frame under the cap: the AAC audio track ends ~16 ms after the last video frame, and the container length
+    // (what a submission form reads) must stay ≤ 30.0 s.
+    const spare = snap(max - 1 / fps - sum());
     if (spare > 0) last.sec = snap(last.sec + Math.min(spare, Math.max(0, last.beat.maxSec - last.sec)));
   } else if (sum() < min) {
     for (let pass = 0; pass < 4 && sum() < min; pass++) {

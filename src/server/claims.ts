@@ -44,6 +44,7 @@ const OUTCOME_TERMS: Record<Outcome, RegExp> = {
   sustained: /\b(?:sustain\w*|kept\s+burning|continued\s+(?:to\s+)?burn\w*|burned\s+to\s+completion|complete\s+burnout)\b/i,
   transition: /\btransition\w*\b/i,
   partial: /\bpartial\w*\b/i,
+  no_ignition: /\b(?:did\s+not\s+ignite|no\s+ignition|not\s+ignited|never\s+(?:caught|ignited)|failed\s+to\s+ignite)\b/i,
 };
 
 /** A standalone number with an optional unit right after it. Skips "O2", "E3", "GMT96". */

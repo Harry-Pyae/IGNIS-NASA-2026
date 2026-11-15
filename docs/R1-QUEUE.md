@@ -142,6 +142,18 @@ Extractor found no stated outcome. Source (NTRS 20210011521): the 2-sided PMMA f
 
 ## 3. Not draftable from these sources (reason stated)
 
+> **2026-11-15 update — outcome `no_ignition` added** (team-lead decision, migration 0006 applied to production).
+> Unlocked, prepared in [SIGNING-SESSION-ADDENDUM.md](SIGNING-SESSION-ADDENDUM.md) (7 cards, not yet saved as drafts):
+> BASS-II GMT175-T9, GMT175-T10, GMT178-T12 (“No ignition”) and Saffire-II silicone samples 2-1 to 2-4.
+>
+> **Still parked, one line each:**
+> - **No outcome stated (9 rows):** the table gives conditions but no result, so there is nothing to record.
+> - **“Reused …” samples (8 rows, incl. the 3 “Reused, did not ignite”):** data quality — a prior burn alters the sample, so it is not comparable to a fresh one; not carded today.
+> - **“No Blow-off” (GMT45-T15 10→29 cm/s, GMT178-T17 6→53 cm/s):** needs R1's reading. *Proposed reading, not to publish yet:* the flow was raised to try to blow the flame off and the flame survived, i.e. `sustained` at the raised final flow, stored `final` with the change in condition_changes. R1 confirm the authors' meaning first.
+> - **Saffire IV-2:** “burned, did not spread appreciably” — see the decision note in [PMMA-DECISION.md](PMMA-DECISION.md#parked-saffire-iv-2): `partial` fits only once the catalog has an approved definition of `partial`.
+> - **Saffire-II 2-7 (PMMA lead + Nomex):** two materials with two outcomes on one sample; not one card.
+> - **Saffire-II 2-8 / 2-9 (PMMA slabs):** results are in a companion paper we have not sourced.
+
 ### Saffire-II (NTRS 20170008805)
 
 - **2-1 to 2-4 (silicone 0.27, 0.61, 1.03, 0.37 mm)**: "none of the silicone samples burned"; a tiny flame "did not spread and quickly extinguished" (p.12). That's non-ignition, which has no outcome category; it's never forced into the enum.

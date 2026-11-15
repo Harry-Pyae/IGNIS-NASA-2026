@@ -21,7 +21,7 @@ export const EXPORT_README = {
     'Provenance fields (source_page, source_figure, source_table, source_section, ntrs_id, doi) are recorded only when seen in the source. source_page is where the quote is; a figure can be on another page.',
     'Dataset provenance (psi_investigation_id, dataset_doi, dataset_version, dataset_file, dataset_row_or_time) names the PSI dataset behind a card, only when recorded; null = not recorded.',
     'telemetry, when present, is a curve digitized from a source figure, not raw instrument data.',
-    'outcome is what the experiment observed: sustained | extinguished | transition | partial.',
+    'outcome is what the experiment observed: sustained | extinguished | transition | partial | no_ignition (ignition attempted; the sample did not ignite).',
   ],
   fields: {
     id: 'IGNIS card id (uuid)',
@@ -36,7 +36,7 @@ export const EXPORT_README = {
     flow_cm_s: 'number | null',
     pressure_kpa: 'number | null',
     ignition_method: 'text | null',
-    outcome: 'sustained | extinguished | transition | partial',
+    outcome: 'sustained | extinguished | transition | partial | no_ignition',
     spread_rate_mm_s: 'number | null',
     key_observation_quote: 'verbatim source quote',
     observation_summary: "curator's plain-language summary | null",

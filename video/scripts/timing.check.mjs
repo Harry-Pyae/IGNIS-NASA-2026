@@ -18,7 +18,7 @@ assert.equal(wordCount('[Name A] led it.'), 4);
   const c = cut([beat('demo-01', 'a b c', 3, 2, 5), beat('demo-02', 'end', 5, 4, 30)]);
   const l = layoutCut(c, manifest({ 'demo-01': { file: 'x', sec: 2.0 } }));
   assert.equal(l.beats[0].sec, Math.round((LEAD_SEC + 2.0 + TAIL_SEC) * 30) / 30);
-  assert.equal(l.totalSec, 30);
+  assert.equal(l.totalSec, Math.round((30 - 1 / 30) * 30) / 30); // one frame under the cap (container ≤ 30.0 s)
   assert.equal(l.overBudget.length, 0);
 }
 // A long line is never cut: the beat grows past maxSec, the cut runs over, and the line is reported with its rewrite.
