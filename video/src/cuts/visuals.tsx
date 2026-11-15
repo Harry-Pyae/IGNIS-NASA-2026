@@ -21,6 +21,8 @@ export function VisualFor({ v, manifest }: { v: Visual; manifest: Manifest }) {
     case 'statement': return <Statement text={v.text} sub={v.sub} />;
     case 'history': return <History year={v.year} name={v.name} fact={v.fact} />;
     case 'ui': return <Ui v={v} manifest={manifest} />;
+    case 'clip': return <Clip v={v} manifest={manifest} />;
+    case 'endStats': return <EndStats manifest={manifest} />;
     case 'team': return <Team />;
     case 'physics': return <Physics />;
     case 'catalog': return <Catalog manifest={manifest} />;
@@ -62,6 +64,46 @@ function History({ year, name, fact }: { year: string; name: string; fact: strin
 }
 
 /** The capture take from each shot's mark in turn; holds the last frame if the take runs out (never a blank frame). */
+/** A raw capture clip (see the 'clip' Visual), held on its last frame if the beat outlasts it. */
+function Clip({ v, manifest }: { v: Extract<Visual, { kind: 'clip' }>; manifest: Manifest }) {
+  const { durationInFrames, fps } = useVideoConfig();
+  const clip = manifest.clips?.[v.clip];
+  if (!clip) return <Awaiting shot={v.clip} />;
+  const rate = v.rate ?? 1;
+  const startSec = v.at >= 0 ? v.at : Math.max(v.floor ?? 0, clip.sec + v.at - (durationInFrames / fps - (v.hold ?? 0)) * rate);
+  const startFrame = Math.round(startSec * fps);
+  const playable = Math.max(1, Math.floor(((clip.sec - startSec) * fps) / rate) - 1);
+  const video = <OffthreadVideo src={staticFile(clip.file)} trimBefore={startFrame} playbackRate={rate} muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />;
+  return (
+    <AbsoluteFill style={{ background: C.bg }}>
+      {durationInFrames <= playable ? video : (
+        <>
+          <Sequence durationInFrames={playable}>{video}</Sequence>
+          <Sequence from={playable}><Freeze frame={playable - 1}>{video}</Freeze></Sequence>
+        </>
+      )}
+    </AbsoluteFill>
+  );
+}
+
+/** The shared end card, the data credit and the live stats line (numbers from /api/export at prep). */
+function EndStats({ manifest }: { manifest: Manifest }) {
+  const c = manifest.catalog;
+  return (
+    <AbsoluteFill>
+      <EndCard />
+      <AbsoluteFill style={{ justifyContent: 'flex-end', alignItems: 'center', paddingBottom: 250, gap: 22 }}>
+        {c?.o2 && c.kpa && (
+          <Rise at={15}><div style={{ fontFamily: MONO, fontSize: 50, color: C.amber, letterSpacing: '0.03em' }}>
+            {c.cards} verified runs · {c.campaigns} NASA campaigns · {c.o2[0]}–{c.o2[1]}% O₂ · {Math.round(c.kpa[0])}–{Math.round(c.kpa[1])} kPa
+          </div></Rise>
+        )}
+        <Rise at={19}><div style={{ fontFamily: SANS, fontSize: 40, color: C.text }}>Built on NASA PSI &amp; NTRS data</div></Rise>
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
+}
+
 function Ui({ v, manifest }: { v: Extract<Visual, { kind: 'ui' }>; manifest: Manifest }) {
   const { durationInFrames, fps } = useVideoConfig();
   const f = useCurrentFrame();

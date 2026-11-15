@@ -23,7 +23,8 @@ const fail = (m) => { console.error(`✖ ${m}`); process.exit(1); };
 const SCENES = [
   { clip: '03-confirm-flow', take: 'head', sec: 11, caption: 'Pick a preset, or describe a scenario. Nothing runs until you confirm it.' },
   { clip: '04-slider-gap', take: 'tail', sec: 11, caption: 'Hatched cells have no verified card yet.' },
-  { clip: '06-evidence-chain', manual: '06-evidence-chain-manual', take: 'tail', sec: 12, caption: 'One click opens the NASA report it came from.' },
+  // 06: the NASA page appears only in the clip's last frames: play to the very end and hold it 2 s.
+  { clip: '06-evidence-chain', manual: '06-evidence-chain-manual', take: 'tail', sec: 12, hold: 2, pad: 0.05, caption: 'One click opens the NASA report it came from.' },
   { clip: '09-no-ignition', take: 'tail', sec: 8, caption: 'Did not ignite — ignition was attempted and the sample never caught.' },
   { clip: '13-case-withheld', take: 'tail', sec: 9, caption: 'A claim that misstates the record: IGNIS checks the source row and withholds it.' },
   { clip: '14-case-accepted', take: 'tail', sec: 7, caption: 'A value that matches its card is accepted, with the same source row.' },
@@ -42,9 +43,9 @@ for (const s of SCENES) {
   const dur = duration(src);
   const sec = Math.min(s.sec, Math.max(3, dur - 1.4));
   // head: skip most of the 2 s still pad; tail: end 0.6 s before the clip ends (a little of the closing pad).
-  const fromSec = s.take === 'head' ? 1.4 : Math.max(0, dur - sec - 0.6);
+  const fromSec = s.take === 'head' ? 1.4 : Math.max(0, dur - (sec - (s.hold ?? 0)) - (s.pad ?? 0.6));
   copyFileSync(src, join(PUB, `${name}.mp4`));
-  segments.push({ file: `silent/${name}.mp4`, fromSec: Math.round(fromSec * 100) / 100, sec, caption: s.caption });
+  segments.push({ file: `silent/${name}.mp4`, fromSec: Math.round(fromSec * 100) / 100, sec, caption: s.caption, ...(s.hold ? { hold: s.hold } : {}) });
   used.push(`${name} [${fromSec.toFixed(1)}–${(fromSec + sec).toFixed(1)} s of ${dur.toFixed(1)}]`);
 }
 

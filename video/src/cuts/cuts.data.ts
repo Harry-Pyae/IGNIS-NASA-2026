@@ -41,30 +41,21 @@ export const CUTS: CutDef[] = [
   {
     id: 'demo',
     composition: 'CutDemo',
-    title: 'The Demo (product-first, ≤30 s)',
+    title: 'The Demo (final submission, ≤30 s, casual VO)',
     lengthSec: { min: 20, max: 30 },
     music: 'Orbit_Flame_30sec.mp3',
     beats: [
-      { id: 'demo-01', vo: 'This is *IGNIS*, from Team AstroFlare.', visual: { kind: 'title' }, targetSec: 3, minSec: 2.5, maxSec: 3.5 },
-      {
-        id: 'demo-02',
-        vo: 'In orbit, fire behaves *differently*. NASA’s evidence is buried in reports.',
-        shorter: 'Fire acts *differently* in orbit. The evidence is buried.',
-        visual: { kind: 'statement', text: 'Fire behaves differently in orbit.', sub: 'NASA’s evidence is scattered across decades of reports.' },
-        targetSec: 5, minSec: 4, maxSec: 5.5,
-      },
-      { id: 'demo-03', vo: 'Describe the cabin scenario. *Confirm* the inputs.', shorter: 'Describe it. *Confirm* it.', visual: { kind: 'ui', shots: ['preset', 'confirm'], rate: 1.5 }, targetSec: 3, minSec: 2.6, maxSec: 3.6 },
-      { id: 'demo-04', vo: 'IGNIS finds the closest *verified* NASA experiments.', shorter: 'The closest *verified* NASA runs.', visual: { kind: 'ui', shots: ['map', 'match'], rate: 1.4 }, targetSec: 3, minSec: 2.6, maxSec: 3.6 },
-      { id: 'demo-05', vo: 'Every claim cites its *NASA* source.', visual: { kind: 'ui', shots: ['citation', 'nasaPage'], rate: 1.4 }, targetSec: 3, minSec: 2.6, maxSec: 3.6 },
-      {
-        id: 'demo-06',
-        vo: 'Move a condition, and the evidence *updates*. Gaps stay *visible*.',
-        shorter: 'Move a slider. Gaps stay *visible*.',
-        visual: { kind: 'ui', shots: ['slider', 'gap'], rate: 1.4 },
-        targetSec: 4, minSec: 3.4, maxSec: 4.6,
-      },
-      { id: 'demo-07', vo: 'A claim that doesn’t match the record? *Withheld*.', shorter: 'A wrong claim? *Withheld*.', visual: { kind: 'ui', shots: ['caseWithheld'], rate: 1.3 }, targetSec: 3.5, minSec: 3, maxSec: 4 },
-      { id: 'demo-08', vo: 'IGNIS never predicts. It shows what *NASA saw*.', visual: { kind: 'end' }, targetSec: 5.5, minSec: 5, maxSec: 8 },
+      // Final submission cut (team lead, 2026-11-15): casual lines, no spoken numbers (the stats line renders on the end
+      // card from /api/export). Scenes are the raw clips (scripts/clips.mjs), which must be re-captured after the data
+      // restore: the clip-revision gate blocks --final until they are.
+      { id: 'demo-01', vo: 'This is *IGNIS*, from Team AstroFlare.', shorter: 'This is *IGNIS*.', visual: { kind: 'title' }, targetSec: 3, minSec: 2.5, maxSec: 3.5 },
+      { id: 'demo-02', vo: 'In orbit, fire behaves *differently* — and NASA’s evidence is buried in reports.', shorter: 'Fire acts *differently* in orbit. The evidence is buried.', visual: { kind: 'statement', text: 'Fire behaves differently in orbit.', sub: 'NASA’s evidence is scattered across decades of reports.' }, targetSec: 4.5, minSec: 4, maxSec: 5.4 },
+      { id: 'demo-03', vo: 'Describe your scenario… and *confirm* it.', shorter: 'Describe it. *Confirm* it.', visual: { kind: 'clip', clip: '03-confirm-flow', at: 3.5, rate: 1.5 }, targetSec: 3, minSec: 2.6, maxSec: 3.4 },
+      { id: 'demo-04', vo: 'IGNIS finds the closest *verified* NASA experiments.', shorter: 'The closest *verified* NASA runs.', visual: { kind: 'clip', clip: '06-evidence-chain', at: 12.5, rate: 1.8 }, targetSec: 3.5, minSec: 3, maxSec: 3.8 },
+      { id: 'demo-05', vo: 'Every claim cites its *NASA* source.', shorter: 'Every claim is *sourced*.', visual: { kind: 'clip', clip: '06-evidence-chain', at: -0.05, floor: 18, hold: 1.2, rate: 1.5 }, targetSec: 3, minSec: 2.6, maxSec: 3.4 },
+      { id: 'demo-06', vo: 'Move a slider — the evidence *updates*. The gaps stay *visible*.', shorter: 'Move a slider. Gaps stay *visible*.', visual: { kind: 'clip', clip: '04-slider-gap', at: 11.5, rate: 2 }, targetSec: 4, minSec: 3.5, maxSec: 4.4 },
+      { id: 'demo-07', vo: 'Try a wrong number? *Withheld*.', shorter: 'Wrong number? *Withheld*.', visual: { kind: 'clip', clip: '13-case-withheld', at: 7, rate: 1.5 }, targetSec: 3.5, minSec: 3, maxSec: 3.8 },
+      { id: 'demo-08', vo: 'IGNIS never predicts. It shows what *NASA saw*.', shorter: 'It shows what *NASA saw*.', visual: { kind: 'endStats' }, targetSec: 5.5, minSec: 5, maxSec: 6 },
     ],
   },
   {
@@ -98,12 +89,12 @@ export const CUTS: CutDef[] = [
         id: 'story-04',
         vo: 'IGNIS turns a cabin scenario into the closest *verified* NASA experiments.',
         shorter: 'IGNIS finds the closest *verified* NASA runs.',
-        visual: { kind: 'ui', shots: ['preset', 'map'], rate: 1.6 },
+        visual: { kind: 'clip', clip: '03-confirm-flow', at: 3.5, rate: 1.5 },
         targetSec: 4.5, minSec: 4, maxSec: 5,
       },
-      { id: 'story-05', vo: 'Every value traces to its source. Every *gap* stays visible.', shorter: 'Every value is sourced. Every *gap* shows.', visual: { kind: 'ui', shots: ['citation', 'gap'], rate: 1.5 }, targetSec: 4.5, minSec: 4, maxSec: 5 },
-      { id: 'story-06', vo: 'Claims that don’t match the record are *withheld*.', shorter: 'Wrong claims are *withheld*.', visual: { kind: 'ui', shots: ['caseWithheld'], rate: 1.3 }, targetSec: 4, minSec: 3.4, maxSec: 4.6 },
-      { id: 'story-07', vo: 'What NASA saw. *Nothing it didn’t.*', visual: { kind: 'end' }, targetSec: 6, minSec: 5, maxSec: 8 },
+      { id: 'story-05', vo: 'Every value traces to its source. Every *gap* stays visible.', shorter: 'Every value is sourced. Every *gap* shows.', visual: { kind: 'clip', clip: '06-evidence-chain', at: -0.05, floor: 14, hold: 1.2, rate: 2 }, targetSec: 4.5, minSec: 4, maxSec: 5 },
+      { id: 'story-06', vo: 'Claims that don’t match the record are *withheld*.', shorter: 'Wrong claims are *withheld*.', visual: { kind: 'clip', clip: '13-case-withheld', at: 7, rate: 1.5 }, targetSec: 4, minSec: 3.4, maxSec: 4.6 },
+      { id: 'story-07', vo: 'What NASA saw. *Nothing it didn’t.*', visual: { kind: 'endStats' }, targetSec: 6, minSec: 5, maxSec: 8 },
     ],
   },
   {
@@ -176,6 +167,252 @@ export const CUTS: CutDef[] = [
       { id: 'walkthrough-08', vo: 'A value that matches its card is *accepted*, with the same source row.', visual: { kind: 'ui', shots: ['caseAccepted'] }, targetSec: 6, minSec: 5, maxSec: 8 },
       { id: 'walkthrough-09', vo: 'Hatched cells have no verified card yet. The gap radar shows where the *evidence runs out*.', visual: { kind: 'ui', shots: ['gap'] }, targetSec: 9, minSec: 8, maxSec: 11 },
       { id: 'walkthrough-10', vo: 'What NASA saw. *Nothing it didn’t.*', visual: { kind: 'end' }, targetSec: 5, minSec: 4, maxSec: 8 },
+    ],
+  },
+  // Final 30 s cuts, silent-first (team lead, 2026-11-15): no voice; captions carry it; the music sits low and dips
+  // 6 dB under each caption. Built from the raw capture clips (assets/real/captures/, catalog revision a0363adf).
+  // The on-screen close is the approved "What NASA saw. Nothing it didn’t." (DECISIONS-ROUND3 #2 keeps "predicts"
+  // spoken-only.) The Story keeps its heritage sign-offs: a placeholder until R1 signs them.
+  {
+    id: "demo30",
+    composition: "CutDemo30",
+    title: "The Demo, final 30 s (silent-first: captions + low music)",
+    lengthSec: {
+      min: 20,
+      max: 30
+    },
+    music: "Orbit_Flame_30sec.mp3",
+    silent: true,
+    captionBand: true,
+    beats: [
+      {
+        id: "demo30-01",
+        vo: "",
+        visual: {
+          kind: "title"
+        },
+        targetSec: 3,
+        minSec: 3,
+        maxSec: 3
+      },
+      {
+        id: "demo30-02",
+        vo: "",
+        visual: {
+          kind: "statement",
+          text: "Fire behaves differently in orbit.",
+          sub: "NASA’s evidence is scattered across decades of reports."
+        },
+        targetSec: 5,
+        minSec: 5,
+        maxSec: 5
+      },
+      {
+        id: "demo30-03",
+        vo: "Describe the cabin scenario. *Confirm* the inputs.",
+        visual: {
+          kind: "clip",
+          clip: "03-confirm-flow",
+          at: 3.5,
+          rate: 1.5
+        },
+        targetSec: 3,
+        minSec: 3,
+        maxSec: 3
+      },
+      {
+        id: "demo30-04",
+        vo: "The closest *verified* NASA runs. Every claim cites its *NASA* source.",
+        visual: {
+          kind: "clip",
+          clip: "06-evidence-chain",
+          at: -0.05,
+          floor: 11,
+          hold: 1.2,
+          rate: 2.2
+        },
+        targetSec: 5.5,
+        minSec: 5.5,
+        maxSec: 5.5
+      },
+      {
+        id: "demo30-05",
+        vo: "Move a condition, and the evidence *updates*. Gaps stay *visible*.",
+        visual: {
+          kind: "clip",
+          clip: "04-slider-gap",
+          at: 11.5,
+          rate: 2
+        },
+        targetSec: 4,
+        minSec: 4,
+        maxSec: 4
+      },
+      {
+        id: "demo30-06",
+        vo: "A claim that doesn’t match the record? *Withheld*.",
+        visual: {
+          kind: "clip",
+          clip: "13-case-withheld",
+          at: 7,
+          rate: 1.5
+        },
+        targetSec: 3.5,
+        minSec: 3.5,
+        maxSec: 3.5
+      },
+      {
+        id: "demo30-07",
+        vo: "What NASA saw. *Nothing it didn’t.*",
+        visual: {
+          kind: "endStats"
+        },
+        targetSec: 5.9,
+        minSec: 5.9,
+        maxSec: 5.9
+      }
+    ]
+  },
+  {
+    id: "story30",
+    composition: "CutStory30",
+    title: "The Story, final 30 s (silent-first: captions + low music)",
+    lengthSec: {
+      min: 20,
+      max: 30
+    },
+    music: "Sleeping_Giants_Breath_30sec.mp3",
+    silent: true,
+    captionBand: true,
+    beats: [
+      {
+        id: "story30-01",
+        vo: "",
+        visual: {
+          kind: "history",
+          year: "1967",
+          name: "Apollo 1",
+          fact: "Fire swept the command module during a ground test in a pure-oxygen cabin atmosphere.",
+          factId: "heritage-apollo-1"
+        },
+        targetSec: 3,
+        minSec: 3,
+        maxSec: 3,
+        signOff: HERITAGE_SIGNOFF
+      },
+      {
+        id: "story30-02",
+        vo: "",
+        visual: {
+          kind: "history",
+          year: "1997",
+          name: "Mir",
+          fact: "A fire broke out aboard the Mir space station.",
+          factId: TODO('heritage-mir: R1 adds and signs this entry in context-content.ts')
+        },
+        targetSec: 3,
+        minSec: 3,
+        maxSec: 3,
+        signOff: "R1: add and sign a heritage-mir entry (date, what burned, source)"
+      },
+      {
+        id: "story30-03",
+        vo: "",
+        visual: {
+          kind: "statement",
+          text: "The evidence exists.",
+          sub: "Scattered across decades of NASA papers."
+        },
+        targetSec: 4,
+        minSec: 4,
+        maxSec: 4
+      },
+      {
+        id: "story30-04",
+        vo: "IGNIS turns a cabin scenario into the closest *verified* NASA experiments.",
+        visual: {
+          kind: "clip",
+          clip: "03-confirm-flow",
+          at: 3.5,
+          rate: 1.5
+        },
+        targetSec: 4.5,
+        minSec: 4.5,
+        maxSec: 4.5
+      },
+      {
+        id: "story30-05",
+        vo: "Every value traces to its *source*.",
+        visual: {
+          kind: "clip",
+          clip: "06-evidence-chain",
+          at: -0.05,
+          floor: 11,
+          hold: 1.2,
+          rate: 2.2
+        },
+        targetSec: 4.5,
+        minSec: 4.5,
+        maxSec: 4.5
+      },
+      {
+        id: "story30-06",
+        vo: "Every *gap* stays visible.",
+        visual: {
+          kind: "clip",
+          clip: "04-slider-gap",
+          at: 11.5,
+          rate: 2.5
+        },
+        targetSec: 3,
+        minSec: 3,
+        maxSec: 3
+      },
+      {
+        id: "story30-07",
+        vo: "Claims that don’t match the record are *withheld*.",
+        visual: {
+          kind: "clip",
+          clip: "13-case-withheld",
+          at: 7.5,
+          rate: 1.5
+        },
+        targetSec: 3.5,
+        minSec: 3.5,
+        maxSec: 3.5
+      },
+      {
+        id: "story30-08",
+        vo: "What NASA saw. *Nothing it didn’t.*",
+        visual: {
+          kind: "endStats"
+        },
+        targetSec: 4.4,
+        minSec: 4.4,
+        maxSec: 4.4
+      }
+    ]
+  },
+  {
+    // The voiced walkthrough for the presentation's demo slot: the silent walkthrough's scenes and order (03 → 04 → 06 →
+    // 09 → 13 → 14 → 10 → 11 → end card), voiced. Each beat fits its recorded line (never sped up); captions sit in a
+    // band below the picture so they never cover verdicts or data. Plays alongside, not instead of, the silent loop.
+    id: 'walk',
+    composition: 'CutWalkVoiced',
+    title: 'Voiced walkthrough (presentation demo slot, ~1:40, no cap)',
+    lengthSec: { min: 60, max: 120 },
+    music: 'the_sleeping_giant_s_breath.mp3',
+    captionBand: true,
+    beats: [
+      { id: 'walk-01', vo: 'So here’s how it works. You describe your scenario — or just grab a preset — and nothing happens until you hit confirm. Then IGNIS pulls up the real NASA experiments, each one placed by its oxygen and airflow.', visual: { kind: 'clip', clip: '03-confirm-flow', at: 1.4 }, targetSec: 14, minSec: 11, maxSec: 17 },
+      { id: 'walk-02', vo: 'Watch what happens when I move the airflow slider — the matches update right away. See those hatched cells? That means we have no verified evidence there. We show you that, instead of hiding it.', visual: { kind: 'clip', clip: '04-slider-gap', at: -0.6, floor: 13 }, targetSec: 13, minSec: 10, maxSec: 16 },
+      { id: 'walk-03', vo: 'The closest runs get ranked by how similar their conditions are — we never rank materials by “safety.” Every run cites its source, and one click takes you to the actual NASA report.', visual: { kind: 'clip', clip: '06-evidence-chain', at: -0.05, floor: 9, hold: 2 }, targetSec: 13, minSec: 10, maxSec: 16 },
+      { id: 'walk-04', vo: 'Outcomes are exactly what NASA observed. “Did not ignite” means they tried to light it — and it just wouldn’t catch.', visual: { kind: 'clip', clip: '09-no-ignition', at: -0.6, floor: 4 }, targetSec: 8, minSec: 5, maxSec: 11 },
+      { id: 'walk-05', vo: 'Now here’s my favorite part. Let’s lie to it. I’ll claim this run used a different airflow than it really did… and IGNIS checks the source row and refuses — withheld.', visual: { kind: 'clip', clip: '13-case-withheld', at: -0.6, floor: 6 }, targetSec: 13, minSec: 10, maxSec: 16 },
+      { id: 'walk-06', vo: 'Give it the real value, and it’s accepted — with the same source row right there, so you can check it yourself.', visual: { kind: 'clip', clip: '14-case-accepted', at: -0.6, floor: 8 }, targetSec: 9, minSec: 6, maxSec: 12 },
+      { id: 'walk-07', vo: 'Anyone can dig into any experiment in the library — the conditions, the exact quote from the paper, and the page it came from.', visual: { kind: 'clip', clip: '10-library', at: 1.4 }, targetSec: 9, minSec: 6, maxSec: 12 },
+      { id: 'walk-08', vo: 'You can put two runs side by side too. And we’re careful here — a difference between two records doesn’t explain a difference in outcomes.', visual: { kind: 'clip', clip: '11-compare', at: 1.4 }, targetSec: 10, minSec: 7, maxSec: 13 },
+      { id: 'walk-09', vo: 'Thirty-one verified runs from eight NASA campaigns, from 16.4 to 31 percent oxygen and 54 to 101 kilopascals. Each traces to its report, page and quote, and the dataset is open.', visual: { kind: 'endStats' }, live: { cards: 31, campaigns: 8, o2: [16.4, 31], kpa: [54.1, 101.325] }, targetSec: 13, minSec: 10, maxSec: 16 },
     ],
   },
 ];

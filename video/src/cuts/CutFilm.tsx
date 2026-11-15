@@ -16,6 +16,12 @@ const MUSIC_DUCK_DB = -18; // under voice (VO and music are both normalised to â
 const ATTACK = 0.15; // s: the dip starts just before the voice
 const RELEASE = 0.45;
 const LOOP_XFADE = 2; // s
+// Silent-first cuts: no voice, so the music is the only sound: low, and 6 dB lower still under each caption.
+const SILENT_BED_DB = -14;
+// captionBand cuts: the picture fills the top 82 % of the frame; captions sit in the band below, never over data, at a
+// size that stays readable on a phone (two lines fit the band).
+const BAND_SCALE = 0.82;
+const BAND_TOP = 16;
 
 export function cutLayout(cutId: CutId, manifest: Manifest, fps: number) {
   const cut = CUTS.find((c) => c.id === cutId)!;
@@ -36,7 +42,13 @@ export function CutFilm({ cutId, manifest }: CutProps) {
         const straightCut = b.beat.visual.kind === 'ui' && beats[i - 1]?.beat.visual.kind === 'ui';
         return (
           <Sequence key={b.beat.id} from={b.from} durationInFrames={b.frames} name={b.beat.id}>
-            <FadeIn frames={straightCut ? 0 : FADE}><VisualFor v={b.beat.visual} manifest={manifest} /></FadeIn>
+            <FadeIn frames={straightCut ? 0 : FADE}>
+              {cut.captionBand ? (
+                <AbsoluteFill style={{ transform: `scale(${BAND_SCALE})`, transformOrigin: '50% 0%', top: BAND_TOP, borderRadius: 20, overflow: 'hidden' }}>
+                  <VisualFor v={b.beat.visual} manifest={manifest} />
+                </AbsoluteFill>
+              ) : <VisualFor v={b.beat.visual} manifest={manifest} />}
+            </FadeIn>
             {b.recorded && (
               <Sequence from={b.voFrom - b.from} name={`vo ${b.beat.id}`}>
                 <Audio src={staticFile(manifest.vo[b.beat.id]!.file)} />
@@ -45,9 +57,9 @@ export function CutFilm({ cutId, manifest }: CutProps) {
           </Sequence>
         );
       })}
-      {cut.music && manifest.music[cut.music] && <Music file={manifest.music[cut.music]!.file} trackSec={manifest.music[cut.music]!.sec} total={total} voice={beats.map((b) => [b.voFrom, b.voFrom + b.voFrames] as const)} endFrom={beats.at(-1)!.from} />}
+      {cut.music && manifest.music[cut.music] && <Music file={manifest.music[cut.music]!.file} trackSec={manifest.music[cut.music]!.sec} total={total} voice={beats.filter((b) => b.beat.vo).map((b) => [b.voFrom, b.voFrom + b.voFrames] as const)} endFrom={beats.at(-1)!.from} {...(cut.silent ? { bedDb: SILENT_BED_DB, duckDb: SILENT_BED_DB - 6 } : {})} />}
       <Chapter beats={beats} />
-      <Captions beats={beats} />
+      <Captions beats={beats} band={!!cut.captionBand} />
       {reasons.length > 0 && <Watermark />}
     </AbsoluteFill>
   );
@@ -66,7 +78,7 @@ type Laid = ReturnType<typeof cutLayout>['beats'];
  * line, back up over RELEASE after it), 0.5 s fade-in, fading to silence across the end card. Loops with a crossfade
  * when the track is shorter than the cut.
  */
-function Music({ file, trackSec, total, voice, endFrom }: { file: string; trackSec: number; total: number; voice: (readonly [number, number])[]; endFrom: number }) {
+function Music({ file, trackSec, total, voice, endFrom, bedDb = MUSIC_BED_DB, duckDb = MUSIC_DUCK_DB }: { file: string; trackSec: number; total: number; voice: (readonly [number, number])[]; endFrom: number; bedDb?: number; duckDb?: number }) {
   const { fps } = useVideoConfig();
   const a = ATTACK * fps;
   const r = RELEASE * fps;
@@ -80,7 +92,7 @@ function Music({ file, trackSec, total, voice, endFrom }: { file: string; trackS
     return d;
   };
   const level = (f: number) => {
-    const db = MUSIC_BED_DB + (MUSIC_DUCK_DB - MUSIC_BED_DB) * duck(f);
+    const db = bedDb + (duckDb - bedDb) * duck(f);
     const fadeIn = Math.min(1, f / (0.5 * fps));
     const fadeOut = f < endFrom ? 1 : Math.max(0, 1 - (f - endFrom) / Math.max(1, total - endFrom));
     return dB(db) * fadeIn * fadeOut * fadeOut;
@@ -120,18 +132,18 @@ function Chapter({ beats }: { beats: Laid }) {
 }
 
 /** Burned-in English captions from the script lines, timed across each VO clip. 88px at 2560 wide â‰ˆ 13px on a phone. */
-function Captions({ beats }: { beats: Laid }) {
+function Captions({ beats, band }: { beats: Laid; band: boolean }) {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const b = beats.find((x) => f >= x.voFrom && f < x.voFrom + x.voFrames + fps * 0.2);
+  const b = beats.find((x) => x.beat.vo && f >= x.voFrom && f < x.voFrom + x.voFrames + fps * 0.2);
   if (!b) return null;
   const t = (f - b.voFrom) / fps;
   const chunks = captionChunks(b.beat.vo, b.voSec);
   const c = chunks.find((x) => t >= x.fromSec && t < x.toSec) ?? chunks.at(-1)!;
   const parts = c.text.split(/(\*[^*]+\*)/g).filter(Boolean);
   return (
-    <AbsoluteFill style={{ justifyContent: 'flex-end', alignItems: 'center', paddingBottom: 80 }}>
-      <div style={{ maxWidth: 2200, background: `${C.bg}e0`, borderRadius: 22, padding: '20px 52px', textAlign: 'center', fontFamily: SANS, fontWeight: 500, fontSize: 88, lineHeight: 1.18, color: C.text }}>
+    <AbsoluteFill style={band ? { top: 'auto', height: 1440 - BAND_TOP - 1440 * BAND_SCALE, justifyContent: 'center', alignItems: 'center' } : { justifyContent: 'flex-end', alignItems: 'center', paddingBottom: 80 }}>
+      <div style={{ maxWidth: band ? 2400 : 2200, background: `${C.bg}e0`, borderRadius: 22, padding: band ? '8px 40px' : '20px 52px', textAlign: 'center', fontFamily: SANS, fontWeight: 500, fontSize: band ? 84 : 88, lineHeight: 1.18, color: C.text }}>
         {parts.map((p, i) => {
           const em = p.startsWith('*');
           const text = em ? p.slice(1, -1) : p;

@@ -71,9 +71,9 @@ async function prep() {
   mkdirSync('public/vo', { recursive: true });
   const known = new Set(CUTS.flatMap((c) => c.beats.map((b) => b.id)));
   for (const file of readdirSync('assets/vo')) {
-    const m = file.match(/^vo-(demo|story|pitch)-(\d{2})\.(wav|m4a|mp3|aac|ogg)$/i);
+    const m = file.match(/^vo-([a-z0-9]+)-(\d{2})\.(wav|m4a|mp3|aac|ogg)$/i);
     if (!m) {
-      if (!/^readme/i.test(file)) notes.push(`ignored assets/vo/${file} (name it vo-<demo|story|pitch>-<nn>.wav)`);
+      if (!/^readme/i.test(file)) notes.push(`ignored assets/vo/${file} (name it vo-<cut>-<nn>.wav, e.g. vo-walk-03.wav)`);
       continue;
     }
     const id = `${m[1].toLowerCase()}-${m[2]}`;
@@ -106,6 +106,24 @@ async function prep() {
 
   // Capture take (scripts/capture.mjs).
   if (existsSync('public/capture/take.json')) manifest.capture = JSON.parse(readFileSync('public/capture/take.json', 'utf8'));
+  // The catalog revision(s) the raw clips were recorded at (session + any re-runs): must equal the live revision.
+  if (existsSync('assets/real/captures/session.json')) {
+    const s = JSON.parse(readFileSync('assets/real/captures/session.json', 'utf8'));
+    manifest.clipRevisions = [...new Set([s.catalogRevision, ...(s.reruns ?? []).map((r) => r.catalogRevision)].filter(Boolean))];
+  }
+
+  // Raw clips used by 'clip' visuals → public/clips/ (a hand-recorded <clip>-manual.mp4 replaces the automated take).
+  manifest.clips = {};
+  mkdirSync('public/clips', { recursive: true });
+  for (const clip of new Set(CUTS.flatMap((c) => c.beats.flatMap((b) => (b.visual.kind === 'clip' ? [b.visual.clip] : []))))) {
+    const manual = `assets/real/captures/${clip}-manual.mp4`;
+    const src = existsSync(manual) ? manual : `assets/real/captures/${clip}.mp4`;
+    if (!existsSync(src)) { notes.push(`clip ${clip}: not recorded yet (npm run cuts:clips)`); continue; }
+    const out = `public/clips/${clip}.mp4`;
+    if (!fresh(out, src)) cpSync(src, out);
+    manifest.clips[clip] = { file: `clips/${clip}.mp4`, sec: duration(out) };
+    if (src === manual) notes.push(`clip ${clip}: using the hand-recorded take`);
+  }
 
   // Live catalog numbers (read-only GET), so on-screen counts match the catalog at render time.
   const range = (values) => { const v = values.filter((x) => x != null); return v.length ? [Math.min(...v), Math.max(...v)] : null; };
@@ -122,6 +140,13 @@ async function prep() {
         kpa: range(rows.map((e) => e.pressure_kpa)),
         revision: body.catalog_revision ?? 'unknown',
         fetchedAt: new Date().toISOString(),
+      };
+      // Data-restore gate (2026-11-15): every published card equals its source, and every fixture card is published again.
+      const { SOURCE_VALUES, sourceMismatches } = await import('../../scripts/source-values.mjs');
+      const published = new Set(rows.map((e) => e.test_id));
+      manifest.sources = {
+        mismatches: sourceMismatches(rows),
+        unpublished: Object.keys(SOURCE_VALUES.cards).filter((t) => !published.has(t)),
       };
     } catch (e) {
       notes.push(`catalog fetch failed (${e.message}); keeping ${manifest.catalog ? `the ${manifest.catalog.fetchedAt} numbers` : 'no numbers'}`);
@@ -165,7 +190,7 @@ function doc() {
   p('# Video scripts — recording sheet, voice-fit spec and shot list');
   p();
   p('Generated from `video/src/cuts/cuts.data.ts` by `npm run cuts:doc` in `video/`. Edit the data file, then regenerate.');
-  p('Four cuts: **The Demo** (≤30.0 s, submission candidate A), **The Story** (≤30.0 s, candidate B), the **Team pitch** (3:00–4:00) and the **In-app walkthrough** (60–90 s, 1080p, no music: the app’s “Watch the walkthrough” button). The walkthrough reaches the app only from a final render (`npm run cuts:render -- --final --only=walkthrough`), which writes `public/media/walkthrough.mp4` + poster and switches the button on in `src/lib/walkthrough.ts`.');
+  p('Five cuts: **The Demo** (≤30.0 s, submission candidate A), **The Story** (≤30.0 s, candidate B), the **Team pitch** (3:00–4:00) the **In-app walkthrough** (60–90 s, 1080p, no music: the app’s “Watch the walkthrough” button), and the **Voiced walkthrough** (the silent presentation walkthrough’s scenes, voiced; ~80–100 s, no length cap; `npm run cuts:prep && npm run cuts:render -- --only=walk`). The walkthrough reaches the app only from a final render (`npm run cuts:render -- --final --only=walkthrough`), which writes `public/media/walkthrough.mp4` + poster and switches the button on in `src/lib/walkthrough.ts`.');
   p('Both 30-second cuts end on the same end card, frame for frame, so swapping the submission is a file swap.');
   p();
   p('**How to read a line:** say it plainly at a normal pace. *Italic* words carry the stress. `[Name A]` = say your own name.');
@@ -176,6 +201,7 @@ function doc() {
     const planned = cut.beats.reduce((s, b) => s + b.targetSec, 0);
     p(`## ${cut.title}`);
     p();
+    if (cut.silent) p('**Silent-first: nothing to record.** The “Line” column is the burned caption; each beat lasts exactly its target; the music dips 6 dB under each caption.\n');
     p(`File prefix \`vo-${cut.id}-\` · ${cut.beats.length} lines · **${words} words** · planned ${planned.toFixed(1)} s · music: ${cut.music ? `\`${cut.music}\`` : 'none (VO only)'}`);
     p();
     p('| # | File | Line (read this) | Words | Target s | Shown while it plays |');
@@ -183,7 +209,7 @@ function doc() {
     for (const b of cut.beats) {
       const n = b.id.split('-')[1];
       const v = b.visual;
-      const shown = v.kind === 'ui' ? `Product: ${v.shots.join(' → ')}` : v.kind === 'statement' ? `“${v.text}”` : v.kind === 'history' ? `${v.year} · ${v.name}` : v.kind === 'list' ? v.heading : { title: 'Title card', team: 'Team names + roles', physics: 'Earth vs orbit flame (illustration)', catalog: 'Live catalog numbers', end: 'Shared end card', close: 'URL + QR, credits, AI use, not affiliated' }[v.kind];
+      const shown = v.kind === 'ui' ? `Product: ${v.shots.join(' → ')}` : v.kind === 'clip' ? `Clip ${v.clip}` : v.kind === 'endStats' ? 'End card + live stats line' : v.kind === 'statement' ? `“${v.text}”` : v.kind === 'history' ? `${v.year} · ${v.name}` : v.kind === 'list' ? v.heading : { title: 'Title card', team: 'Team names + roles', physics: 'Earth vs orbit flame (illustration)', catalog: 'Live catalog numbers', end: 'Shared end card', close: 'URL + QR, credits, AI use, not affiliated' }[v.kind];
       const line = b.vo.replace(/\*([^*]+)\*/g, '*$1*').replace(/\|/g, '\\|');
       const notes = [b.chapter && `**${b.chapter}**`, b.live && '**[LIVE] catalog numbers: record this line LAST**', b.signOff && `⚠ ${b.signOff}`, b.note && `Presenter note: ${b.note}`].filter(Boolean).join('<br>');
       p(`| ${n} | \`vo-${cut.id}-${n}.wav\` | ${line}${notes ? `<br><sub>${notes}</sub>` : ''} | ${timing.wordCount(b.vo)} | ${b.targetSec} | ${shown} |`);
@@ -198,7 +224,7 @@ function doc() {
   }
   p('## Recording spec');
   p();
-  p('- **One file per numbered line**, named exactly as in the tables: `vo-demo-03.wav`, `vo-story-01.m4a`, `vo-pitch-17.wav`. `.wav`, `.m4a`, `.mp3`, `.aac` or `.ogg` all work.');
+  p('- **One file per numbered line**, named exactly as in the tables: `vo-demo-03.wav`, `vo-story-01.m4a`, `vo-pitch-17.wav`, `vo-walk-01.wav` … `vo-walk-09.wav`. `.wav`, `.m4a`, `.mp3`, `.aac` or `.ogg` all work.');
   p('- **Drop folder:** `video/assets/vo/`. Re-record any single line by replacing its file; nothing else changes.');
   p('- Quiet room, soft furnishings, no fan or music. A phone is fine: hold it 20–30 cm away, slightly to the side of your mouth.');
   p('- Leave **about half a second of silence** before and after each line. Don’t trim it: the prep step trims it.');

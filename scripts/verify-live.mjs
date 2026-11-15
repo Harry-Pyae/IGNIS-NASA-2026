@@ -1,5 +1,6 @@
 // Read-only live verification (docs/DEPLOY-RUNBOOK.md). Usage: npm run verify:live [-- https://<deployment>]
 // Writes nothing to the catalog or the briefing cache; the only side effect is the public per-IP rate-limit counter.
+import { sourceMismatches } from './source-values.mjs';
 const base = (process.argv[2] ?? 'https://ignis-nasa-2026.vercel.app').replace(/\/$/, '');
 const T7 = 'ec0cf0b6-c415-4495-966f-0a0a3e7667d1'; // BASS GMT96-T7, a published card (10 cm/s, p.3)
 let failed = 0;
@@ -30,6 +31,12 @@ await check('GET /api/export (verified cards only)', async () => {
   const body = await res.json();
   expect(res.ok && typeof body.count === 'number', `HTTP ${res.status}`);
   return `${body.count} verified cards, revision ${String(body.catalog_revision).slice(0, 8)}`;
+});
+await check('every published card equals its NASA source values (tests/fixtures/source-values.json)', async () => {
+  const body = await (await fetch(`${base}/api/export`)).json();
+  const problems = sourceMismatches(body.experiments);
+  expect(problems.length === 0, `${problems.length} mismatch(es):\n      ${problems.join('\n      ')}`);
+  return `${body.experiments.length} published cards, all fields match`;
 });
 await check('POST /api/check-claim: 12 cm/s on GMT96-T7 is withheld, naming the card value', async () => {
   const body = await (await claim(12)).json();

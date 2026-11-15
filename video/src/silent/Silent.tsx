@@ -5,13 +5,16 @@ import { EndCard } from '../cuts/visuals';
 
 /** Written by scripts/silent.mjs from the raw clips + the live export. */
 export interface SilentPlan {
-  segments: { file: string; fromSec: number; sec: number; caption: string }[];
+  /** `hold`: the clip's last `hold` s are its final frame, frozen (06's NASA page appears only in the clip's last frames). */
+  segments: { file: string; fromSec: number; sec: number; caption: string; hold?: number }[];
   stats: { cards: number; campaigns: number; o2: [number, number]; kpa: [number, number]; revision: string };
   openSec: number;
   endSec: number;
 }
 export const EMPTY_PLAN: SilentPlan = { segments: [], stats: { cards: 0, campaigns: 0, o2: [0, 0], kpa: [0, 0], revision: '' }, openSec: 1, endSec: 6 };
 const FADE = 8;
+const Clip = ({ s }: { s: SilentPlan['segments'][number] }) => <OffthreadVideo src={staticFile(s.file)} trimBefore={Math.round(s.fromSec * 30)} muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />;
+
 /** The end card is fully risen by this frame; the opening holds exactly this frame, so first frame = last frame. */
 const SETTLED = 75;
 
@@ -36,7 +39,12 @@ export function SilentWalkthrough({ plan }: { plan: SilentPlan }) {
       {placed.map((s) => (
         <Sequence key={s.file + s.from} from={s.from} durationInFrames={s.frames} name={s.file}>
           <Fade frames={s.frames}>
-            <OffthreadVideo src={staticFile(s.file)} trimBefore={fr(s.fromSec)} muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            {s.hold ? (
+              <>
+                <Sequence durationInFrames={s.frames - fr(s.hold)}><Clip s={s} /></Sequence>
+                <Sequence from={s.frames - fr(s.hold)}><Freeze frame={s.frames - fr(s.hold) - 1}><Clip s={s} /></Freeze></Sequence>
+              </>
+            ) : <Clip s={s} />}
           </Fade>
           <Caption text={s.caption} frames={s.frames} />
         </Sequence>

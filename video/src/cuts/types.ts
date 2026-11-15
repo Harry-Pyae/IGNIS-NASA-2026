@@ -1,6 +1,6 @@
 import type { ShotId } from './shots';
 
-export type CutId = 'demo' | 'story' | 'pitch' | 'walkthrough';
+export type CutId = 'demo' | 'story' | 'pitch' | 'walkthrough' | 'demo30' | 'story30' | 'walk';
 
 /** What fills the frame during one beat. Every word on screen comes from the data file or the generated manifest. */
 export type Visual =
@@ -14,6 +14,15 @@ export type Visual =
    * `zoom` slowly pushes in towards (x, y) as fractions of the frame, for readability on phones.
    */
   | { kind: 'ui'; shots: ShotId[]; at?: number; rate?: number; zoom?: { x: number; y: number; scale: number } }
+  /**
+   * One raw clip from scripts/clips.mjs (assets/real/captures/<clip>.mp4), played at `rate`. `at` ≥ 0: start that many
+   * seconds in. `at` < 0: end-anchored for clips that repeat the confirm flow first: the beat ends |at| s before the
+   * clip does, starting no earlier than `floor` s, and its last `hold` s are the clip's final frame. Held on its last
+   * frame whenever the beat outlasts the clip.
+   */
+  | { kind: 'clip'; clip: string; at: number; floor?: number; hold?: number; rate?: number }
+  /** The shared end card + the live stats line and the data credit (numbers from /api/export at prep). */
+  | { kind: 'endStats' }
   | { kind: 'team' }
   | { kind: 'physics' }
   /** Catalog numbers from the manifest ({cards}, {campaigns}, {sources}), read from /api/export at prep time. */
@@ -54,6 +63,13 @@ export interface CutDef {
   lengthSec: { min: number; max: number };
   /** File in assets/music/; null = VO only. */
   music: string | null;
+  /**
+   * Silent-first: no voice-over. Captions carry the narration, each beat lasts exactly its targetSec, and missing VO is
+   * not a placeholder reason. Music (if any) sits low and dips 6 dB under each caption.
+   */
+  silent?: boolean;
+  /** Shrink the picture into the top of the frame and set captions in the band below, so they never cover data. */
+  captionBand?: boolean;
   beats: Beat[];
 }
 

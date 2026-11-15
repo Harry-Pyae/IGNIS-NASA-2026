@@ -17,6 +17,12 @@ export interface Manifest {
   music: Record<string, { file: string; sec: number; cleared: boolean; ledger: string }>;
   /** The one continuous capture take and the second each shot starts at. */
   capture: { file: string; sec: number; width: number; height: number; marks: Partial<Record<string, number>> } | null;
+  /** Source-value guard against the live export (scripts/source-values.mjs): drift and not-yet-republished cards. */
+  sources?: { mismatches: string[]; unpublished: string[] };
+  /** Catalog revision(s) the raw clips were recorded at (assets/real/captures/session.json). */
+  clipRevisions?: string[];
+  /** Raw clips (scripts/clips.mjs) copied to public/clips/ with their lengths. */
+  clips?: Record<string, { file: string; sec: number }>;
   /** Read from /api/export when the manifest was built. */
   catalog: { cards: number; campaigns: number; sources: number; o2?: [number, number] | null; kpa?: [number, number] | null; revision: string; fetchedAt: string } | null;
   /** QR modules for the live URL, one string of 0/1 per row. */
@@ -64,6 +70,8 @@ export function layoutCut(cut: CutDef, manifest: Manifest, fps = 30): CutLayout 
   const snap = (s: number) => Math.round(s * fps) / fps;
   const timings: BeatTiming[] = cut.beats.map((beat) => {
     const vo = manifest.vo[beat.id];
+    // Silent-first cuts: the beat is exactly its planned length and its caption spans it (no voice to fit).
+    if (cut.silent) { const sec = snap(beat.targetSec); return { beat, voSec: Math.max(0, sec - LEAD_SEC - TAIL_SEC), recorded: false, needSec: sec, sec, overMax: false }; }
     const voSec = vo ? vo.sec : planSec(beat);
     const needSec = LEAD_SEC + voSec + TAIL_SEC;
     const sec = snap(Math.min(Math.max(needSec, beat.minSec), Math.max(beat.maxSec, needSec)));
@@ -157,12 +165,24 @@ export function captionChunks(text: string, voSec: number, maxChars = 40): { tex
 /** Why a cut is still a placeholder (watermarked). Empty = ready for a final render. */
 export function placeholderReasons(cut: CutDef, manifest: Manifest): string[] {
   const r: string[] = [];
-  const missingVo = cut.beats.filter((b) => !manifest.vo[b.id]).map((b) => b.id);
+  const missingVo = cut.silent ? [] : cut.beats.filter((b) => b.vo && !manifest.vo[b.id]).map((b) => b.id);
   if (missingVo.length) r.push(`VO not recorded: ${missingVo.join(', ')}`);
   const shots = [...new Set(cut.beats.flatMap((b) => (b.visual.kind === 'ui' ? b.visual.shots : [])))];
   const missingShots = shots.filter((s) => manifest.capture?.marks[s] == null);
-  if (!manifest.capture) r.push('no capture take (scripts/capture.mjs)');
+  if (shots.length && !manifest.capture) r.push('no capture take (scripts/capture.mjs)');
   else if (missingShots.length) r.push(`capture is missing shots: ${missingShots.join(', ')}`);
+  const clips = [...new Set(cut.beats.flatMap((b) => (b.visual.kind === 'clip' ? [b.visual.clip] : [])))];
+  const missingClips = clips.filter((c) => !manifest.clips?.[c]);
+  if (missingClips.length) r.push(`missing clips (npm run cuts:clips): ${missingClips.join(', ')}`);
+  if (clips.length) {
+    const stale = (manifest.clipRevisions ?? ['unknown']).filter((rev) => rev !== manifest.catalog?.revision);
+    if (stale.length) r.push(`clips recorded at catalog revision ${stale.map((x) => x.slice(0, 8)).join(', ')}, live is ${manifest.catalog?.revision.slice(0, 8) ?? '?'}: re-run npm run cuts:clips after the data restore`);
+  }
+  if (!manifest.sources) r.push('source-value check not run (prep could not read /api/export)');
+  else {
+    for (const m of manifest.sources.mismatches) r.push(`card differs from its source: ${m}`);
+    if (manifest.sources.unpublished.length) r.push(`data restore incomplete: not republished yet: ${manifest.sources.unpublished.join(', ')}`);
+  }
   for (const b of cut.beats) if (b.signOff) r.push(`${b.id}: ${b.signOff}`);
   const strings = JSON.stringify(cut) + (cut.beats.some((b) => b.visual.kind === 'team' || /\[Name /.test(b.vo)) ? JSON.stringify(TEAM) : '');
   const todos = strings.match(new RegExp(`${TODO_MARK} ([^"]*)`, 'g')) ?? [];

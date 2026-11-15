@@ -1,34 +1,37 @@
 # Video scripts — recording sheet, voice-fit spec and shot list
 
 Generated from `video/src/cuts/cuts.data.ts` by `npm run cuts:doc` in `video/`. Edit the data file, then regenerate.
-Four cuts: **The Demo** (≤30.0 s, submission candidate A), **The Story** (≤30.0 s, candidate B), the **Team pitch** (3:00–4:00) and the **In-app walkthrough** (60–90 s, 1080p, no music: the app’s “Watch the walkthrough” button). The walkthrough reaches the app only from a final render (`npm run cuts:render -- --final --only=walkthrough`), which writes `public/media/walkthrough.mp4` + poster and switches the button on in `src/lib/walkthrough.ts`.
+Five cuts: **The Demo** (≤30.0 s, submission candidate A), **The Story** (≤30.0 s, candidate B), the **Team pitch** (3:00–4:00) the **In-app walkthrough** (60–90 s, 1080p, no music: the app’s “Watch the walkthrough” button), and the **Voiced walkthrough** (the silent presentation walkthrough’s scenes, voiced; ~80–100 s, no length cap; `npm run cuts:prep && npm run cuts:render -- --only=walk`). The walkthrough reaches the app only from a final render (`npm run cuts:render -- --final --only=walkthrough`), which writes `public/media/walkthrough.mp4` + poster and switches the button on in `src/lib/walkthrough.ts`.
 Both 30-second cuts end on the same end card, frame for frame, so swapping the submission is a file swap.
 
 **How to read a line:** say it plainly at a normal pace. *Italic* words carry the stress. `[Name A]` = say your own name.
 “IGNIS” is said **IG-niss**. “Saffire” is said like “sapphire”. Catalog numbers are spoken only in lines marked **[LIVE]**: record those last, after “catalog final”. `npm run cuts:prep` checks every [LIVE] line against the live catalog and keeps the render a placeholder on any mismatch.
 
-## The Demo (product-first, ≤30 s)
+## The Demo (final submission, ≤30 s, casual VO)
 
-File prefix `vo-demo-` · 8 lines · **63 words** · planned 30.0 s · music: `Orbit_Flame_30sec.mp3`
+File prefix `vo-demo-` · 8 lines · **60 words** · planned 30.0 s · music: `Orbit_Flame_30sec.mp3`
 
 | # | File | Line (read this) | Words | Target s | Shown while it plays |
 |---|---|---|---|---|---|
 | 01 | `vo-demo-01.wav` | This is *IGNIS*, from Team AstroFlare. | 6 | 3 | Title card |
-| 02 | `vo-demo-02.wav` | In orbit, fire behaves *differently*. NASA’s evidence is buried in reports. | 11 | 5 | “Fire behaves differently in orbit.” |
-| 03 | `vo-demo-03.wav` | Describe the cabin scenario. *Confirm* the inputs. | 7 | 3 | Product: preset → confirm |
-| 04 | `vo-demo-04.wav` | IGNIS finds the closest *verified* NASA experiments. | 7 | 3 | Product: map → match |
-| 05 | `vo-demo-05.wav` | Every claim cites its *NASA* source. | 6 | 3 | Product: citation → nasaPage |
-| 06 | `vo-demo-06.wav` | Move a condition, and the evidence *updates*. Gaps stay *visible*. | 10 | 4 | Product: slider → gap |
-| 07 | `vo-demo-07.wav` | A claim that doesn’t match the record? *Withheld*. | 8 | 3.5 | Product: caseWithheld |
-| 08 | `vo-demo-08.wav` | IGNIS never predicts. It shows what *NASA saw*. | 8 | 5.5 | Shared end card |
+| 02 | `vo-demo-02.wav` | In orbit, fire behaves *differently* — and NASA’s evidence is buried in reports. | 12 | 4.5 | “Fire behaves differently in orbit.” |
+| 03 | `vo-demo-03.wav` | Describe your scenario… and *confirm* it. | 6 | 3 | Clip 03-confirm-flow |
+| 04 | `vo-demo-04.wav` | IGNIS finds the closest *verified* NASA experiments. | 7 | 3.5 | Clip 06-evidence-chain |
+| 05 | `vo-demo-05.wav` | Every claim cites its *NASA* source. | 6 | 3 | Clip 06-evidence-chain |
+| 06 | `vo-demo-06.wav` | Move a slider — the evidence *updates*. The gaps stay *visible*. | 10 | 4 | Clip 04-slider-gap |
+| 07 | `vo-demo-07.wav` | Try a wrong number? *Withheld*. | 5 | 3.5 | Clip 13-case-withheld |
+| 08 | `vo-demo-08.wav` | IGNIS never predicts. It shows what *NASA saw*. | 8 | 5.5 | End card + live stats line |
 
 Shorter wordings, used only if the voice-fit report says that line is over budget:
 
+- `demo-01`: This is *IGNIS*.
 - `demo-02`: Fire acts *differently* in orbit. The evidence is buried.
 - `demo-03`: Describe it. *Confirm* it.
 - `demo-04`: The closest *verified* NASA runs.
+- `demo-05`: Every claim is *sourced*.
 - `demo-06`: Move a slider. Gaps stay *visible*.
-- `demo-07`: A wrong claim? *Withheld*.
+- `demo-07`: Wrong number? *Withheld*.
+- `demo-08`: It shows what *NASA saw*.
 
 ## The Story (stakes-first, ≤30 s)
 
@@ -39,10 +42,10 @@ File prefix `vo-story-` · 7 lines · **57 words** · planned 29.0 s · music: `
 | 01 | `vo-story-01.wav` | *1967*. Apollo 1. Fire in a pure-oxygen cabin.<br><sub>⚠ R1: sign the heritage entry (docs/FACT-CHECK-QUEUE.md) before this line ships</sub> | 8 | 3 | 1967 · Apollo 1 |
 | 02 | `vo-story-02.wav` | *1997*. Mir. Fire in orbit.<br><sub>⚠ R1: add and sign a heritage-mir entry (date, what burned, source)</sub> | 5 | 3 | 1997 · Mir |
 | 03 | `vo-story-03.wav` | The evidence exists, scattered across *decades* of NASA papers. | 9 | 4 | “The evidence exists.” |
-| 04 | `vo-story-04.wav` | IGNIS turns a cabin scenario into the closest *verified* NASA experiments. | 11 | 4.5 | Product: preset → map |
-| 05 | `vo-story-05.wav` | Every value traces to its source. Every *gap* stays visible. | 10 | 4.5 | Product: citation → gap |
-| 06 | `vo-story-06.wav` | Claims that don’t match the record are *withheld*. | 8 | 4 | Product: caseWithheld |
-| 07 | `vo-story-07.wav` | What NASA saw. *Nothing it didn’t.* | 6 | 6 | Shared end card |
+| 04 | `vo-story-04.wav` | IGNIS turns a cabin scenario into the closest *verified* NASA experiments. | 11 | 4.5 | Clip 03-confirm-flow |
+| 05 | `vo-story-05.wav` | Every value traces to its source. Every *gap* stays visible. | 10 | 4.5 | Clip 06-evidence-chain |
+| 06 | `vo-story-06.wav` | Claims that don’t match the record are *withheld*. | 8 | 4 | Clip 13-case-withheld |
+| 07 | `vo-story-07.wav` | What NASA saw. *Nothing it didn’t.* | 6 | 6 | End card + live stats line |
 
 Shorter wordings, used only if the voice-fit report says that line is over budget:
 
@@ -101,9 +104,58 @@ File prefix `vo-walkthrough-` · 10 lines · **124 words** · planned 69.0 s · 
 | 09 | `vo-walkthrough-09.wav` | Hatched cells have no verified card yet. The gap radar shows where the *evidence runs out*. | 16 | 9 | Product: gap |
 | 10 | `vo-walkthrough-10.wav` | What NASA saw. *Nothing it didn’t.* | 6 | 5 | Shared end card |
 
+## The Demo, final 30 s (silent-first: captions + low music)
+
+**Silent-first: nothing to record.** The “Line” column is the burned caption; each beat lasts exactly its target; the music dips 6 dB under each caption.
+
+File prefix `vo-demo30-` · 7 lines · **42 words** · planned 29.9 s · music: `Orbit_Flame_30sec.mp3`
+
+| # | File | Line (read this) | Words | Target s | Shown while it plays |
+|---|---|---|---|---|---|
+| 01 | `vo-demo30-01.wav` |  | 0 | 3 | Title card |
+| 02 | `vo-demo30-02.wav` |  | 0 | 5 | “Fire behaves differently in orbit.” |
+| 03 | `vo-demo30-03.wav` | Describe the cabin scenario. *Confirm* the inputs. | 7 | 3 | Clip 03-confirm-flow |
+| 04 | `vo-demo30-04.wav` | The closest *verified* NASA runs. Every claim cites its *NASA* source. | 11 | 5.5 | Clip 06-evidence-chain |
+| 05 | `vo-demo30-05.wav` | Move a condition, and the evidence *updates*. Gaps stay *visible*. | 10 | 4 | Clip 04-slider-gap |
+| 06 | `vo-demo30-06.wav` | A claim that doesn’t match the record? *Withheld*. | 8 | 3.5 | Clip 13-case-withheld |
+| 07 | `vo-demo30-07.wav` | What NASA saw. *Nothing it didn’t.* | 6 | 5.9 | End card + live stats line |
+
+## The Story, final 30 s (silent-first: captions + low music)
+
+**Silent-first: nothing to record.** The “Line” column is the burned caption; each beat lasts exactly its target; the music dips 6 dB under each caption.
+
+File prefix `vo-story30-` · 8 lines · **35 words** · planned 29.9 s · music: `Sleeping_Giants_Breath_30sec.mp3`
+
+| # | File | Line (read this) | Words | Target s | Shown while it plays |
+|---|---|---|---|---|---|
+| 01 | `vo-story30-01.wav` | <br><sub>⚠ R1: sign the heritage entry (docs/FACT-CHECK-QUEUE.md) before this line ships</sub> | 0 | 3 | 1967 · Apollo 1 |
+| 02 | `vo-story30-02.wav` | <br><sub>⚠ R1: add and sign a heritage-mir entry (date, what burned, source)</sub> | 0 | 3 | 1997 · Mir |
+| 03 | `vo-story30-03.wav` |  | 0 | 4 | “The evidence exists.” |
+| 04 | `vo-story30-04.wav` | IGNIS turns a cabin scenario into the closest *verified* NASA experiments. | 11 | 4.5 | Clip 03-confirm-flow |
+| 05 | `vo-story30-05.wav` | Every value traces to its *source*. | 6 | 4.5 | Clip 06-evidence-chain |
+| 06 | `vo-story30-06.wav` | Every *gap* stays visible. | 4 | 3 | Clip 04-slider-gap |
+| 07 | `vo-story30-07.wav` | Claims that don’t match the record are *withheld*. | 8 | 3.5 | Clip 13-case-withheld |
+| 08 | `vo-story30-08.wav` | What NASA saw. *Nothing it didn’t.* | 6 | 4.4 | End card + live stats line |
+
+## Voiced walkthrough (presentation demo slot, ~1:40, no cap)
+
+File prefix `vo-walk-` · 9 lines · **252 words** · planned 102.0 s · music: `the_sleeping_giant_s_breath.mp3`
+
+| # | File | Line (read this) | Words | Target s | Shown while it plays |
+|---|---|---|---|---|---|
+| 01 | `vo-walk-01.wav` | So here’s how it works. You describe your scenario — or just grab a preset — and nothing happens until you hit confirm. Then IGNIS pulls up the real NASA experiments, each one placed by its oxygen and airflow. | 37 | 14 | Clip 03-confirm-flow |
+| 02 | `vo-walk-02.wav` | Watch what happens when I move the airflow slider — the matches update right away. See those hatched cells? That means we have no verified evidence there. We show you that, instead of hiding it. | 34 | 13 | Clip 04-slider-gap |
+| 03 | `vo-walk-03.wav` | The closest runs get ranked by how similar their conditions are — we never rank materials by “safety.” Every run cites its source, and one click takes you to the actual NASA report. | 32 | 13 | Clip 06-evidence-chain |
+| 04 | `vo-walk-04.wav` | Outcomes are exactly what NASA observed. “Did not ignite” means they tried to light it — and it just wouldn’t catch. | 20 | 8 | Clip 09-no-ignition |
+| 05 | `vo-walk-05.wav` | Now here’s my favorite part. Let’s lie to it. I’ll claim this run used a different airflow than it really did… and IGNIS checks the source row and refuses — withheld. | 30 | 13 | Clip 13-case-withheld |
+| 06 | `vo-walk-06.wav` | Give it the real value, and it’s accepted — with the same source row right there, so you can check it yourself. | 21 | 9 | Clip 14-case-accepted |
+| 07 | `vo-walk-07.wav` | Anyone can dig into any experiment in the library — the conditions, the exact quote from the paper, and the page it came from. | 23 | 9 | Clip 10-library |
+| 08 | `vo-walk-08.wav` | You can put two runs side by side too. And we’re careful here — a difference between two records doesn’t explain a difference in outcomes. | 24 | 10 | Clip 11-compare |
+| 09 | `vo-walk-09.wav` | Thirty-one verified runs from eight NASA campaigns, from 16.4 to 31 percent oxygen and 54 to 101 kilopascals. Each traces to its report, page and quote, and the dataset is open.<br><sub>**[LIVE] catalog numbers: record this line LAST**</sub> | 31 | 13 | End card + live stats line |
+
 ## Recording spec
 
-- **One file per numbered line**, named exactly as in the tables: `vo-demo-03.wav`, `vo-story-01.m4a`, `vo-pitch-17.wav`. `.wav`, `.m4a`, `.mp3`, `.aac` or `.ogg` all work.
+- **One file per numbered line**, named exactly as in the tables: `vo-demo-03.wav`, `vo-story-01.m4a`, `vo-pitch-17.wav`, `vo-walk-01.wav` … `vo-walk-09.wav`. `.wav`, `.m4a`, `.mp3`, `.aac` or `.ogg` all work.
 - **Drop folder:** `video/assets/vo/`. Re-record any single line by replacing its file; nothing else changes.
 - Quiet room, soft furnishings, no fan or music. A phone is fine: hold it 20–30 cm away, slightly to the side of your mouth.
 - Leave **about half a second of silence** before and after each line. Don’t trim it: the prep step trims it.
