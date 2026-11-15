@@ -1,10 +1,11 @@
-import { Button, buttonClass } from '../components/ui';
+import { Button, buttonClass, textLink } from '../components/ui';
 import { useVerifiedCatalog } from '../lib/catalog';
 import { MISSION_CASE, missionEntry } from '../engine/mission';
 import { COPY } from '../lib/copy';
 import { t } from '../i18n';
 import { requestGuidedMission } from './consoleLoader';
 import { WalkthroughButton } from '../features/walkthrough/Walkthrough';
+import { TOUR_PARAM } from '../features/tour/tourOffer';
 
 export function MissionActions({ explore }: { explore: () => void }) {
   return <>
@@ -17,6 +18,8 @@ export function MissionActions({ explore }: { explore: () => void }) {
       <WalkthroughButton size="lg" />
     </div>
     {!MISSION_CASE && <p className="mt-3 max-w-lg text-[14px] leading-snug text-dim">{COPY.missionAvailability}</p>}
+    {/* Re-entry for the first-visit tour (a text link, never a fourth CTA): ?tour=1 opens it once, then drops the param. */}
+    <a className={`mt-3 inline-block text-[14px] ${textLink}`} href={`/?${TOUR_PARAM}=1#console`}>{t('tourTakeGuided')}</a>
   </>;
 }
 

@@ -425,6 +425,7 @@ const EN = {
   tourExplore: COPY.plain.tour.explore,
   tourSkip: COPY.plain.tour.skip,
   tourReplay: COPY.plain.tour.replay,
+  tourTakeGuided: 'Take the guided tour',
   walkthroughShort: COPY.plain.walkthrough.short,
   walkthroughTitle: COPY.plain.walkthrough.title,
   walkthroughCaptioned: COPY.plain.walkthrough.captioned,
