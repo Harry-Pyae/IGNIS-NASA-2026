@@ -9,7 +9,13 @@
     "render": "node scripts/run.mjs real render",
     "render:dummy": "node scripts/run.mjs dummy render",
     "check:no-dummy": "node scripts/run.mjs real check",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "cuts:prep": "node scripts/cuts.mjs prep",
+    "cuts:doc": "node scripts/cuts.mjs doc",
+    "cuts:render": "node scripts/cuts.mjs render",
+    "cuts:studio": "node scripts/cuts.mjs studio",
+    "cuts:capture": "node scripts/capture.mjs",
+    "cuts:check": "node scripts/timing.check.mjs"
   },
   "dependencies": {
     "@react-three/fiber": "8.18.0",
@@ -21,8 +27,11 @@
     "three": "0.186.1"
   },
   "devDependencies": {
+    "@types/qrcode": "^1.5.5",
     "@types/react": "^18.3.31",
     "@types/three": "0.186.0",
+    "playwright-core": "^1.64.1",
+    "qrcode": "^1.5.4",
     "typescript": "^6.0.3"
   }
 }

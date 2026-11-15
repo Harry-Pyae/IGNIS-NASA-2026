@@ -11,3 +11,14 @@ public/real/*
 
 out/
 node_modules/
+
+# The three cuts (scripts/cuts.mjs): team audio and the capture take travel via the team drive, not git.
+# Drop folders keep only their README.
+assets/vo/*
+!assets/vo/README.md
+assets/music/*
+!assets/music/README.md
+public/vo/
+public/music/
+public/capture/
+public/cuts-manifest.json

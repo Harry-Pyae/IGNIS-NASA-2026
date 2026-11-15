@@ -1,5 +1,10 @@
 # IGNIS pitch video — reuse guide
 
+> **The three submission/pitch cuts** (The Demo ≤30 s, The Story ≤30 s, Team pitch 3–4 min, QHD) use their own
+> voice-fit pipeline: scripts in `src/cuts/cuts.data.ts`, recording sheet + shot list in `docs/video-scripts.md`,
+> `npm run cuts:capture` → `cuts:prep` → `cuts:render` (add `-- --final` for the real render). VO goes in
+> `assets/vo/`, music in `assets/music/`. The older IgnisFilm / TrailerCut described below are unchanged.
+
 A Remotion project, separate from the app (own `package.json`; root lint ignores `video/`; nothing here is in the
 app build or CI). Two compositions share every scene: **IgnisFilm** (~2:01, 1920×1080, 30 fps) and **TrailerCut** (~44 s).
 

@@ -3,6 +3,11 @@ import { data, Film, layout, transitionWindows } from './Film';
 import { JOURNEY } from './transitions/journey';
 import { REGISTRY } from './transitions/registry';
 import { type Cut, mediaPaths, problems } from './validate';
+import { CUTS } from './cuts/cuts.data.ts';
+import { CutFilm, cutLayout } from './cuts/CutFilm';
+import type { Manifest } from './cuts/timing.ts';
+
+const EMPTY_MANIFEST: Manifest = { generatedAt: '', vo: {}, music: {}, capture: null, catalog: null, qr: null };
 
 // Fonts are the app's own self-hosted files (synced into public/fonts by scripts/run.mjs).
 const fontsReady = delayRender('fonts');
@@ -37,6 +42,27 @@ export function Root() {
     <>
       <Composition id="IgnisFilm" component={Film} defaultProps={{ cut: 'film' as Cut }} width={1920} height={1080} fps={30} durationInFrames={1} calculateMetadata={() => metadata('film')} />
       <Composition id="TrailerCut" component={Film} defaultProps={{ cut: 'trailer' as Cut }} width={1920} height={1080} fps={30} durationInFrames={1} calculateMetadata={() => metadata('trailer')} />
+      {/* The cuts: QHD (the walkthrough renders at 0.75 = 1080p), voice-fit (scripts/cuts.mjs prep writes the manifest they read). */}
+      <Folder name="cuts">
+        {CUTS.map((cut) => (
+          <Composition
+            key={cut.id}
+            id={cut.composition}
+            component={CutFilm}
+            defaultProps={{ cutId: cut.id, manifest: EMPTY_MANIFEST }}
+            width={2560}
+            height={1440}
+            fps={30}
+            durationInFrames={1}
+            calculateMetadata={async ({ props }) => {
+              const r = await fetch(staticFile('cuts-manifest.json')).catch(() => null);
+              if (!r?.ok) throw new Error('public/cuts-manifest.json missing: run `npm run cuts:prep` in video/ first.');
+              const manifest = (await r.json()) as Manifest;
+              return { durationInFrames: cutLayout(props.cutId, manifest, 30).total, props: { ...props, manifest } };
+            }}
+          />
+        ))}
+      </Folder>
       {/* Each transition alone, per implementation (+ 'none' = plain cut), for previewing and the cost benchmark. */}
       <Folder name="transitions">
         {transitionWindows('film').flatMap((w) =>

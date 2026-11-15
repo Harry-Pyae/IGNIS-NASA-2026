@@ -6,7 +6,7 @@ Media files are gitignored (size); share them through the team drive and record 
 
 | File | What it is | Who | Rules |
 |---|---|---|---|
-| `product-01-scenario.mp4` | Screen recording, live app (`ignisprototype01.vercel.app`): describe the scenario → parse → confirm inputs | Coder A / R3 | 1920×1080, 30 fps, ≥15 s, real verified catalog only, no dev tools or cursor clutter |
+| `product-01-scenario.mp4` | Screen recording, live app (`ignis-nasa-2026.vercel.app`): describe the scenario → parse → confirm inputs | Coder A / R3 | 1920×1080, 30 fps, ≥15 s, real verified catalog only, no dev tools or cursor clutter |
 | `product-02-matches.mp4` | Matched NASA experiments: cards, match explanations, evidence map | Coder A / R3 | same |
 | `product-03-source.mp4` | Open one card → quote → locator → the NASA source URL | Coder A / R3 | same |
 | `product-04-brief.mp4` | The Mission Brief: OBSERVED / SUPPORTED claims, the UNTESTED block | Coder A / R3 | same; keep the Brief still in the recording |
