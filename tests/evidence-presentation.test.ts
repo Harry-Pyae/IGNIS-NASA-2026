@@ -25,7 +25,7 @@ describe('map populations', () => {
   it('separates measured points beyond axes from missing measurements, including zero and boundaries', () => {
     const low = card({ o2_pct: 14, flow_cm_s: 0 });
     const high = card({ o2_pct: 30, flow_cm_s: 30 });
-    const beyond = card({ o2_pct: 31, flow_cm_s: 10 });
+    const beyond = card({ o2_pct: 33, flow_cm_s: 10 }); // the O₂ axis ends at 32 %
     const missing = card({ o2_pct: null, flow_cm_s: 10 });
     const population = mapCoordinates([low, high, beyond, missing]);
     expect(population.visible).toEqual([low, high]);

@@ -9,7 +9,7 @@
 import { eligibleCards } from '../lib/gates.js';
 import type { Experiment, MaterialClass, ResolvedScenario } from '../lib/types.js';
 
-export const GRID = { o2: { min: 14, max: 30, step: 1 }, flow: { min: 0, max: 30, step: 2 } } as const;
+export const GRID = { o2: { min: 14, max: 32, step: 1 }, flow: { min: 0, max: 30, step: 2 } } as const;
 
 export type CellState = 'tested' | 'untested' | 'outside_range';
 export interface GapCell {

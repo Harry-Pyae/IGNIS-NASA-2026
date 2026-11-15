@@ -555,7 +555,7 @@ export function Console() {
         <SectionHeader help="helpScenario" id="s1" step={t('describeStep')} title={t('missionScenario')} />
         <MissionCaption step={guidedStep === 0 ? 0 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[0].caption)} />
         <div data-peek className="mb-5 grid gap-5">
-            <Slider label="O₂" describedBy="scenario-hint-o2" hint={<InputHint field="o2" label="O₂" />} unit="%" min={14} max={30} value={scenario.o2_pct} onChange={(value) => moveSlider({ o2_pct: value })} onClear={() => moveSlider({ o2_pct: null })} allowUnspecified unspecifiedValue={21} unspecifiedLabel={t('notSpecified')} setValueLabel={t('setOxygen')} clearValueLabel={t('clearOxygen')} />
+            <Slider label="O₂" describedBy="scenario-hint-o2" hint={<InputHint field="o2" label="O₂" />} unit="%" min={GRID.o2.min} max={GRID.o2.max} value={scenario.o2_pct} onChange={(value) => moveSlider({ o2_pct: value })} onClear={() => moveSlider({ o2_pct: null })} allowUnspecified unspecifiedValue={21} unspecifiedLabel={t('notSpecified')} setValueLabel={t('setOxygen')} clearValueLabel={t('clearOxygen')} />
             <Slider label="Airflow" describedBy="scenario-hint-airflow" hint={<InputHint field="airflow" label="Airflow" />} unit="cm/s" min={0} max={30} value={scenario.flow_cm_s} onChange={(value) => moveSlider({ flow_cm_s: value })} onClear={() => moveSlider({ flow_cm_s: null })} allowUnspecified unspecifiedLabel={t('notSpecified')} setValueLabel={t('setAirflow')} clearValueLabel={t('clearAirflow')} />
             <p className="text-[14px] text-dim">{COPY.sliderCaption}</p>
         </div>

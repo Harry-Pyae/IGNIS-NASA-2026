@@ -171,8 +171,8 @@ describe('gap grid + radar (§6)', () => {
   const grid = gapGrid(SEED_CARDS, null);
   const at = (o2: number, flow: number) => grid.cells[o2 - 14]![flow / 2]!;
 
-  it('14–30 % O₂ × 0–30 cm/s in 1 % × 2 cm/s cells', () => {
-    expect(grid.cells).toHaveLength(16);
+  it('14–32 % O₂ × 0–30 cm/s in 1 % × 2 cm/s cells', () => {
+    expect(grid.cells).toHaveLength(18); // O₂ axis to 32 % since Saffire VI (31.0 %)
     expect(grid.cells.every((r) => r.length === 15)).toBe(true);
     expect(grid.envelope).toEqual({ o2_min: 18.7, o2_max: 21, flow_min: 2.2, flow_max: 10 });
   });
@@ -208,9 +208,9 @@ describe('gap grid + radar (§6)', () => {
 });
 
 describe('gap radar with nothing plottable (round 3, item 6)', () => {
-  it('empty catalog: 240 untested cells, null envelope, and NO ranked regions', () => {
+  it('empty catalog: 270 untested cells, null envelope, and NO ranked regions', () => {
     const grid = gapGrid([], null);
-    expect(grid.cells.flat()).toHaveLength(240);
+    expect(grid.cells.flat()).toHaveLength(270);
     expect(grid.cells.flat().every((c) => c.state === 'untested')).toBe(true);
     expect([grid.envelope, grid.population, grid.plotted]).toEqual([null, 0, 0]);
     const radar = gapRadar(grid, []);

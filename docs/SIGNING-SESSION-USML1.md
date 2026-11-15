@@ -15,7 +15,7 @@ layer (letters and digits; the scan has OCR typos such as “aimow” for “air
 
 ### W1. USML-1 WIF-A — concurrent flow
 
-`DRAFT-ID` · reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate)
+`e70cb310-45b4-43fa-b1d5-6853ed8eef57` · saved as a draft; reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate)
 
 | ✓ | Field | Draft value | Check it against |
 |---|---|---|---|
@@ -38,7 +38,7 @@ layer (letters and digits; the scan has OCR typos such as “aimow” for “air
 
 ### W2. USML-1 WIF-B — opposed flow
 
-`DRAFT-ID` · reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate)
+`e78a52ba-2e50-4577-9893-44a2a3ab94bd` · saved as a draft; reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate)
 
 | ✓ | Field | Draft value | Check it against |
 |---|---|---|---|
@@ -59,7 +59,7 @@ layer (letters and digits; the scan has OCR typos such as “aimow” for “air
 
 ### W3. USML-1 WIF-D — opposed flow
 
-`DRAFT-ID` · reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate)
+`e0e5251b-5971-486a-a51c-63e886498caa` · saved as a draft; reopen it from **Drafts to verify** in [/curate](https://ignis-nasa-2026.vercel.app/curate)
 
 | ✓ | Field | Draft value | Check it against |
 |---|---|---|---|

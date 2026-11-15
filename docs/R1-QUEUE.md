@@ -1,5 +1,12 @@
 # R1 queue: drafts to verify and sign
 
+> **R1 MINI-TASK (15 min, deadline 14:00 today) — Cargo packaging preset.** Find a citable NASA source stating that
+> ISS cargo transfer bags (CTBs) are made of Nomex (a CTB specification or NASA fact sheet; none of the Saffire VI PDFs
+> says so). **If found:** add it as a signed context fact in `docs/FACT-CHECK-QUEUE.md` and tell Coder A — the preset
+> becomes “Cargo packaging (Nomex bags)”, mapped to `nomex_fabric` (Saffire VI-1, `no_ignition`, once signed), with the
+> context note visible on the tile. **If not found by 14:00:** the tile stays “Silicone sheet” (already live) and the
+> cargo gap stays on the Gap Radar line. Either way the preset resolves today.
+
 > **Status 2026-11-15 08:49 (read-only `/api/export`):** still 3 verified cards (revision `becd7b54…`): GMT96-T7,
 > GMT96-T8, GMT45-T4. **None of the 11 drafts below is published yet.** The Round 9 review counted "6 drafts + 3
 > candidates": the 6 are the BASS-II rows (#1–3, #5, #6, #11) and the 3 are the §2 outcome decisions (V-3, V-4, IV-2);

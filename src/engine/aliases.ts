@@ -48,6 +48,7 @@ export const MATERIAL_LABELS: Record<string, string> = {
   cotton_fiberglass: 'Cotton-fiberglass fabric',
   polyethylene: 'Polyethylene',
   silicone: 'Silicone',
+  nomex_fabric: 'Nomex fabric',
 };
 export const CLASS_LABELS: Record<MaterialClass, string> = {
   thermoplastic: 'thermoplastic',
