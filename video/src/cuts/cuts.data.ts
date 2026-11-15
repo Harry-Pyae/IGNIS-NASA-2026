@@ -54,8 +54,8 @@ export const CUTS: CutDef[] = [
       { id: 'demo-04', vo: 'IGNIS finds the closest *verified* NASA experiments.', shorter: 'The closest *verified* NASA runs.', visual: { kind: 'clip', clip: '06-evidence-chain', at: 12.5, rate: 1.8 }, targetSec: 3.5, minSec: 3, maxSec: 3.8 },
       { id: 'demo-05', vo: 'Every claim cites its *NASA* source.', shorter: 'Every claim is *sourced*.', visual: { kind: 'clip', clip: '06-evidence-chain', at: -0.05, floor: 18, hold: 1.2, rate: 1.5 }, targetSec: 3, minSec: 2.6, maxSec: 3.4 },
       { id: 'demo-06', vo: 'Move a slider — the evidence *updates*. The gaps stay *visible*.', shorter: 'Move a slider. Gaps stay *visible*.', visual: { kind: 'clip', clip: '04-slider-gap', at: 11.5, rate: 2 }, targetSec: 4, minSec: 3.5, maxSec: 4.4 },
-      { id: 'demo-07', vo: 'Try a wrong number? *Withheld*.', shorter: 'Wrong number? *Withheld*.', visual: { kind: 'clip', clip: '13-case-withheld', at: 7, rate: 1.5 }, targetSec: 3.5, minSec: 3, maxSec: 3.8 },
-      { id: 'demo-08', vo: 'IGNIS never predicts. It shows what *NASA saw*.', shorter: 'It shows what *NASA saw*.', visual: { kind: 'endStats' }, targetSec: 5.5, minSec: 5, maxSec: 6 },
+      { id: 'demo-07', vo: 'Try a wrong number? *Withheld*.', shorter: 'Wrong number? *Withheld*.', visual: { kind: 'clip', clip: '13-case-withheld', at: 7, rate: 1.5 }, targetSec: 3.5, minSec: 2.5, maxSec: 3.8 },
+      { id: 'demo-08', vo: 'IGNIS never predicts. It shows what *NASA saw*.', shorter: 'It shows what *NASA saw*.', visual: { kind: 'endStats' }, targetSec: 5.5, minSec: 4.2, maxSec: 6 },
     ],
   },
   {
