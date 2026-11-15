@@ -195,3 +195,9 @@ Extractor found no stated outcome. Source (NTRS 20210011521): the 2-sided PMMA f
 ## 4. Next candidates (outside this pass, outcomes stated in the sources)
 
 - **PMMA rods** (NTRS 20150008961) and the **PSI-25 archive**, per `docs/sources.md`.
+
+## 2.0 correction candidates (after the submission; do not republish verified cards before the deadline)
+
+- **Saffire VI-1 (Nomex), o2_pct:** promote 31.9 % from NTRS 20250002675 (ICES-2025-156, #3) p.4, Table 1: "4 Nomex Burn:
+  31.9% O2. Did not Ignite". Ruling 2026-11-15 (team lead): it stays in the notes for now, not in the field; the card is
+  published and republishing a verified card hours before the deadline costs more than the field is worth.

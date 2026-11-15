@@ -8,7 +8,7 @@
 // Public pages only (never /curate, never a secret). Read-only: no catalog writes; parse-scenario is blocked;
 // synthesize calls are allowed but counted per provider (a warmed cache answers them without a generation).
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -114,7 +114,18 @@ function helpers(page, { width, height, record }) {
   let pointer = { x: width / 2, y: height / 2 };
   const wait = (ms) => page.waitForTimeout(ms);
   const moveTo = async (x, y, steps = 48) => { await page.mouse.move(x, y, { steps }); pointer = { x, y }; };
-  const box = async (loc) => { await loc.scrollIntoViewIfNeeded(); const b = await loc.boundingBox(); return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; };
+  // A target hidden under the sticky header (or the phone's pinned condition bar) would take the click instead, so any
+  // target not clearly in view is centred first.
+  const box = async (loc) => {
+    await loc.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const header = document.querySelector('header')?.getBoundingClientRect().bottom ?? 0;
+      if (r.top < header + 70 || r.bottom > innerHeight - 20) el.scrollIntoView({ block: 'center', behavior: 'instant' });
+    });
+    await page.waitForTimeout(250);
+    const b = await loc.boundingBox();
+    return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+  };
   const hover = async (loc, dwell = 900) => { const c = await box(loc); await moveTo(c.x, c.y); await wait(dwell); };
   const click = async (loc) => { const c = await box(loc); await moveTo(c.x, c.y); await wait(350); await page.mouse.down(); await wait(110); await page.mouse.up(); };
   const glide = (y, ms = 2200) => page.evaluate(([y, ms]) => new Promise((done) => {
@@ -344,7 +355,7 @@ await clip('17-mobile', async ({ open, consoleReady, page, glideTo, confirmCrew,
   await open('/#console', consoleReady);
   await glideTo(page.locator('#s1'), 120, 1200);
   await confirmCrew();
-  await glideTo(page.locator('#evidence-map'), 130, 1800);
+  await glideTo(page.locator('#evidence-map'), 215, 1800); // clear of the header + the pinned condition bar
   await wait(4000);
 }, { width: 390, height: 844, scale: 3, mobile: true });
 
@@ -356,6 +367,16 @@ await clip('18-light-theme', async ({ open, consoleReady, page, glide, wait }) =
 
 await browser.close();
 log.finishedAt = new Date().toISOString();
-writeFileSync(join(OUT, 'session.json'), JSON.stringify(log, null, 1));
+// A partial re-run (--only) updates the full session's log instead of replacing it.
+const sessionFile = join(OUT, 'session.json');
+if (ONLY && existsSync(sessionFile)) {
+  const prev = JSON.parse(readFileSync(sessionFile, 'utf8'));
+  const rerun = Object.keys(log.clips);
+  prev.clips = { ...prev.clips, ...log.clips };
+  prev.notes = [...(prev.notes ?? []).filter((n) => !rerun.some((c) => n.startsWith(c))), ...log.notes];
+  for (const [k, v] of Object.entries(log.synthesize)) prev.synthesize[k] = (prev.synthesize[k] ?? 0) + v;
+  prev.reruns = [...(prev.reruns ?? []), { at: log.finishedAt, clips: rerun, catalogRevision: log.catalogRevision }];
+  writeFileSync(sessionFile, JSON.stringify(prev, null, 1));
+} else writeFileSync(sessionFile, JSON.stringify(log, null, 1));
 console.log(`catalog ${log.count} cards, revision ${String(log.catalogRevision).slice(0, 8)} · synthesize ${JSON.stringify(log.synthesize)}`);
 for (const n of log.notes) console.log(`  · ${n}`);

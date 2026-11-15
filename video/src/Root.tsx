@@ -6,6 +6,7 @@ import { type Cut, mediaPaths, problems } from './validate';
 import { CUTS } from './cuts/cuts.data.ts';
 import { CutFilm, cutLayout } from './cuts/CutFilm';
 import type { Manifest } from './cuts/timing.ts';
+import { EMPTY_PLAN, SilentWalkthrough, type SilentPlan } from './silent/Silent';
 
 const EMPTY_MANIFEST: Manifest = { generatedAt: '', vo: {}, music: {}, capture: null, catalog: null, qr: null };
 
@@ -43,6 +44,23 @@ export function Root() {
       <Composition id="IgnisFilm" component={Film} defaultProps={{ cut: 'film' as Cut }} width={1920} height={1080} fps={30} durationInFrames={1} calculateMetadata={() => metadata('film')} />
       <Composition id="TrailerCut" component={Film} defaultProps={{ cut: 'trailer' as Cut }} width={1920} height={1080} fps={30} durationInFrames={1} calculateMetadata={() => metadata('trailer')} />
       {/* The cuts: QHD (the walkthrough renders at 0.75 = 1080p), voice-fit (scripts/cuts.mjs prep writes the manifest they read). */}
+      {/* The silent walkthrough for the live presentation (scripts/silent.mjs writes public/silent/plan.json). */}
+      <Composition
+        id="SilentWalkthrough"
+        component={SilentWalkthrough}
+        defaultProps={{ plan: EMPTY_PLAN }}
+        width={2560}
+        height={1440}
+        fps={30}
+        durationInFrames={1}
+        calculateMetadata={async () => {
+          const r = await fetch(staticFile('silent/plan.json')).catch(() => null);
+          if (!r?.ok) throw new Error('public/silent/plan.json missing: run node scripts/silent.mjs first.');
+          const plan = (await r.json()) as SilentPlan;
+          const sec = plan.openSec + plan.segments.reduce((t, s) => t + s.sec, 0) + plan.endSec;
+          return { durationInFrames: Math.round(sec * 30), props: { plan } };
+        }}
+      />
       <Folder name="cuts">
         {CUTS.map((cut) => (
           <Composition

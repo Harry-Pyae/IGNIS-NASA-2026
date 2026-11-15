@@ -7,6 +7,10 @@ This is one self-contained file for checking progress without the repo. Coder A 
 `a0363adf…`), every signing session signed. Range for the deck and video: verified evidence from 16.4 % to 31 % O₂, 54–101 kPa.
 Remaining: Moon-base preset (R1 signature), green-flash Beat 1 (R2 frame by 12:30), recording session, VO.
 
+> **Deck stats line (final, live revision `a0363adf…`, read 2026-11-15):** **31 verified runs · 8 NASA campaigns ·
+> 16.4–31 % O₂ · 54–101 kPa · outcomes 15 sustained / 7 extinguished / 9 did not ignite · source reports 1994–2024.**
+> Do not state flight years (e.g. "1992–2022") unless R1 confirms them from the mission records.
+
 **2026-11-14 evening:** live = `main` `96262b4`, CI green. 3 verified cards; runbook steps 0, a, c, d done, f warm;
 b, e, g, h open (progress table in [EXECUTION-STATUS.md](EXECUTION-STATUS.md)).
 
