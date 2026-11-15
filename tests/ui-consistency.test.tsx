@@ -48,7 +48,7 @@ describe('Compare from a detail page', () => {
     catalog([a, b]);
     at('/compare', '?ids=' + a.id);
     const html = renderToStaticMarkup(<Compare />);
-    expect(html).toContain('Select two distinct');
+    expect(html).toContain('Choose two different');
     expect(html).toContain('A-run');
     expect(html).toContain('B-run');
   });

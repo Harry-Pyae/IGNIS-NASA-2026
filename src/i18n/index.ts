@@ -2,7 +2,7 @@ import { COPY } from '../lib/copy';
 /** English strings for the public console. Add Burmese only after R3's full reviewed set arrives. */
 const EN = {
   missionScenario: 'Mission scenario',
-  evidenceMap: 'Evidence map',
+  evidenceMap: 'Evidence Map',
   matchPanel: 'Matching experiments',
   missionBrief: 'Mission brief',
   evidenceGapRadar: 'Evidence gap radar',
@@ -28,7 +28,7 @@ const EN = {
   setOxygen: 'Set to 21% (cabin air)',
   clearOxygen: 'Clear oxygen',
   enterMaterial: 'Enter a material',
-  selectMaterial: 'Select material',
+  selectMaterial: 'Choose a material',
   chooseCatalogMaterial: 'Choose a verified catalog material to continue.',
   chooseAmbiguousMaterial: 'Choose which catalog material you mean.',
   catalogMaterialsUnavailable: 'Verified catalog materials could not be loaded.',
@@ -72,7 +72,7 @@ const EN = {
   catalogNotConnected: 'The catalog could not be loaded. Retry to view the evidence map. This does not mean there is no matching evidence.',
   evidenceUnavailable: 'Catalog unavailable',
   mapNoPoints: 'No verified records with both oxygen and airflow values are available to plot yet.',
-  mapAccessibility: 'Evidence map plotting oxygen against airflow',
+  mapAccessibility: 'Evidence Map plotting oxygen against airflow',
   mapVerifiedTitle: 'Verified experiment outcomes by airflow and oxygen concentration',
   airflowAxis: 'Airflow (cm/s)',
   oxygenAxis: 'O₂ (%)',
@@ -138,7 +138,7 @@ const EN = {
   openMatchCard: 'Open its match card',
   noUntestedWithinRange: 'No untested cells were found inside the current catalog range.',
   thinMaterialsHeading: 'Materials with fewer than three verified records',
-  openDataset: 'Open dataset (.json)',
+  openDataset: 'Export dataset (.json)',
   backToTop: 'Back to top',
   oneIdea: 'The one idea',
   refusesToGuess: 'IGNIS refuses to guess. It renders the absence of evidence as a visible, first-class feature.',
@@ -158,7 +158,7 @@ const EN = {
   compareUnavailable: 'The verified catalog is unavailable.',
   compareChoose: 'Choose a verified experiment',
   compareMissing: 'These IDs are unavailable for comparison in the current IGNIS catalog.',
-  compareDistinct: 'Select two distinct verified solid-material experiments to compare.',
+  compareDistinct: 'Choose two different verified experiments to compare.',
   methodsEyebrow: 'Methods / evidence retrieval',
   methodsTitle: 'From scenario to source',
   methodsIntro: 'Follow a mission question through IGNIS and see where the software checks a statement before you read it.',
@@ -383,7 +383,7 @@ const EN = {
   caseError: 'The check could not run right now. This is a connection problem, not a verdict. Try again in a moment.',
   caseCreditData: 'Experiment data: NASA, {campaign} ({source}).',
   // Evidence Map legend: pressable items and the plain key are separate groups
-  legendRegion: 'Evidence map legend',
+  legendRegion: 'Evidence Map legend',
   legendExplained: 'Tap for meaning',
   legendKeyOnly: 'Also on the map',
   // Round 8 · C1 error boundaries
@@ -413,9 +413,9 @@ const EN = {
   // Round 8 · C3 Specimen Explorer
   specimenExplorer: 'Specimen Explorer',
   specimenIntro: 'Open a verified fabric run to inspect its reported conditions, quotation, and source locator.',
-  specimenSelectByName: 'Select a run by name',
+  specimenSelectByName: 'Choose a run by name',
   specimenInspect: 'Inspect this run in the Library',
-  specimenLocate: 'Locate this specimen on the Evidence Map',
+  specimenLocate: 'Locate this run on the Evidence Map',
   // Round 8 · C4 printable evidence handoff
   handoffPrint: 'Print evidence handoff',
   handoffRegion: 'Evidence handoff',
