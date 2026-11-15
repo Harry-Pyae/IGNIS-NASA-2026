@@ -56,9 +56,10 @@ describe('co-located runs on the Evidence Map', () => {
     expect(html).not.toContain('stroke-dasharray="2 3"'); // no dashed per-cell boxes for out-of-range cells
   });
 
-  it('draws no decorative radar wedge inside the plot', () => {
+  it('draws the radar sweep as decoration only: hidden from assistive tech, never hit-testable, under every run', () => {
     const html = renderToStaticMarkup(<EvidenceMap experiments={[alone]} scenario={null} matches={[]} status="connected" selectedId={null} onSelect={() => {}} />);
-    expect(html).not.toContain('map-radar');
-    expect(html).not.toContain('<foreignObject');
+    expect(html).toMatch(/<foreignObject[^>]*aria-hidden="true"[^>]*pointer-events="none"/);
+    expect(html).toContain('class="map-radar anim-radar"');
+    expect(html.indexOf('map-radar')).toBeLessThan(html.indexOf('id="map-point-'));
   });
 });

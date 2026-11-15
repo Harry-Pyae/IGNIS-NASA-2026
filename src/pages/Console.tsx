@@ -1175,6 +1175,13 @@ export function EvidenceMap({
                 <rect x={left} y={top} width={plotWidth} height={plotHeight} fill="url(#ignis-untested-hatch)" mask="url(#ignis-untested-mask)" />
                 <rect x={left} y={top} width={plotWidth} height={plotHeight} fill="var(--color-faint)" fillOpacity=".08" mask="url(#ignis-outside_range-mask)" />
               </g>
+              {/* The radar sweep: decoration only, under the data, never hit-testable; absent under reduced motion. A circle
+                  as wide as the plot's diagonal turns about its centre, so the beam reaches every corner. */}
+              <foreignObject x={left} y={top} width={plotWidth} height={plotHeight} aria-hidden="true" pointerEvents="none">
+                <div className="map-radar-frame">
+                  <div className="map-radar anim-radar" style={{ width: Math.hypot(plotWidth, plotHeight), height: Math.hypot(plotWidth, plotHeight) }} />
+                </div>
+              </foreignObject>
               {grid.envelope && (
                 <rect
                   x={x(grid.envelope.flow_min)}
