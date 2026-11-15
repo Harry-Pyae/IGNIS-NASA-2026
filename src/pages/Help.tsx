@@ -42,13 +42,14 @@ export function Help() {
       <nav aria-label={t('helpContents')} className="mb-8">
         <p className="console-label mb-2 text-dim">{t('helpContents')}</p>
         <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
-          {SECTIONS.map((s) => <li key={s.id}><a className={textLink} href={`#${s.id}`}>{t(s.title)}</a></li>)}
+          {/* The public learning path only; curator notes stay last and apart (their #curate anchor still works). */}
+          {SECTIONS.filter((s) => s.id !== 'curate').map((s) => <li key={s.id}><a className={textLink} href={`#${s.id}`}>{t(s.title)}</a></li>)}
         </ul>
       </nav>
       {/* With the global 6.5rem scroll-padding, this lands each section 1rem under the live header at any width. */}
       <div className="grid gap-4">
         {SECTIONS.map((s) => (
-          <Panel as="section" key={s.id} aria-labelledby={`help-${s.id}`} id={s.id} className="scroll-mt-[calc(var(--header-h,6.5rem)-6.5rem+1rem)]">
+          <Panel as="section" key={s.id} aria-labelledby={`help-${s.id}`} id={s.id} className={`scroll-mt-[calc(var(--header-h,6.5rem)-6.5rem+1rem)] ${s.id === 'curate' ? 'mt-8 border-dashed bg-transparent' : ''}`}>
             <h2 id={`help-${s.id}`} className="text-xl font-semibold text-text">{t(s.title)}</h2>
             {s.body.map((key) => <p key={key} className="mt-2 max-w-3xl text-dim">{t(key)}</p>)}
             {s.id === 'start' && <div className="mt-3 flex flex-wrap items-center gap-3">
