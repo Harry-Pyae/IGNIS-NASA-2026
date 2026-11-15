@@ -1,5 +1,12 @@
 # IGNIS — state handoff (2026-11-10, console merged · preparation phase)
 
+> **2026-11-15 16:20: In-app walkthrough (Help) shipped, captions only (Stage 1).** `public/media/walkthrough.mp4`,
+> 104.0 s, 1080p, 10.8 MB, no audio; 15 approved lines (core flow + run switcher, Compare, Gap Radar, 60-second case,
+> Export/Sources); all clips re-captured from production at revision `75f01fc1` with today's UI (Demo source clips kept in
+> `video/assets/real/captures-demo-final/`). Help transcript = the caption lines (same source). CSV export shipped
+> alongside the canonical JSON (`1130735`). Stage 2 (team lead VO) only if the recording lands by 22:30; nothing deploys
+> after 23:59. The Demo stays frozen.
+
 > **2026-11-15 15:45: UI polish for the local judges, live.** Navbar = segmented control; map clearings blurred by a
 > third of a cell (no boxes); mobile header fits 320–430 px; map tap targets never overlap (runs within 24 px share one
 > stack + switcher, "N runs at or near this point — pick one:"). Commits `3635258`, `e8f10f8`; `verify:live` passes.

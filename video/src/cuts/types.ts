@@ -70,6 +70,8 @@ export interface CutDef {
   silent?: boolean;
   /** Shrink the picture into the top of the frame and set captions in the band below, so they never cover data. */
   captionBand?: boolean;
+  /** Split long caption lines into near-equal parts instead of filling each to the limit (no orphan words). */
+  balancedCaptions?: boolean;
   beats: Beat[];
 }
 

@@ -59,7 +59,7 @@ export function CutFilm({ cutId, manifest }: CutProps) {
       })}
       {cut.music && manifest.music[cut.music] && <Music file={manifest.music[cut.music]!.file} trackSec={manifest.music[cut.music]!.sec} total={total} voice={beats.filter((b) => b.beat.vo).map((b) => [b.voFrom, b.voFrom + b.voFrames] as const)} endFrom={beats.at(-1)!.from} {...(cut.silent ? { bedDb: SILENT_BED_DB, duckDb: SILENT_BED_DB - 6 } : {})} />}
       <Chapter beats={beats} />
-      <Captions beats={beats} band={!!cut.captionBand} />
+      <Captions beats={beats} band={!!cut.captionBand} balanced={!!cut.balancedCaptions} />
       {reasons.length > 0 && <Watermark />}
     </AbsoluteFill>
   );
@@ -132,13 +132,13 @@ function Chapter({ beats }: { beats: Laid }) {
 }
 
 /** Burned-in English captions from the script lines, timed across each VO clip. 88px at 2560 wide ≈ 13px on a phone. */
-function Captions({ beats, band }: { beats: Laid; band: boolean }) {
+function Captions({ beats, band, balanced }: { beats: Laid; band: boolean; balanced: boolean }) {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
   const b = beats.find((x) => x.beat.vo && f >= x.voFrom && f < x.voFrom + x.voFrames + fps * 0.2);
   if (!b) return null;
   const t = (f - b.voFrom) / fps;
-  const chunks = captionChunks(b.beat.vo, b.voSec);
+  const chunks = captionChunks(b.beat.vo, b.voSec, 40, balanced);
   const c = chunks.find((x) => t >= x.fromSec && t < x.toSec) ?? chunks.at(-1)!;
   const parts = c.text.split(/(\*[^*]+\*)/g).filter(Boolean);
   return (

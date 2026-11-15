@@ -132,14 +132,20 @@ export function withNames(text: string): string {
  * Caption chunks for one line: sentence breaks first, then whole words up to `maxChars`, each chunk timed by its
  * share of the line's characters across the VO span. Short chunks stay readable on a phone at 96px.
  */
-export function captionChunks(text: string, voSec: number, maxChars = 40): { text: string; fromSec: number; toSec: number }[] {
+export function captionChunks(text: string, voSec: number, maxChars = 40, balanced = false): { text: string; fromSec: number; toSec: number }[] {
   const clauses = withNames(text).split(/(?<=[.?!:;—])\s+/).filter(Boolean);
   const chunks: string[] = [];
+  const len = (s: string) => s.replace(/\*/g, '').length;
   for (const clause of clauses) {
+    // balanced: a clause over maxChars splits into near-equal parts (no orphan words); otherwise fill each chunk greedily.
+    const parts = Math.ceil(len(clause) / maxChars);
+    const limit = balanced && parts > 1 ? len(clause) / parts : maxChars;
     let line = '';
+    let made = 0;
     for (const word of clause.split(/\s+/)) {
       const next = line ? `${line} ${word}` : word;
-      if (next.replace(/\*/g, '').length > maxChars && line) {
+      if (len(next) > limit + (balanced ? len(word) / 2 : 0) && line && (!balanced || made < parts - 1)) {
+        made++;
         chunks.push(line);
         line = word;
       } else line = next;

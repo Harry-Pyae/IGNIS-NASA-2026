@@ -22,6 +22,13 @@ the maker. Downloaded: name the source page and its licence (and any attribution
 | `the_sleeping_giant_s_breath.mp3` (121.7 s) | Team pitch (looped) | AI-generated music: Google Gemini, generated for IGNIS | Full permission to use, confirmed by the team lead 2026-11-15. Credited as AI-generated music in the team pitch close | Team (via the team lead) | Yes |
 | `vo-<cut>-<nn>` voice lines | All three cuts | Team members’ own voices, recorded for this video | Team-made; no third-party rights | Each speaker (names in `video/src/cuts/cuts.data.ts` `TEAM`) | Pending recording |
 
+## Videos (shipped)
+
+| Video / file | Where | Content | Audio | Approved? |
+|---|---|---|---|---|
+| `video/out/ignis-demo.mp4` (29.973 s) | Submission video, <https://youtu.be/SA0A5cdz4hE>; 1080p copy in the deck | Screen recordings of the live product (post-restore capture, revision `75f01fc1`), captions | Team lead's narration + `Orbit_Flame_30sec.mp3` (AI-generated, disclosed) | Yes (frozen) |
+| `public/media/walkthrough.mp4` (104.0 s, 1080p, 10.8 MB) + `walkthrough-poster.jpg` | Help → "Watch the walkthrough" (and the console hero button) | Screen recordings of the live product at revision `75f01fc1` (captured 2026-11-15 15:48–16:05, today's UI); 15 burned-in caption lines, identical to the Help transcript | **None: captions only** (Stage 1). No music, no voice | Yes (team lead, 2026-11-15) |
+
 Candidate sources: [NASA SVS 31394](https://svs.gsfc.nasa.gov/31394/),
 [NASA Glenn Saffire overview](https://www.nasa.gov/centers-and-facilities/glenn/flame-burns-out-on-nasas-long-running-spacecraft-fire-experiment/),
 and the actual PSI experiment files. These have not been established as origins of the four practice-build images.

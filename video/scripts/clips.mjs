@@ -365,6 +365,24 @@ await clip('18-light-theme', async ({ open, consoleReady, page, glide, wait }) =
   await wait(1500);
 }, { theme: 'light' });
 
+// Runs too close to tap apart share one target: a tap opens the stack, its switcher lists every run (in-app walkthrough).
+await clip('19-run-switcher', async ({ open, consoleReady, page, glideTo, click, hover, wait }) => {
+  await open('/#console', consoleReady);
+  await glideTo(page.locator('#evidence-plot'), 90, 1600);
+  await wait(600);
+  const stack = page.locator('[id^="map-point-"][data-stack]').filter({ has: page.locator('circle[data-hit]') });
+  const biggest = await stack.evaluateAll((els) => els.reduce((b, e, i, all) => (Number(e.dataset.stack) > Number(all[b].dataset.stack) ? i : b), 0));
+  await click(stack.nth(biggest).locator('circle[data-focus-ring]').first());
+  await wait(1400);
+  const chips = page.getByText(/runs at or near this point — pick one/).locator('xpath=following::button[@aria-pressed]');
+  await glideTo(page.getByText(/runs at or near this point — pick one/), 260, 1000);
+  await hover(chips.nth(1), 700);
+  await click(chips.nth(1));
+  await wait(1600);
+  await click(chips.nth(3));
+  await wait(2000);
+});
+
 await browser.close();
 log.finishedAt = new Date().toISOString();
 // A partial re-run (--only) updates the full session's log instead of replacing it.
