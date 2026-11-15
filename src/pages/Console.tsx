@@ -1356,7 +1356,7 @@ export function EvidenceMap({
           )}
           <MapLegend outcomeColor={outcomeColor} />
           {plotted.length > 0 && <details className="mt-3 text-sm">
-            <summary className="cursor-pointer">{t('specimenSelectByName')}</summary>
+            <summary className="cursor-pointer py-1">{t('specimenSelectByName')}</summary>
             <ul className="mt-2 flex flex-wrap gap-2">
               {plotted.map(card => <li key={card.id}>
                 <Button size="sm" aria-pressed={selectedId === card.id} onClick={() => choose(card.id)}>{experimentLabel(card)}</Button>
