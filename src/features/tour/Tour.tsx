@@ -8,12 +8,22 @@ import { WIDE_QUERY } from '../../lib/layout';
 const section = (id: string) => document.getElementById(id)?.closest('section') ?? null;
 
 /** One coach mark per console section, in page order. The map step spotlights the plot itself (the dots). */
-const STEPS: { title: TranslationKey; body: TranslationKey; target: () => HTMLElement | null }[] = [
-  { title: 'missionScenario', body: 'tourDescribe', target: () => section('s1') },
-  { title: 'evidenceMap', body: 'tourMap', target: () => document.getElementById('evidence-plot') ?? section('s2') },
-  { title: 'matchPanel', body: 'tourMatches', target: () => section('s3') },
-  { title: 'missionBrief', body: 'tourBrief', target: () => section('s4') },
-  { title: 'evidenceGapRadar', body: 'tourGaps', target: () => section('s5') },
+/** The biggest stack on the map (runs that share one tap target), else the plot itself. */
+const biggestStack = () => [...document.querySelectorAll<HTMLElement>('[id^="map-point-"][data-stack]')]
+  .sort((a, b) => Number(b.dataset.stack) - Number(a.dataset.stack))[0] ?? document.getElementById('evidence-plot');
+/** A tab in the sticky header: spotlit where it is (no scroll, no clamp below the header). */
+const tab = (href: string) => document.querySelector<HTMLElement>(`header a.project-tab[href="${href}"]`);
+
+// Every step is prewritten copy over a real element (no LLM). `heading` = where focus lands if the tour ends there.
+const STEPS: { title: TranslationKey; body: TranslationKey; target: () => HTMLElement | null; heading: string; inHeader?: true }[] = [
+  { title: 'missionScenario', body: 'tourDescribe', target: () => section('s1'), heading: 's1' },
+  { title: 'evidenceMap', body: 'tourMap', target: () => document.getElementById('evidence-plot') ?? section('s2'), heading: 's2' },
+  { title: 'tourStacksTitle', body: 'tourStacks', target: biggestStack, heading: 's2' },
+  { title: 'matchPanel', body: 'tourMatches', target: () => section('s3'), heading: 's3' },
+  { title: 'missionBrief', body: 'tourBrief', target: () => section('s4'), heading: 's4' },
+  { title: 'evidenceGapRadar', body: 'tourGaps', target: () => section('s5'), heading: 's5' },
+  { title: 'tourLibraryTitle', body: 'tourLibrary', target: () => tab('/library'), heading: 's5', inHeader: true },
+  { title: 'tourCaseTitle', body: 'tourCase', target: () => tab('/case'), heading: 's5', inHeader: true },
 ];
 const END = STEPS.length;
 const MARGIN = 16;
@@ -24,7 +34,7 @@ const reducedMotion = () => !window.matchMedia('(prefers-reduced-motion: no-pref
 const headerHeight = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h')) || 0;
 const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), Math.max(lo, hi));
 /** The heading of a step's section (focus lands there when the tour ends mid-way). */
-const headingFor = (step: number) => document.getElementById(`s${Math.min(step, END - 1) + 1}`);
+const headingFor = (step: number) => document.getElementById(STEPS[Math.min(step, END - 1)]!.heading);
 
 /**
  * The guided tour: a native modal <dialog> over the real console (the page stays visible but inert, Tab stays inside,
@@ -74,7 +84,7 @@ export function Tour({ open, onClose }: { open: boolean; onClose: () => void }) 
     setReady(false);
     card.current?.focus({ preventScroll: true });
     const target = STEPS[step]?.target();
-    if (!target) { setReady(true); return; }
+    if (!target || STEPS[step]?.inHeader) { setReady(true); return; }
     const wide = window.matchMedia(WIDE_QUERY).matches;
     // Below xl the condition bar can pin itself under the header: leave room for it.
     const top = window.scrollY + target.getBoundingClientRect().top - headerHeight() - (wide ? MARGIN : 64);
@@ -107,17 +117,20 @@ export function Tour({ open, onClose }: { open: boolean; onClose: () => void }) 
       const r = target.getBoundingClientRect();
       const left = Math.max(r.left - PAD, 4);
       const right = Math.min(r.right + PAD, vw - 4);
-      const top = Math.max(r.top - PAD, headerHeight() + 4);
+      const top = Math.max(r.top - PAD, STEPS[step]?.inHeader ? 4 : headerHeight() + 4);
       const bottom = Math.min(r.bottom + PAD, vh - 4);
       s.style.transform = `translate(${left}px, ${top}px)`;
       s.style.width = `${Math.max(0, right - left)}px`;
       s.style.height = `${Math.max(0, bottom - top)}px`;
       const w = c.offsetWidth;
       const h = c.offsetHeight;
+      // A header tab's card goes below the pinned condition bar (phones), never over it.
+      const bar = STEPS[step]?.inHeader ? document.querySelector<HTMLElement>('[role="region"].fixed') : null;
+      const below = Math.max(bottom, bar && bar.offsetHeight > 0 ? bar.getBoundingClientRect().bottom : 0);
       let x: number;
       let y: number;
       if (vw - right >= w + GAP + MARGIN) { x = right + GAP; y = clamp(top, MARGIN, vh - h - MARGIN); }
-      else if (vh - bottom >= h + GAP + MARGIN) { x = clamp(left, MARGIN, vw - w - MARGIN); y = bottom + GAP; }
+      else if (vh - below >= h + GAP + MARGIN) { x = clamp(left, MARGIN, vw - w - MARGIN); y = below + GAP; }
       else if (top - headerHeight() >= h + GAP + MARGIN) { x = clamp(left, MARGIN, vw - w - MARGIN); y = top - GAP - h; }
       else { x = clamp(left, MARGIN, vw - w - MARGIN); y = vh - h - MARGIN; } // over the bottom of a tall section
       c.style.transform = `translate(${x}px, ${y}px)`;

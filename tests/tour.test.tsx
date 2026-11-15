@@ -35,10 +35,10 @@ describe('tour content', () => {
   it('every coach mark stays within 20 words', () => {
     for (const line of Object.values(COPY.plain.tour.steps)) expect(line.split(/\s+/).filter((w) => /\w/.test(w)).length, line).toBeLessThanOrEqual(20);
   });
-  it('opens on step 1 of 5 with Skip and Next, no Back', () => {
+  it('opens on step 1 of 8 with Skip and Next, no Back', () => {
     const html = renderToStaticMarkup(<Tour open={false} onClose={() => {}} />);
     expect(html).toContain('<dialog');
-    expect(html).toContain('Step 1 of 5');
+    expect(html).toContain('Step 1 of 8');
     expect(html).toContain('Mission scenario');
     expect(html).toContain('Skip tour');
     expect(html).toContain('>Next<');
