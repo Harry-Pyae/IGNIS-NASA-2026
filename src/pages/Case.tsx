@@ -210,7 +210,8 @@ function ClaimCheck({ runs }: { runs: Experiment[] }) {
         </Button>
       </form>
 
-      <div id="case-result" aria-live="polite" className="mt-4 min-h-[5rem]">
+      <div id="case-result" aria-live="polite" className="mt-4">
+        {state.kind === 'idle' && <p className="rounded-xl border border-dashed border-border px-4 py-3 text-sm text-dim">{t('caseIdle')}</p>}
         {state.kind === 'invalid' && <p id={`${valueInput}-error`} className="text-warn">{t('caseInvalid')}</p>}
         {state.kind === 'error' && <p role="status" className="text-warn">{state.message}</p>}
         {state.kind === 'done' && <Verdict state={state} />}

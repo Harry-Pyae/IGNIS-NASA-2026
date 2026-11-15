@@ -1,6 +1,6 @@
 import { useCatalogRevisionWatch, useCatalogSummary, useVerifiedCatalog, type VerifiedCatalog, type CatalogSummary } from '../lib/catalog';
 import { ExportButton } from '../components/CatalogStatus';
-import { Button, Page, PageHeader, Panel, textLink } from '../components/ui';
+import { Button, Page, PageHeader, Panel, tapLink, textLink } from '../components/ui';
 import { COPY } from '../lib/copy';
 import { evidenceSource } from '../lib/evidenceSource';
 import type { Experiment } from '../lib/types';
@@ -53,7 +53,7 @@ export function SourceList({catalog, summary, retry}: {catalog: VerifiedCatalog;
     <p className="mt-2 text-sm text-dim">JSON is the canonical format. The CSV flattens the same export into one row per run for spreadsheets; empty cells mean the source did not report that value.</p>
     <section className="mt-8" aria-labelledby="challenge-resources">
       <h2 id="challenge-resources" className="mb-2 text-xl font-semibold">Official challenge resources</h2>
-      <a className={textLink} href="https://www.spaceappschallenge.org/2026/challenges/flame-in-freefall/?tab=resources"
+      <a className={`${textLink} ${tapLink}`} href="https://www.spaceappschallenge.org/2026/challenges/flame-in-freefall/?tab=resources"
         target="_blank" rel="noopener noreferrer">NASA Space Apps · Flame in Freefall Resources</a>
     </section>
     <div className="mt-8">

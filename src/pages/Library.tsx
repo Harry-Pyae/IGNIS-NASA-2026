@@ -1,7 +1,7 @@
 import { format, t } from '../i18n';
 import { useEffect, useRef, useState } from 'react';
 import { LIBRARY_QUERY_KEY, readSession, writeSession } from '../lib/consoleDraft';
-import { Button, buttonClass, Icon, Page, PageHeader, Panel, Select, textLink } from '../components/ui';
+import { Button, buttonClass, Icon, Page, PageHeader, Panel, Select, tapLink, textLink } from '../components/ui';
 import { useVerifiedCatalog } from '../lib/catalog';
 import { useFlash } from '../lib/useFlash';
 import { datasetCitation, evidenceLocator, evidenceSource } from '../lib/evidenceSource';
@@ -21,6 +21,9 @@ const ranges = [
   ['o2_pct', 'o2'], ['flow_cm_s', 'flow'],
 ] as const;
 const readable = (value: string) => value.replaceAll('_', ' ');
+/** The app-wide outcome label ("Did not ignite"), never the stored code. */
+const outcomeLabel = (outcome: Experiment['outcome']) => outcome ? t(outcome) : t('outcomeNotReported');
+const STORED = { initial: 'libraryStoredInitial', final: 'libraryStoredFinal', final_held: 'libraryStoredFinalHeld' } as const;
 const measure = (card: Experiment, field: keyof typeof FIELD_UNITS) =>
   card[field] == null ? missing : `${card[field]} ${FIELD_UNITS[field]}`;
 const citationFields = ['source_page', 'source_figure', 'source_table', 'source_section', 'ntrs_id', 'doi'] as const;
@@ -68,8 +71,8 @@ export function Library() {
 
   return <Page>
     <PageHeader help={detail ? 'helpDetail' : 'helpLibrary'} eyebrow={t('libraryEyebrow')} title={detail ? t('libraryDetail') : t('libraryTitle')} />
-    {detail ? <a className={linkClass} href={'/library' + query}>{t('libraryBack')}</a>
-      : <a className={linkClass} href="/methods#publishing">{t('verificationLink')}</a>}
+    {detail ? <a className={`${linkClass} ${tapLink}`} href={'/library' + query}>{t('libraryBack')}</a>
+      : <a className={`${linkClass} ${tapLink}`} href="/methods#publishing">{t('verificationLink')}</a>}
     <div className="mt-5">
       {catalog.state === 'loading' && <p role="status">{t('libraryLoading')}</p>}
       {catalog.state === 'unavailable' && <Panel>
@@ -148,7 +151,7 @@ function LibraryResults({ cards, params, update, endSearch }: {
             <h2 className="my-2 text-lg font-semibold">
               <a className={linkClass} href={`/library/${card.id}${params.size ? '?' + params : ''}`}>{card.test_id}</a>
             </h2>
-            <p>{readable(card.fuel_material)} · {readable(card.fuel_form)} · {readable(card.outcome)}</p>
+            <p>{readable(card.fuel_material)} · {readable(card.fuel_form)} · {outcomeLabel(card.outcome)}</p>
             <p className="mt-2 text-sm text-dim">{t('libraryOxygen')} {measure(card, 'o2_pct')} · {t('libraryAirflow')} {measure(card, 'flow_cm_s')}</p>
           </Panel>
         </li>)}</ul>
@@ -170,7 +173,7 @@ function ExperimentDetail({ card, specimen }: { card: Experiment; specimen: bool
     [t('libraryClass'), readable(card.material_class)], [t('form'), readable(card.fuel_form)],
     ...CONTINUOUS_PARAMS.map(field => [t(parameterLabels[field]), measure(card, field)] as const),
     [t('libraryIgnition'), card.ignition_method ?? missing],
-    [t('libraryOutcome'), readable(card.outcome)], [t('librarySpread'), measure(card, 'spread_rate_mm_s')],
+    [t('libraryOutcome'), outcomeLabel(card.outcome)], [t('librarySpread'), measure(card, 'spread_rate_mm_s')],
   ];
 
   return <div className="space-y-5">
@@ -193,8 +196,8 @@ function ExperimentDetail({ card, specimen }: { card: Experiment; specimen: bool
       {card.condition_changes?.map((change, index) => <p key={index} className="mt-3 text-sm text-warn">
         {format('libraryConditionChange', {
           field: t(parameterLabels[change.parameter]), from: change.from, to: change.to,
-          unit: FIELD_UNITS[change.parameter], stored: readable(change.stored),
-        })} {change.note}
+          unit: FIELD_UNITS[change.parameter], stored: t(STORED[change.stored]),
+        })} {change.note.charAt(0).toUpperCase() + change.note.slice(1)}
       </p>)}
     </Panel>
     <Panel>

@@ -5,6 +5,7 @@ import {
   FlameSphereArt,
   Icon,
   Panel,
+  tapLink,
   textLink,
   type IconName,
 } from '../components/ui';
@@ -334,11 +335,11 @@ function Footer() {
           {/* Open dataset export (§8.1 item 6): verified cards only, honest README-only file when empty. */}
           <div className="flex flex-wrap gap-2 md:justify-end">
             <ExportButton summary={summary} label={t('openDataset')} />
-            <ExportButton summary={summary} label="CSV" format="csv" />
+            <ExportButton summary={summary} label="Spreadsheet (.csv)" format="csv" />
           </div>
-          <a href="/methods#plain-words" className={textLink}>Plain words</a>
-          <a href="/methods#publishing" className={textLink}>{t('verificationLink')}</a>
-          <a href="#top" className="console-label text-dim transition-colors duration-200 can-hover:hover:text-text">
+          <a href="/methods#plain-words" className={`${textLink} ${tapLink}`}>Plain words</a>
+          <a href="/methods#publishing" className={`${textLink} ${tapLink}`}>{t('verificationLink')}</a>
+          <a href="#top" className="console-label inline-flex min-h-6 items-center text-dim transition-colors duration-200 can-hover:hover:text-text">
             {t('backToTop')}
           </a>
         </div>

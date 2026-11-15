@@ -616,7 +616,7 @@ export function Console() {
               }}>{COPY.plain.presets.explore}</Button>
             )}
             <details ref={scenarioEditor} data-peek className="rounded-xl border border-border bg-bg/35 p-3">
-              <summary className="cursor-pointer console-label text-dim">{t('editScenario')} · {scenario.fuel_material_raw ?? t('selectMaterial')}</summary>
+              <summary className="cursor-pointer py-1 console-label text-dim">{t('editScenario')} · {scenario.fuel_material_raw ?? t('selectMaterial')}</summary>
               <div className="mt-4 flex flex-col gap-4">
                 <form onSubmit={parseDescription} className="flex flex-col gap-2">
                   <label htmlFor="scenario-description" className="console-label text-dim">{t('orDescribeScenario')}</label>

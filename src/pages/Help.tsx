@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Page, PageHeader, Panel, textLink } from '../components/ui';
+import { Page, PageHeader, Panel, tapLink, textLink } from '../components/ui';
 import { t, type TranslationKey } from '../i18n';
 import { WalkthroughButton, WalkthroughTranscript } from '../features/walkthrough/Walkthrough';
 
@@ -37,7 +37,7 @@ export function Help() {
   }, []);
   return (
     <Page>
-      <a className={`${textLink} text-sm`} href={back}>← {t('helpBack')}</a>
+      <a className={`${textLink} ${tapLink} text-sm`} href={back}>← {t('helpBack')}</a>
       <div className="mt-4"><PageHeader eyebrow={t('helpEyebrow')} title={t('helpTitle')} intro={t('helpIntro')} /></div>
       <nav aria-label={t('helpContents')} className="mb-8">
         <p className="console-label mb-2 text-dim">{t('helpContents')}</p>

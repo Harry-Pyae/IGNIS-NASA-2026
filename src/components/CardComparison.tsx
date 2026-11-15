@@ -23,7 +23,7 @@ const fields = [
 /** Compare only the current matches; a changed selection can never revive an old card. */
 export function CardComparison({cards, standalone = false}: {cards: Experiment[]; standalone?: boolean}) {
   const [pair, setPair] = useState<[string,string]>(['','']);
-  // Phones: the table keeps readable columns and scrolls sideways inside its own box (edge fades show which way).
+  // ≥ sm: the table (scrolls sideways inside its own box if it must). Phones get the stacked two-column view.
   const tableScroll = useScrollArea('x');
   const eligible = cards.filter(c => c.verified_by && c.domain === 'solid_flammability');
   const left = eligible.find(c => c.id === pair[0]) ?? eligible[0];
@@ -41,7 +41,26 @@ export function CardComparison({cards, standalone = false}: {cards: Experiment[]
         </select>
       </label>)}</div>}
     {!standalone && <a className={buttonClass('secondary', 'sm', 'mb-4')} href={`/compare?ids=${two.map((card) => encodeURIComponent(card.id)).join(',')}`}>{t('compareOpen')}</a>}
-    <div ref={tableScroll} data-axis="x" role="group" aria-label={t(standalone ? 'compareVerifiedCaption' : 'compareMatchedCaption')} className="scroll-area overflow-x-auto">
+    {/* Phones: the two runs side by side in two half-width columns, one field per row (no hidden sideways column). */}
+    <div role="group" aria-label={t(standalone ? 'compareVerifiedCaption' : 'compareMatchedCaption')} className="text-sm sm:hidden">
+      <div className="grid grid-cols-2 gap-3 pb-2 font-semibold">{two.map(c => <p key={c.id} className="min-w-0 [overflow-wrap:anywhere]">{label(c)}</p>)}</div>
+      {fields.map(([name, read]) => {
+        const values = two.map(read);
+        const different = values[0] !== values[1];
+        return <div key={name} className={cx('border-t border-border py-2', different && 'bg-raised/20 -mx-2 px-2')}>
+          <p className="text-xs font-medium text-dim">{name}{different && <span className="ml-2 text-amber">{t('compareDifference')}</span>}</p>
+          <div className="mt-1 grid grid-cols-2 gap-3 tabular-nums">{values.map((v, i) => <p key={i} className="min-w-0 [overflow-wrap:anywhere]">{v}</p>)}</div>
+        </div>;
+      })}
+      <div className="border-t border-border py-2">
+        <p className="text-xs font-medium text-dim">{t('source')}</p>
+        <div className="mt-1 grid grid-cols-2 gap-3">{two.map(c => {
+          const src = evidenceSource(c);
+          return <div key={c.id} className="min-w-0 [overflow-wrap:anywhere]">{src ? <a className={cx(textLink, 'line-clamp-3')} title={c.source_title} href={src.url} target="_blank" rel="noopener noreferrer">{c.source_title}</a> : c.source_title}<small className="mt-1 block text-dim">{evidenceLocator(c)}</small></div>;
+        })}</div>
+      </div>
+    </div>
+    <div ref={tableScroll} data-axis="x" role="group" aria-label={t(standalone ? 'compareVerifiedCaption' : 'compareMatchedCaption')} className="scroll-area hidden overflow-x-auto sm:block">
     <table className="w-full min-w-[30rem] table-fixed border-collapse text-left text-sm break-words">
       <caption className="sr-only">{t(standalone ? 'compareVerifiedCaption' : 'compareMatchedCaption')}</caption>
       <thead><tr><th scope="col">{t('compareField')}</th>{two.map(c => <th scope="col" className="p-2" key={c.id}>{label(c)}</th>)}</tr></thead>

@@ -29,6 +29,8 @@ const SIZES: Record<Size, string> = {
 const TERTIARY_SIZE = 'h-auto px-0 text-sm gap-1.5 rounded-sm';
 
 /** Tertiary look for links inside prose and long titles (wraps; no button box). */
+/** A link that stands on its own line (not inside running text): a 24 px tall tap target (WCAG 2.5.8). */
+export const tapLink = 'inline-flex min-h-6 items-center';
 export const textLink = 'text-amber underline decoration-amber/45 underline-offset-4 can-hover:hover:decoration-amber [overflow-wrap:anywhere]';
 
 /** Class string for a button tier — use it on `<a>` when a link must look like a button (e.g. Compare). */

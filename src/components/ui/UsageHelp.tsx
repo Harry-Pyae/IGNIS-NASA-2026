@@ -27,7 +27,7 @@ export type UsageHelpKey = keyof typeof TOPICS;
 export function UsageHelp({ topic }: { topic: UsageHelpKey }) {
   const { label, anchor } = TOPICS[topic];
   return (
-    <a href={`/help#${anchor}`} className={`${textLink} mt-2 inline-flex w-fit items-center gap-1.5 text-sm`}>
+    <a href={`/help#${anchor}`} className={`${textLink} mt-2 inline-flex min-h-6 w-fit items-center gap-1.5 text-sm`}>
       <Icon name="info" size={15} className="shrink-0" />{t(label)}
     </a>
   );

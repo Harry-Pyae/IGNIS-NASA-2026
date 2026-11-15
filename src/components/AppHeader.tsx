@@ -119,7 +119,7 @@ export function AppHeader() {
           {/* §8.1 item 6: the verified-only open dataset (/api/export). */}
           {/* Round 9 shell diet: on phones Export lives on Sources (the dataset area) and the theme in a labelled menu. */}
           <div className="hidden sm:block"><ExportMenu summary={summary} label="Export dataset" /></div>
-          <details ref={display} className="relative sm:hidden">
+          <details ref={display} className="relative md:hidden">
             <summary className="bubble-control flex min-h-11 cursor-pointer list-none items-center gap-1.5 min-w-11 justify-center rounded-lg border border-control-border px-2.5 text-sm text-dim [&::-webkit-details-marker]:hidden">
               <Icon name={theme === 'dark' ? 'moon' : 'sun'} size={16} /><span className="max-[400px]:sr-only">Display</span>
             </summary>
@@ -137,13 +137,13 @@ export function AppHeader() {
             return (
               <a key={url} href={url} aria-current={current ? 'page' : undefined}
                 className={`project-tab pressable flex min-h-11 flex-auto items-center justify-center gap-1.5 rounded-md px-1 text-[13px] whitespace-nowrap max-[380px]:px-0.5 max-[380px]:text-xs max-[340px]:px-0 max-[340px]:text-[11px] sm:min-h-9 sm:flex-none sm:px-2.5 sm:text-sm md:px-3 ${current ? 'text-amber' : 'text-dim'}`}>
-                <Icon name={icon} size={18} className="hidden md:block" />
+                <Icon name={icon} size={18} className="hidden lg:block" />
                 {short ? <><span className="sm:hidden">{short}</span><span className="hidden sm:inline">{label}</span></> : <span>{label}</span>}
               </a>
             );
           })}
         </nav>
-        <ThemeControl name="color-theme" theme={theme} setTheme={setTheme} className="ml-auto hidden sm:flex" />
+        <ThemeControl name="color-theme" theme={theme} setTheme={setTheme} className="ml-auto hidden md:flex" />
       </div>
     </header>
   );

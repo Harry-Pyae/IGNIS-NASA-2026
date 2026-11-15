@@ -1,4 +1,4 @@
-import { Button, buttonClass, textLink } from '../components/ui';
+import { Button, buttonClass, tapLink, textLink } from '../components/ui';
 import { useVerifiedCatalog } from '../lib/catalog';
 import { MISSION_CASE, missionEntry } from '../engine/mission';
 import { COPY } from '../lib/copy';
@@ -19,7 +19,7 @@ export function MissionActions({ explore }: { explore: () => void }) {
     </div>
     {!MISSION_CASE && <p className="mt-3 max-w-lg text-[14px] leading-snug text-dim">{COPY.missionAvailability}</p>}
     {/* Re-entry for the first-visit tour (a text link, never a fourth CTA): ?tour=1 opens it once, then drops the param. */}
-    <a className={`mt-3 inline-block text-[14px] ${textLink}`} href={`/?${TOUR_PARAM}=1#console`}>{t('tourTakeGuided')}</a>
+    <a className={`mt-3 text-[14px] ${textLink} ${tapLink}`} href={`/?${TOUR_PARAM}=1#console`}>{t('tourTakeGuided')}</a>
   </>;
 }
 

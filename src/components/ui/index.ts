@@ -5,7 +5,7 @@
  */
 export { Badge } from './Badge';
 export { Button } from './Button';
-export { buttonClass, textLink, type ButtonSize, type ButtonVariant } from './buttonStyles';
+export { buttonClass, tapLink, textLink, type ButtonSize, type ButtonVariant } from './buttonStyles';
 export { CHIP_STATUS, Chip, CitationChip, PresetChip } from './Chip';
 export { EmptyState } from './EmptyState';
 export { FlameSphereArt, ILLUSTRATION_NOTE } from './FlameSphereArt';

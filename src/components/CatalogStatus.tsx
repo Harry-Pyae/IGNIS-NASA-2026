@@ -17,15 +17,15 @@ export function ProvenancePill({ summary, retry }: { summary: CatalogSummary; re
   const disconnected = summary.state === 'unavailable' && summary.reason === 'not_configured';
   return (
     <span
-      className="catalog-provenance console-label inline-flex min-w-0 items-center gap-2 rounded-xl border border-border bg-panel/80 px-2.5 py-1.5 max-[340px]:gap-1.5 max-[340px]:px-2 tracking-[0.04em] text-dim sm:rounded-full sm:px-3 sm:tracking-[0.08em]"
+      className="catalog-provenance console-label inline-flex min-w-0 items-center gap-2 rounded-xl border border-border bg-panel/80 px-2.5 py-1.5 max-[340px]:gap-1.5 max-[340px]:px-2 tracking-[0.04em] text-dim max-[340px]:tracking-normal xl:rounded-full xl:px-3 xl:tracking-[0.08em]"
       aria-live="polite"
     >
       <Icon name={failed ? 'withheld' : disconnected ? 'link-off' : 'provenance'} size={16} className={failed ? 'shrink-0 text-warn' : 'shrink-0 text-amber'} />
-      {/* Phones: one fact per line ("31 verified" / "8 campaigns"), never a word-by-word wrap inside the pill. */}
-      <span key={catalogLine(summary, true)} className="swap-in min-w-0 leading-tight [overflow-wrap:anywhere] sm:hidden">
+      {/* Below xl: one fact per line ("31 verified" / "8 campaigns"), never a word-by-word wrap inside the pill. */}
+      <span key={catalogLine(summary, true)} className="swap-in min-w-0 leading-tight [overflow-wrap:anywhere] xl:hidden">
         {catalogLine(summary, true).split(' · ').map((part) => <span key={part} className="block whitespace-nowrap">{part}</span>)}
       </span>
-      <span key={catalogLine(summary)} className="swap-in hidden truncate sm:inline">
+      <span key={catalogLine(summary)} className="swap-in hidden truncate xl:inline">
         {catalogLine(summary)}
       </span>
       {failed && retry && (
