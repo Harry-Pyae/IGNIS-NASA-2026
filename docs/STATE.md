@@ -6,6 +6,8 @@
 > "Take the guided tour" link + 3 new steps (run switcher, Library + Compare, 60-second case), card always on screen.
 > Sliders never disabled (unset = hollow thumb); O₂/Airflow labels full contrast; modal overlays lock page scroll.
 > Header "Export dataset" is a JSON/CSV dropdown. Evidence Map radar sweep restored. `verify:live` passes.
+> CSV open-in-Excel check (team lead, 17:31, manual screenshot): arrows render (BOM works), nulls empty, plain outcome
+> labels, revision + timestamp on every row, 20 columns aligned. Passed.
 
 > **2026-11-15 16:20: In-app walkthrough (Help) shipped, captions only (Stage 1).** `public/media/walkthrough.mp4`,
 > 104.0 s, 1080p, 10.8 MB, no audio; 15 approved lines (core flow + run switcher, Compare, Gap Radar, 60-second case,
