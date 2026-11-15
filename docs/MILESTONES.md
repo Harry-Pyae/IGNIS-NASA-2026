@@ -3,6 +3,12 @@
 **NASA Space Apps 2026 · "Flame in Freefall" · Team AstroFlare**
 This is one self-contained file for checking progress without the repo. Coder A updates it after every patch.
 
+**2026-11-15 14:30 — Demo shipped, local stage done:** all 31 cards republished source-true (revision `75f01fc1`,
+`verify:live` passes); post-restore re-capture done (17/18 clips; 12-share retry pending). **Final Demo:**
+<https://youtu.be/SA0A5cdz4hE> (29.973 s, −17.0 LUFS), linked in the submission form; 1080p copy embedded in the
+local-stage deck. The Demo is **frozen**. Tonight, in order: clip 12 → voiced walkthrough (after `vo-walk-01…09`) →
+Story unlock (if R1 signs Apollo 1 / Mir) → final QA sweep → freeze report at 18:00.
+
 **2026-11-15 13:05 — data restore:** 12 cards were found edited off their sources (O₂/flow, II-5 class/form) and are
 back to source values as drafts; **19 of 31 public** until the team lead republishes them (SIGNING-SESSION-RESTORE.md).
 A source-value guard now runs in CI and in `verify:live`. Map crowding fixed in the UI (stack switcher, soft hatch). The

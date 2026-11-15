@@ -14,7 +14,8 @@ republished (0 source mismatches; `verify:live` passes). They are unchanged from
 | The 60-second case | <https://ignis-nasa-2026.vercel.app/case> |
 | Open dataset (JSON) | <https://ignis-nasa-2026.vercel.app/api/export> |
 | Source code (Apache-2.0) | <https://github.com/Harry-Pyae/IGNIS-NASA-2026> |
-| Submission video (≤ 30.0 s) | **The Demo** (casual VO, `vo-demo-01…08`), final render after the data restore + re-capture; The Story is the backup only once R1 signs its heritage facts — upload link: **TODO** |
+| Submission video (≤ 30.0 s) | <https://youtu.be/SA0A5cdz4hE>: **The Demo**, final (29.973 s, 2560×1440 master; revision `75f01fc1`, post-restore capture). **FROZEN**: no re-render, caption or `cuts.data.ts` change to the Demo without the team lead's say-so |
+| Local-stage deck | **Done**: the 1080p copy (`video/out/ignis-demo-1080p.mp4`) is embedded in the deck |
 | Live-presentation walkthrough (silent, 80 s) + voiced (~1:42) | **Re-render pending:** the current files were recorded at the off-source revision `a0363adf` and must not be shown; both are rebuilt from the post-restore re-capture |
 
 ## Submission text
@@ -59,7 +60,8 @@ simulation paper).
 
 | ✓ | Check | How | Status |
 |---|---|---|---|
-| ☐ | Submission video ≤ 30.0 s | `ffprobe` container duration of the uploaded file (placeholders measured 29.973 s) | |
+| ☑ | Submission video ≤ 30.0 s | `ffprobe` container duration of the uploaded file | 29.973 s (`ignis-demo.mp4`, final) · uploaded, linked in the form |
+| ☑ | Local-stage deliverables | final Demo uploaded + linked; 1080p copy embedded in the local-stage deck | done 2026-11-15 |
 | ☐ | Deck = 7 slides | count in the exported deck | |
 | ☐ | Every link above opens in an incognito window | site, /case, /api/export, GitHub, video | |
 | ☐ | QR code opens the live site | scan from a phone | |

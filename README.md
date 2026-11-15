@@ -23,6 +23,12 @@ The platform is frozen for the event. The remaining work is catalog verification
 - **Round 2 decisions, approved copy, validation guarantee:** [docs/DECISIONS-ROUND2.md](docs/DECISIONS-ROUND2.md)
 - **Deploying:** [docs/DEPLOY-RUNBOOK.md](docs/DEPLOY-RUNBOOK.md)
 
+## Demo video
+
+**[Watch the 30-second demo on YouTube](https://youtu.be/SA0A5cdz4hE)** (29.97 s, captioned, works muted).
+
+Background music AI-generated (disclosed); recording and narration human-made.
+
 ## Event and submission
 
 **Official event: Saturday 14 November through Sunday 15 November 2026.** The team plans to upload a new submission repository to GitHub during the official timer.
