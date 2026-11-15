@@ -1,5 +1,12 @@
 # IGNIS — state handoff (2026-11-10, console merged · preparation phase)
 
+> **2026-11-14 evening: current state.** Live = GitHub `main` `96262b4` (`Harry-Pyae/IGNIS-NASA-2026`, public);
+> the live page serves the same asset hashes as a local build of that tree. On top of the frozen prep: Round 8
+> (`IGNIS_FIX_ROUND8.md`: Coder B's console fixes, Coder C's error boundaries / Specimen Explorer / evidence handoff,
+> light theme), the 60-second case (`/case`, `POST /api/check-claim`) and Round 9 (`docs/IGNIS_REVIEW_ROUND9.md`:
+> case rebuild, `/help`, shell diet, P0 fixes). Sweep: typecheck · lint · 280 tests (22 skipped) · build. Catalog:
+> 3 verified, 11 drafts queued for R1 (`R1-QUEUE.md`). Open: runbook steps b, e, g, h (`EXECUTION-STATUS.md`).
+
 > **2026-11-14 04:17 UTC: the catalog is no longer zero.** R1's reviewers published 3 verified cards (BASS GMT96-T7,
 > BASS GMT96-T8, BASS-II GMT45-T4; NTRS 20150008962), revision `becd7b54435772eaf9f7499a69267ad5`. The real-data
 > sequence passed on production the same day: step c (Groq), the warmed cache, and the forced-Gemini synthesize proof.
@@ -78,22 +85,24 @@ Snapshot written by Coder A after the console merge. Overwrite on the next hando
 
 | Risk | Impact | Owner / next step |
 |---|---|---|
-| **Forced-Gemini synthesize unproven on production.** | Parse failover is proven on production (2026-11-09); synthesize on lite is proven in tests and locally on the disposable DB. | Coder A: run the forced synthesize step from the runbook rehearsal once R1's first real card exists. |
+| ~~Forced-Gemini synthesize unproven on production.~~ | **Resolved 2026-11-14:** forced Gemini synthesize on real cards returned status ok, 3 OBSERVED, 0 withheld (`QA-LOG.md`). | — |
+| **No mission case.** | `MISSION_CASE = null`: the landing shows the availability line, and the video's `mission-guided.mp4` can't be recorded. | R1 + R3 name the case and reviewer → Coder A fills it (runbook step e). |
+| **Thin catalog.** | 3 verified of the 15+ target; 11 drafts wait in `/curate`. | R1: `R1-QUEUE.md`, easiest first. |
 
 ## Next actions
 
 | Owner | Action |
 |---|---|
-| **R1** | **Event window only (from Sat 11-14):** re-verify the 3 seed cards against NTRS 20150008962 and publish them in `/curate` under your own name. The public catalog stays at 0 until then. Decide the GMT45-T4 changing-flow question (`docs/DECISIONS-ROUND2.md`). Next sources in order: complete BASS-II runs → Saffire I/II/IV → obtainable MIST papers (DECISIONS-ROUND3 #5). |
+| **R1** | ~~Re-verify and publish the 3 seed cards~~ (done 2026-11-14). Now: the 11 drafts in `docs/R1-QUEUE.md`, the coverage snapshot and the GMT45-T4 decision line in `docs/catalog-coverage.md`. Source order after that: remaining BASS-II runs → Saffire I/II/IV → obtainable MIST papers (DECISIONS-ROUND3 #5). |
 | **R1** | Card a real wire/cable insulation material and a real cargo packaging material, then send Coder A each card's `fuel_material`. This activates two presets (AGENTS.md → Open handoffs). |
 | **R2** | A few correctly associated, ledgered stills before thumbnail count (DECISIONS-ROUND3 #6). |
 | **Coder B** | Fast-forward `console` to `main` (`git pull --ff-only origin main`), then Round 6 queue #6: self-review with R3 (`docs/DECISIONS-ROUND6.md`). Shared primitives (`src/components/ui/*`) and `copy.ts` change only with Coder A sign-off (DECISIONS-ROUND3 #9). |
 | **R3** | Add the Round 6 usability questions to the test script. QA the live console (390/1024/1440, reduced motion, export, empty/error/retry states); favicon tab screenshot; pick the demo scenario from R1's coverage note once cards exist. |
 | **Team lead: environment setup** | Done. Optional: the Vercel `GEMINI_MODEL=gemini-3.5-flash-lite` value now equals the code default and can stay or go. |
-| **Coder A** | **Queue empty; no new code without the team lead's kick-off.** Reopens on (a) the next console PR, reviewed principles first, then CI, then a disposable-DB click-through; or (b) the integration checkpoint once R1 publishes signed cards: warm the briefing cache for the catalog-supported demo scenario (not necessarily PMMA); parse → confirm → resolve → retrieve → synthesize → cite source on real cards, with cache hit, provider failure, and correction/unpublish exercised on the disposable DB; the forced-Gemini synthesize proof; then the final acceptance run (Build Plan §12). Low priority: PageSpeed "render-blocking ~150 ms" and "cache lifetimes 7 KiB" (`/art/(.*)` rule in `vercel.json`). |
+| **Coder A** | Integration checkpoint, cache warm and forced-Gemini proof done (2026-11-14). Now: fill `MISSION_CASE` once R1 + R3 name the case (step e), re-warm the cache after the last publication (step f), set the cable/cargo preset materials when R1 sends them, then the final acceptance run (Build Plan §12). Bug fixes only otherwise. Low priority: PageSpeed "render-blocking ~150 ms" and "cache lifetimes 7 KiB" (`/art/(.*)` rule in `vercel.json`). |
 
 ## Deliberate deferrals left in code (no TODO or stub markers)
 
 - `src/engine/aliases.ts:36`: "cable jacket" stays a class hint until R1 cards an insulation material.
 - `src/engine/aliases.ts:102`: the Cargo packaging preset has no material until R1 names one.
-- `src/main.tsx:12`: pathname switch instead of a router; add react-router only if Coder B needs nested routes.
+- `src/main.tsx:19`: pathname switch instead of a router; add react-router only if Coder B needs nested routes.

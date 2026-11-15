@@ -21,7 +21,8 @@ Real cards only, no production writes except the briefing cache the public path 
 | Cache after forced run | preset body, unforced | `provider: cache` (forced run neither read nor wrote it) |
 
 Not yet run: step e (`MISSION_CASE` needs R1 and R3 to name the reviewed case and reviewer), browser click-through of
-citations at 1280 and 390 px (R3), migration 0004 confirmation (SQL editor).
+citations at 1280 and 390 px (R3). Migrations 0004 and 0005: applied in production by the team lead (SQL editor,
+2026-11-14), columns confirmed by an anon read (`MILESTONES.md`, Event Day 1).
 
 ## Local implementation checks
 

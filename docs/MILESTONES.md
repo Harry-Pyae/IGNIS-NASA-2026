@@ -3,9 +3,8 @@
 **NASA Space Apps 2026 · "Flame in Freefall" · Team AstroFlare**
 This is one self-contained file for checking progress without the repo. Coder A updates it after every patch.
 
-**2026-11-13: prep complete, frozen for the event.** Only data and the Day 1/2 runbook items remain:
-[EXECUTION-STATUS.md](EXECUTION-STATUS.md) is the single Day 1 runbook (order, owner, "visible when", rollback).
-During the event, code changes are bug fixes and runbook items only.
+**2026-11-14 evening:** live = `main` `96262b4`, CI green. 3 verified cards; runbook steps 0, a, c, d done, f warm;
+b, e, g, h open (progress table in [EXECUTION-STATUS.md](EXECUTION-STATUS.md)).
 
 ### Event Day 1 (2026-11-14), Coder A
 
@@ -40,8 +39,16 @@ During the event, code changes are bug fixes and runbook items only.
   0005 runs in production.
 - Tier 1 split: `docs/WHO-DOES-WHAT.md`. Coder A shipped: `'/name/*'` route matching and a Methods link beside the
   match order note.
-
-### Showcase round — in `main`, not yet verified live
+- **Round 8** (`IGNIS_FIX_ROUND8.md`): Coder A curation concurrency (`409 edit_conflict`), stale-parse guard, mission
+  gate bound to reviewed versions, preset availability, versioned share links; Coder B compact scenario row, retrieval
+  action, page help, console draft; Coder C error boundaries, why-this-run / why-no-matches, Specimen Explorer,
+  evidence handoff; persistent light theme. R1 queue: 11 drafts loaded to `/curate` (`docs/R1-QUEUE.md`).
+- **60-second case:** `/case` (alias `/case/green-flash`). Beat 2 runs live on `POST /api/check-claim` (the production
+  validator on one claim vs one verified card, no LLM); Beat 1 waits on `GREEN_FLASH` (R1 quote + R2 still).
+- **Round 9** (`docs/IGNIS_REVIEW_ROUND9.md`): case verdict race and proof fixes, `/help` with stable anchors replacing
+  six "How to use this" disclosures, phone header 164 → 117 px, light-theme contrast, `npm run verify:live`,
+  per-route canonical/OG tags, 378 i18n keys. Headless Edge: 30 page variants clean at 1440 + 390.
+### Showcase round — in `main` and live (visual acceptance on a populated catalog still open)
 
 | Surface | Behavior and limits |
 |---|---|
@@ -60,12 +67,12 @@ The browser preview host was unavailable: actual print pagination, mobile layout
 
 | | |
 |---|---|
-| **As of** | 2026-11-13, prep frozen (official start Sat 2026-11-14 = Day 1) |
-| **main** | `b7602ba`: unified-spec prep patch (`82c63d2`) + mission gate (`45568e3`) + map axes from the shared GRID (`b7602ba`), on the Round 6 console |
-| **Live** | <https://ignis-nasa-2026.vercel.app>, serving `main` (Vercel Production deploys from `main`; `08d4ace` verified 2026-11-14) |
-| **CI** | green: typecheck · lint · 219 tests passed, 19 skipped (DB tests + the optional benchmark run in their own jobs) · build · disposable-DB job 16/16 |
-| **Public catalog** | **0 verified cards**, 3 drafts in review |
-| **Overall** | Engine, API and console are built and live. The demo cannot run on real data until R1 publishes verified cards, and that happens in the event window. |
+| **As of** | 2026-11-14 evening (Day 1 of 2) |
+| **main** | `96262b4` (GitHub, recreated history): Round 6 console + unified-spec prep + Round 8 + 60-second case + Round 9 |
+| **Live** | <https://ignis-nasa-2026.vercel.app>, serving `main` (same asset hashes as a local build of `96262b4`) |
+| **CI** | green on `96262b4`: typecheck · lint · 280 tests passed, 22 skipped (DB tests, live-LLM smoke and the optional benchmark run in their own jobs) · build · disposable-DB job |
+| **Public catalog** | **3 verified cards** (revision `becd7b54…`), 11 drafts queued for R1 |
+| **Overall** | Engine, API, console, library, case and help pages are live on real data. Open: more cards, the mission case, stills, usability tests and the submission. |
 
 **Card verification happens only in the event window (from Sat 2026-11-14).** The guide is [§12](#12-how-to-verify-a-card-r1-curate).
 
@@ -93,10 +100,10 @@ refuses to guess.
 
 | Role | Owns | Status |
 |---|---|---|
-| **Coder A** (team lead) | `main`, engine, API, deploy, merges, shared contracts/copy | Prep frozen and live (`b7602ba`); Day 1 runbook steps 0, c–f |
-| **Coder B** | Mission console (`console` branch) | Console v1 merged and live 2026-11-10 |
-| **Coder C** (optional) | Features (`features` branch) | ❌ no commits beyond `main`; the Team Plan's fallback rules apply |
-| **R1** | Data and science research: the catalog | ⛔ 0 cards published (blocks the demo) |
+| **Coder A** (team lead) | `main`, engine, API, deploy, merges, shared contracts/copy | Live `96262b4`; runbook 0, c, d done, f warm; e (mission case) waits on R1 + R3 |
+| **Coder B** | Mission console (`console` branch) | Console v1 live 2026-11-10; Round 8 fixes merged 2026-11-14 |
+| **Coder C** (optional) | Features (`features` branch) | Round 8 merged 2026-11-14: error boundaries, why-this-run / why-no-matches, Specimen Explorer, evidence handoff |
+| **R1** | Data and science research: the catalog | 🟡 3 cards published 2026-11-14; 11 drafts queued (`R1-QUEUE.md`) |
 | **R2** | NASA media, media ledger, pitch video | Media ledger prepared; asset verification and video pending |
 | **R3** | QA, demo, captions, Burmese review, submission | QA/demo/submission protocols prepared; human execution and review pending |
 
@@ -137,7 +144,7 @@ human (`verified_by` is the reviewer's own name).
 
 | Item | Status | Notes |
 |---|---|---|
-| 15+ verified cards | ⛔ **0** | R1. 3 seed drafts are waiting for re-verification against NTRS 20150008962 |
+| 15+ verified cards | 🟡 **3** | R1. The 3 seeds are published (NTRS 20150008962); 11 drafts wait in `/curate` (`R1-QUEUE.md`) |
 | Scenario Builder with presets + editable fields | ✅ | 4 presets; 2 (Cable insulation, Cargo packaging) open the material picker until R1 cards those materials |
 | parse-scenario with user confirmation | ✅ | Values are editable; nothing is retrieved before Confirm |
 | Deterministic alias resolution + visible "Resolved" line | ✅ | Unknown or ambiguous phrases open a picker of verified materials only |
@@ -160,7 +167,7 @@ human (`verified_by` is the reviewer's own name).
 | Media thumbnails on cards | 🟡 | Renderer shipped in Round 6; approved R2 assets and R1 associations pending |
 | 30 cards | ⛔ | R1 |
 | Briefing cache | ✅ | Keyed by scenario + `catalog_revision` + prompt/validator version |
-| Guided Demo (Judge Mode) | 🟡 | Five-step wiring shipped; reviewed case/captions and ≥3 distinct verified solid records pending |
+| Guided Demo (Judge Mode) | 🟡 | Five-step wiring shipped; ≥3 distinct verified solid records now exist; reviewed case/captions (`MISSION_CASE`) pending |
 
 ### WOW (if time allows)
 
@@ -170,7 +177,7 @@ human (`verified_by` is the reviewer's own name).
 | Telemetry sparklines/modal | Cut; schema field is not a requirement to implement it |
 | Comparison animation | Rejected by current decisions and unified specification |
 | Flammability boundary polyline | ⛔ deferred (decision R2-6: needs a certified comparable measured series) |
-| Burmese UI | 🟡 `t()` plumbing + EN set done; Round 5 MY draft staged (`src/i18n/my.draft.ts`, 3 of 144 keys + glossary) behind R3 review (`docs/MY-REVIEW.md`); ships only complete and reviewed |
+| Burmese UI | 🟡 `t()` plumbing + EN set done (378 keys after Round 9); Round 5 MY draft staged (`src/i18n/my.draft.ts`, 3 keys + glossary) behind R3 review (`docs/MY-REVIEW.md`); ships only complete and reviewed |
 | Map choreography (dot stagger, marker glide, crossfade) | Present in local showcase; see scope and browser acceptance above |
 
 ### DO NOT BUILD (unchanged)
@@ -184,10 +191,10 @@ Earlier work is recorded in the development history above. Follow the local subm
 
 | When | Work | Owner | Status |
 |---|---|---|---|
-| **Day 1** | After the timer opens, upload the new submission repository with its credits and license. | Coder A | planned |
-| **Day 1 (Sat 11-14)** | **R1 card-verification sprint:** re-verify the 3 seeds from the source, then 15+ cards (§12) | R1 (+ team lead session) | pending |
-| Day 1 | **Integration checkpoint on real cards:** warm the demo cache, parse → confirm → retrieve → synthesize → cite on the deployed URL; the **forced-Gemini synthesize proof** (once, on a real card) | Coder A | pending (needs cards) |
-| Day 1 | Mission case chosen from the real catalog (≥3 strong matches + one clean gap); captions written | R1 + R3 | pending (needs cards) |
+| **Day 1** | After the timer opens, upload the new submission repository with its credits and license. | Coder A | uploaded (`Harry-Pyae/IGNIS-NASA-2026`, public); link check in the submission checklist |
+| **Day 1 (Sat 11-14)** | **R1 card-verification sprint:** re-verify the 3 seeds from the source, then 15+ cards (§12) | R1 (+ team lead session) | 🟡 3 seeds published; 11 drafts queued |
+| Day 1 | **Integration checkpoint on real cards:** warm the demo cache, parse → confirm → retrieve → synthesize → cite on the deployed URL; the **forced-Gemini synthesize proof** (once, on a real card) | Coder A | ✅ API level (`QA-LOG.md`); browser click-through open |
+| Day 1 | Mission case chosen from the real catalog (≥3 strong matches + one clean gap); captions written | R1 + R3 | pending (3 cards now exist) |
 | Day 1 | Stills association checked for the mission's cards; footage pull | R2 → R1 | pending |
 | **Day 2 (Sun 11-15)** | Mission content wired (or the presenter-led fallback); aligned Match Panel; static comparison only if time allows | Coder B | pending |
 | Day 2 | Three-person usability test (DECISIONS-ROUND4, five questions); fix the hesitation step | R3 | pending |
@@ -204,10 +211,10 @@ real verified cards, the video.
 
 | Role | Done when (Team Plan) | Status |
 |---|---|---|
-| Coder A | Every §5–§7 behavior has a passing test; the demo scenario returns ≥3 strong matches + one clean gap from the live DB; `main` never has a red day | 🟡 Tests ✅, main green ✅; the demo scenario ⛔ needs cards |
+| Coder A | Every §5–§7 behavior has a passing test; the demo scenario returns ≥3 strong matches + one clean gap from the live DB; `main` never has a red day | 🟡 Tests ✅, main green ✅; *Crew clothing* returns the 3 verified cards; the reviewed case and gap wait on R1 + R3 |
 | Coder B | Live app matches the mockup boards at 1440/1024/390; drag → glide → re-match → Brief runs clean on the deployed URL | 🟡 Console v1 live; choreography, thumbnails and Guided Demo open |
-| Coder C | Its list or its fallback subset | ❌ not started |
-| R1 | Any sampled card survives a line-by-line challenge against its source | ⛔ 0 cards |
+| Coder C | Its list or its fallback subset | 🟡 Round 8 subset merged (error boundaries, explanations, Specimen Explorer, evidence handoff) |
+| R1 | Any sampled card survives a line-by-line challenge against its source | 🟡 3 cards published |
 | R2 | 30+ cards carry stills; ledger justifies every asset; the video can win alone | ❓ |
 | R3 | A judge gets the full story from video + URL + README; QA log has every check dated and passing | ❓ |
 
@@ -218,12 +225,13 @@ real verified cards, the video.
 | Console against the production catalog | ✅ 2026-11-13 on `b7602ba`, 1280 px + 390 px: map "no records to plot", `0 eligible · 0 with plot coordinates · 0 missing`, mission availability line (no start button), context section omitted, no `/api` calls, no errors, no sideways scroll. Earlier ✅ 2026-11-10, 1280 px + 390 px: honest empty states everywhere before and after Confirm, no fixture dots, no `/api` calls, no errors, no sideways scroll |
 | Console click-through (disposable DB, Edge) | ✅ 2026-11-10: presets, free text, material picker, both "Not specified" sliders, Set/Clear, keyboard, three map states, clipping, still Brief, reduced motion, 390 px |
 | Synthesize round trip | ✅ round 3 via Groq (0 withheld, revision bound, cache hit) |
-| Synthesize on Gemini lite | ✅ locally (2 validated Briefs); production proof ⛔ waits for R1's first card |
+| Synthesize on Gemini lite | ✅ locally (2 validated Briefs); ✅ 2026-11-14 production, forced, real cards: status ok, 3 OBSERVED, 0 withheld |
+| Synthesize on real cards (step c) | ✅ 2026-11-14 production, *Crew clothing*: Groq status ok, 3 OBSERVED + 1 SUPPORTED, 0 withheld; second call `provider: cache` |
 | Forced-Gemini parse on production | ✅ 2026-11-09 |
 | health-llm | ✅ 2026-11-13 (one call, production `b7602ba`): Groq 200, Gemini lite 200. Earlier ✅ 2026-11-10: Groq 200, Gemini 200. Flash checks have ended (lite is final) |
 | RLS + curation lifecycle | ✅ 16/16 on the disposable DB (incl. duplicate-identity `409`), locally and in CI on `b7602ba` |
 | Rate limit | ✅ 20 allowed, then 429 with `retry-after`; fails open |
-| Export | ✅ 2026-11-13: `count 0`, revision `empty`, with the 33-field README |
+| Export | ✅ 2026-11-14: `count 3`, revision `becd7b54…`. Earlier ✅ 2026-11-13: `count 0`, revision `empty`, with the 33-field README |
 | PageSpeed mobile | ✅ 2026-11-10 after the console code-split (`21bb12c`), Lighthouse 12.2 mobile with devtools throttling from the dev machine (the Google API's keyless quota was exhausted both times): **Performance 83** (79 before the split) · Accessibility / Best Practices / SEO 100 · FCP/LCP **3.5 s** (4.0) · TBT 40 ms · CLS 0.001 · unused JS at first load **0** (42 KiB). Landing JS **57.2 KB gzip** (95.6 before the split, 55.3 before the console), and Zod is off the landing path again. The absolute times are network-bound on this path (200 ms RTT, 560 ms for the HTML), so they aren't comparable with the old Google-server run (FCP 0.8 s). Re-run from Google's servers when the quota resets. |
 | Favicon tab screenshot | ❓ R3 |
 
@@ -248,37 +256,35 @@ real verified cards, the video.
 
 | Risk | Impact | Next step |
 |---|---|---|
-| **No verified cards** | Blocks the demo case, the integration checkpoint, the mission, stills, the production failover proof and the acceptance run | R1: verification sprint on Day 1 (in the event window only) |
+| **Thin catalog** (3 verified) | The mission case is possible on the 3 seeds (*Crew clothing*), but coverage and the gap story stay narrow | R1: the 11 drafts in `R1-QUEUE.md`, then the coverage snapshot |
+| **No mission case** | `MISSION_CASE = null`: no mission start button; the video's `mission-guided.mp4` can't be recorded | R1 + R3 name case + reviewer → Coder A (runbook step e) |
 | R2/R3 execution evidence pending | Ledger, QA log and demo structure now exist; they do not establish completed reviews or a video | R2/R3: append actual asset reviews, sessions and rehearsal results |
-| Forced-Gemini synthesize unproven on production | Backup path on stage is proven in tests and locally only | Coder A: run once on R1's first real card (runbook §3) |
-| Migration 0004 not applied to production | No DB-level duplicate guard until applied (the `409` path is live but never triggers) | Coder A + R1: runbook step 0, before the first publish |
 | Two presets lack materials | Cable insulation and Cargo packaging always open the picker | R1: card a real insulation and a packaging material, send the `fuel_material` names |
-| Coder C absent | WOW features cut by default | Follow the fallback rules; nobody absorbs them at the cost of their own "done when" |
 
 ## 10. Next actions
 
 | Owner | Action |
 |---|---|
-| Coder A | Day 1 runbook ([EXECUTION-STATUS.md](EXECUTION-STATUS.md)): step 0 (migration 0004), c (real-data checkpoint), d (forced-Gemini proof, once), e (fill `MISSION_CASE`), f (warm the cache after the last publish) |
-| R1 | No card extraction or verification before Sat 11-14. Now: `docs/FACT-CHECK-QUEUE.md`, smallest defensible set first (environment presets: the exploration figures look wrong; then only the context entries the section needs). Day 1: re-verify and publish the 3 seeds under your own name, decide GMT45-T4, then 15+ cards; coverage note for R3 |
+| Coder A | Runbook ([EXECUTION-STATUS.md](EXECUTION-STATUS.md)): 0, c, d done. Now e (fill `MISSION_CASE` once R1 + R3 name it), f (re-warm the cache after the last publish), cable/cargo preset materials when R1 sends them |
+| R1 | Seeds published. Now: the 11 drafts in `docs/R1-QUEUE.md` (easiest first), the GMT45-T4 decision line and coverage snapshot in `catalog-coverage.md` (R3 picks the mission case from it); then `docs/FACT-CHECK-QUEUE.md` if time allows |
 | R2 | Now: trace the 4 practice-build SVS images to their NASA SVS pages and ledger them (DECISIONS-ROUND5 handoff). Day 1: stills with a rights ledger for the mission's cards; video by Day 2 |
-| R3 | Now: `docs/MY-REVIEW.md` (144 keys; check the swapped-looking Back/Next pair); add the Round 6 usability questions to the test script. Fri 11-13: read the Submission + Judging guides. Day 1–2: captions, usability test, QA, rehearsals, submission |
+| R3 | Day 1–2: mission case with R1, captions, usability test ×3, browser click-through of citations at 1280 + 390 px, QA, rehearsals, submission. Burmese (`docs/MY-REVIEW.md`, 378 keys after Round 9) is first in the cut order |
 | Coder B | Fast-forward `console` to `main` (`git pull --ff-only origin main`; her two commits are unchanged, with Coder A's fixes on top), then queue #6: self-review with R3 against the DECISIONS-ROUND6 criteria at 1440/1024/390. Static comparison only after that |
 
 ## 11. Codebase at a glance
 
 | Area | Where | Size |
 |---|---|---|
-| API routes (Vercel functions) | `api/`: parse-scenario, synthesize, extract, curate-write, curate-cards, export, health-llm | 7 routes |
+| API routes (Vercel functions) | `api/`: parse-scenario, synthesize, check-claim, extract, curate-write, curate-cards, export, health-llm | 8 routes |
 | Server logic | `src/server/`: LLM adapter, prompts, claim validation, synthesis, briefing cache, rate limit, export | |
 | Engine (pure, no LLM) | `src/engine/`: aliases, match, gaps, views · `src/lib/gates.ts`, `coverage.ts` | |
 | Contracts | `src/lib/types.ts` (Zod), `copy.ts` (approved copy), `fixtures.ts` · Round 5: `src/engine/environments.ts`, `src/lib/context-content.ts`, `src/i18n/my.draft.ts` (unshippable draft) · Round 6: `src/engine/mission.ts` (mission-entry gate) | |
-| UI | `src/pages/Home.tsx` (landing), `Console.tsx` (lazy console) + `consoleLoader.ts`, `Curate.tsx`, `Kit.tsx` · `src/components/ui/*` · `src/i18n/` | |
-| Database | `supabase/migrations/` 0001–0003 · `supabase/seed.sql` (3 drafts) | |
-| Tests | `tests/`: 27 files (incl. `tests/db/` RLS + lifecycle on a throwaway DB) | 207 passing |
+| UI | `src/pages/`: `Home.tsx` (landing), `Console.tsx` (lazy console) + `consoleLoader.ts`, `Library`, `Case`, `Compare`, `Sources`, `Methods`, `Help`, `Curate`, `Kit`, `NotFound` · `src/features/*` (Coder C) · `src/components/ui/*` · `src/i18n/` | |
+| Database | `supabase/migrations/` 0001–0005 · `supabase/seed.sql` (the 3 seeds, as drafts; published in production) | |
+| Tests | `tests/`: 43 files (incl. `tests/db/` RLS + lifecycle on a throwaway DB) | 280 passing, 22 skipped |
 | Docs | `IGNIS_BUILD_PLAN.md`, `IGNIS_TEAM_PLAN.md`, `AGENTS.md`, `docs/STATE.md`, `DECISIONS-ROUND2/3/4/5/6.md`, `CREDITS.md`, `FACT-CHECK-QUEUE.md`, `MY-REVIEW.md`, `DEPLOY-RUNBOOK.md` | |
 
-Total tracked source + tests + DB + scripts: ~9,300 lines.
+Total tracked source + API + tests + DB + scripts: ~14,900 lines (2026-11-14).
 
 ## 12. How to verify a card (R1, `/curate`)
 

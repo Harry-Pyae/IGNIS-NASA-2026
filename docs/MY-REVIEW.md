@@ -163,9 +163,9 @@ The draft comes from a teammate's practice build (Pyroverse, used with her permi
 
 
 
-## 1b. Added since the draft: Rounds 6–9 (234 keys)
+## 1b. Added since the draft: Rounds 6–9 + tap feedback (241 keys)
 
-Generated 2026-11-14 from `src/i18n/index.ts` (378 keys in total; the table above covers the first 144). Same rules as §1:
+Generated 2026-11-14 from `src/i18n/index.ts` (385 keys in total; the table above covers the first 144). Same rules as §1:
 every row needs an R3 translation with both ticks before Burmese can ship. New in Round 9: the Help page, the
 60-second case (two-run question), the grouped map legend, the language note on Methods.
 
@@ -405,6 +405,39 @@ every row needs an R3 translation with both ticks before Burmese can ship. New i
 | `handoffRuns` | Ranked verified runs |  |  |  |  |
 | `handoffRecordId` | Record ID |  |  |  |  |
 | `handoffLocatorUnset` | Locator not reported |  |  |  |  |
+| `mapSelected` | Selected {run} — details below the map |  |  |  | Screen-reader announcement; keep `{run}` |
+| `mapSelectionCleared` | Selection cleared |  |  |  | Screen-reader announcement |
+| `mapRegionOutlined` | Region {n} highlighted on the map: its {cells} untested cells |  |  |  | Keep `{n}`, `{cells}` |
+| `mapRegionClear` | Clear highlight |  |  |  |  |
+| `regionShowOnMap` | Show on the Evidence Map |  |  |  |  |
+| `regionOnMap` | Highlighted on the Evidence Map |  |  |  |  |
+| `copied` | Copied |  |  |  | Button label after copying a link or citation |
+
+## 1c. Submission day: guided tour + walkthrough (18 keys)
+
+Added 2026-11-15 to `src/i18n/index.ts` (403 keys in total). Same rules as §1. Also translate the label template
+“Watch the {n}-second walkthrough” (`COPY.plain.walkthrough.label`) and “Recorded on catalog revision {revision}.”
+
+| Key | English | R3 translation | Native ✓ | Scientific ✓ | Notes |
+|---|---|---|---|---|---|
+| `tourOffer` | New here? Take the 30-second tour — or jump straight in. |  |  |  |  |
+| `tourStart` | Start tour |  |  |  |  |
+| `tourDescribe` | Set a material and conditions. Anything you leave unspecified stays unspecified — IGNIS never fills it in. |  |  |  |  |
+| `tourMap` | Each dot is a real NASA test, placed by oxygen and airflow. Hatched cells are untested. |  |  |  |  |
+| `tourMatches` | Why each experiment appeared: what matches your scenario, what differs, and what its source didn’t report. |  |  |  |  |
+| `tourBrief` | Every claim is checked against its source card. A claim that fails is withheld, and counted. |  |  |  |  |
+| `tourGaps` | Where the evidence runs out: conditions no verified card covers in the current IGNIS catalog. |  |  |  |  |
+| `tourStepOf` | Step {n} of {total} |  |  |  |  |
+| `tourEndTitle` | That’s the tour |  |  |  |  |
+| `tourEndBody` | Pick a way in. |  |  |  |  |
+| `tourExplore` | Explore freely |  |  |  |  |
+| `tourSkip` | Skip tour |  |  |  |  |
+| `tourReplay` | Replay the tour |  |  |  |  |
+| `walkthroughShort` | Watch the walkthrough |  |  |  |  |
+| `walkthroughTitle` | IGNIS walkthrough |  |  |  |  |
+| `walkthroughCaptioned` | Captions are burned into the video, so it works without sound. Transcript in Help. |  |  |  |  |
+| `walkthroughClose` | Close video |  |  |  |  |
+| `walkthroughTranscript` | Walkthrough transcript |  |  |  |  |
 
 ## 2. Glossary (terms from her strings)
 

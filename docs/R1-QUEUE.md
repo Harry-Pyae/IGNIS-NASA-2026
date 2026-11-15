@@ -1,5 +1,15 @@
 # R1 queue: drafts to verify and sign
 
+> **Status 2026-11-15 08:49 (read-only `/api/export`):** still 3 verified cards (revision `becd7b54…`): GMT96-T7,
+> GMT96-T8, GMT45-T4. **None of the 11 drafts below is published yet.** The Round 9 review counted "6 drafts + 3
+> candidates": the 6 are the BASS-II rows (#1–3, #5, #6, #11) and the 3 are the §2 outcome decisions (V-3, V-4, IV-2);
+> the 5 Saffire drafts (#4, #7–10) are also loaded and signable. Drafts are invisible to the public export, so only
+> `/curate` can confirm which are still there: R1, tick each one here as you publish it.
+>
+> **Fastest wins:** the six BASS-II rows share one source table, one provenance block and one judgment (held final
+> flow), the same pattern as the published GMT45-T4. Signing them takes *Crew clothing* from 3 to 9 runs. After the
+> last publication, tell Coder A: the briefing cache must be re-warmed and the video counts refreshed.
+
 Generated 2026-11-14 by the Round 8 extraction run (Coder A). Every draft below is already in production
 `/curate` as a **draft** (`verified_by` empty, invisible to the public). Reopen it there, check it against the PDF, correct
 anything, and publish under your own name. Nothing here is verified until you sign it.

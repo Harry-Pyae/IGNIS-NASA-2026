@@ -1,13 +1,32 @@
 # Day 1 runbook — the single execution order
 
-Updated 2026-11-13. **Prep complete, frozen for the event.** Live = `main` `b7602ba` (pushed 2026-11-13 on the
-team lead's instruction; CI `check` + `db` green; Vercel production reports `b7602ba`). During the event, code changes
-are bug fixes and the steps below only. The five Core Principles outrank this file.
+Updated 2026-11-14 (evening). Prep was frozen 2026-11-13 at `b7602ba`; since then Round 8 (`IGNIS_FIX_ROUND8.md`),
+the 60-second case (`/case`, `POST /api/check-claim`) and Round 9 (`docs/IGNIS_REVIEW_ROUND9.md`) merged to `main`.
+Live = GitHub `main` `96262b4` (`Harry-Pyae/IGNIS-NASA-2026`): the live page serves the same asset hashes as a local
+build of that tree. Local sweep: typecheck · lint · 280 tests passed (22 skipped: DB + live-LLM suites) · build.
+During the event, code changes are bug fixes and the steps below only. The five Core Principles outrank this file.
 
 Every step is already rendered behind a gate. Inserting signed data is the remaining work. No agent signs for a human.
 **Production holds real data only**: no test cards, ever (AGENTS.md). Gemini: one call per check, never polled.
 
-## Verified live empty state (baseline, 2026-11-13)
+## Progress (2026-11-14)
+
+Live catalog: **3 verified** (BASS GMT96-T7, GMT96-T8, BASS-II GMT45-T4; NTRS 20150008962), revision
+`becd7b54435772eaf9f7499a69267ad5` (`/api/export` count 3). Results are in `QA-LOG.md`, "Real-data production checks".
+
+| # | Status |
+|---|---|
+| 0 | ✅ 0004 and 0005 applied in production (team lead, SQL editor) |
+| a | ✅ 3 seeds published 04:17 UTC under the reviewers' names; GMT45-T4 carries its 10 → 2.2 cm/s change. The explicit GMT45-T4 decision line in `catalog-coverage.md` is still blank |
+| b | 🟡 3 of 15+. 11 drafts wait in `/curate` (`docs/R1-QUEUE.md`); coverage snapshot blank; cable/cargo presets still `material: null` |
+| c | ✅ API level (parse, synthesize, citations, PDF). Browser click-through at 1280 + 390 px still open (R3) |
+| d | ✅ forced Gemini parse + synthesize once each; the next unforced parse returned `groq` |
+| e | ❌ `MISSION_CASE = null` |
+| f | 🟡 warm for the *Crew clothing* preset on revision `becd7b54…` (`prompts-v5`, `claims-v2` unchanged since). Any publish in b or g makes it cold: re-warm after the last publication |
+| g | ❌ no Approved ledger rows |
+| h | ❌ QA-LOG usability and rehearsal rows still Pending |
+
+## Verified live empty state (baseline, 2026-11-13, historical)
 
 `/api/export`: `count 0`, revision `empty` · landing: "Catalog in verification — 3 cards in review", mission
 availability line shown, no start button · console (1280 + 390 px): "No verified records… to plot yet",
@@ -50,12 +69,14 @@ core works with English, text cards and the evidence-only narration fallback.
 
 ## Status matrix
 
-| Surface | Shipped (live `b7602ba`) | Content signed | QA |
+| Surface | Shipped (live `96262b4`) | Content signed | QA |
 |---|---|---|---|
-| Retrieval, cards, map, Brief, export | Source links as recorded, map populations + outcome shapes, axes from the shared GRID, interpretation limits (`prompts-v5`), catalog-unavailable retry | 0 verified, 3 drafts | Empty states verified live; real-card acceptance = step c |
+| Retrieval, cards, map, Brief, export | Source links as recorded, map populations + outcome shapes, axes from the shared GRID, interpretation limits (`prompts-v5`), catalog-unavailable retry | 3 verified, 11 drafts in `/curate` | Real-card acceptance (step c) ✅ at API level; browser click-through open |
+| Library, Sources, Methods, Help, Compare | `/library` + detail, `/sources`, `/methods`, `/help` anchors, `/compare`, share links | Render the verified catalog only | Round 9 headless-Edge pass (1440/390) |
+| 60-second case | `/case` (alias `/case/green-flash`): Beat 2 live on `POST /api/check-claim` (the production validator, no LLM) | Beat 1 `GREEN_FLASH = null` (R1 quote + R2 still) | `verify:live` checks withheld/accepted/400 |
 | Guided mission | Gate: named reviewer, preset with a material, ≥3 distinct verified solid IDs, all in the preset's current top 5 | `MISSION_CASE = null` | Gate tests; real mission = step e |
 | Duplicate protection | `409 duplicate_experiment` live; migration 0004 applied 2026-11-14 | — | 16/16 disposable DB tests |
-| Dataset provenance | 0005 applied 2026-11-14; `/curate` fields + export; card line pending Coder B | Fields empty until R1 records them | CI `db` round trip |
+| Dataset provenance | 0005 applied 2026-11-14; `/curate` fields + export; dataset line on console and library cards | Fields empty until R1 records them | CI `db` round trip |
 | Card stills | Renderer, "Campaign context" label | No approved ledger rows | Step g |
 | Environment / research context | Signed-only renderers | Unsigned → hidden | R1 review |
 | Burmese | Draft import guard | Unreviewed → English only | CI guard |

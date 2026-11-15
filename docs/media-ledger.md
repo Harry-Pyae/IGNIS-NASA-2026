@@ -9,6 +9,19 @@ Status: no newly approved assets. A source lead is not a publication authorizati
 | Pyroverse `svs-spherical-flame.jpg` | Untraced | Pending | Unproven | Pending | No |
 | Pyroverse `svs-starmap-4k.jpg` | Untraced | Pending | Unproven | Pending | No |
 
+## Audio (video cuts)
+
+Music and voice for the three video cuts (`docs/video-scripts.md`). A track renders only when its row here says
+**Yes**: `npm run cuts:render -- --final` reads this table and refuses an uncleared track. Team-made: say so and name
+the maker. Downloaded: name the source page and its licence (and any attribution it requires).
+
+| Asset / local filename | Used in | Origin / source | Licence / attribution line | Recorded or supplied by | Approved? |
+|---|---|---|---|---|---|
+| `Orbit_Flame_30sec.mp3` (30.0 s) | The Demo | Pending: team lead to state | Pending | Team (dropped into `video/assets/music/` 2026-11-14) | No |
+| `Sleeping_Giants_Breath_30sec.mp3` (30.0 s) | The Story | Pending: team lead to state | Pending | Team (dropped into `video/assets/music/` 2026-11-14) | No |
+| `the_sleeping_giant_s_breath.mp3` (121.7 s) | Team pitch (looped) | Pending: team lead to state | Pending | Team (dropped into `video/assets/music/` 2026-11-14) | No |
+| `vo-<cut>-<nn>` voice lines | All three cuts | Team members’ own voices, recorded for this video | Team-made; no third-party rights | Each speaker (names in `video/src/cuts/cuts.data.ts` `TEAM`) | Pending recording |
+
 Candidate sources: [NASA SVS 31394](https://svs.gsfc.nasa.gov/31394/),
 [NASA Glenn Saffire overview](https://www.nasa.gov/centers-and-facilities/glenn/flame-burns-out-on-nasas-long-running-spacecraft-fire-experiment/),
 and the actual PSI experiment files. These have not been established as origins of the four practice-build images.
