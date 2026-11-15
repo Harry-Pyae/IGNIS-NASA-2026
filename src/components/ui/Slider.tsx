@@ -55,7 +55,9 @@ export function Slider({ label, hint, describedBy, value, min, max, step = 1, un
         max={max}
         step={step}
         value={currentValue}
-        disabled={allowUnspecified && value == null}
+        // Never disabled: an unspecified value stays draggable, and a drag, a tap on the track or an arrow key sets it.
+        data-unset={allowUnspecified && value == null ? '' : undefined}
+        aria-valuetext={allowUnspecified && value == null ? unspecifiedLabel : undefined}
         onChange={(e) => onChange(Number(e.target.value))}
         style={{ '--fill': `${Math.min(100, Math.max(0, fill))}%` } as CSSProperties}
       />
