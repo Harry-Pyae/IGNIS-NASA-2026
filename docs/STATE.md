@@ -1,5 +1,9 @@
 # IGNIS — state handoff (2026-11-10, console merged · preparation phase)
 
+> **2026-11-15 13:10: DATA RESTORE COMPLETE — catalog final.** All 31 cards republished by the team lead, 0 source
+> mismatches, revision `75f01fc1…`; `verify:live` passes. Deck stats line re-read: unchanged. The post-restore
+> re-capture started automatically at 13:10 (18 clips → `cuts:prep`); nothing recorded before it may be used.
+
 > **2026-11-15 13:05: DATA RESTORE in progress — 19 of 31 cards public.** 12 published cards had O₂/flow (and II-5
 > class/form) edited off their sources to spread the map. All 21 fields are back to source values as **drafts**
 > (revision `a0363adf…` → `1db4eaa3…`); the team lead re-verifies and republishes them from

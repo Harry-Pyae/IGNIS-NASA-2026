@@ -14,7 +14,7 @@ Demo render follow the republish; The Story waits on R1's heritage signatures.
 `a0363adf…`), every signing session signed. Range for the deck and video: verified evidence from 16.4 % to 31 % O₂, 54–101 kPa.
 Remaining: Moon-base preset (R1 signature), green-flash Beat 1 (R2 frame by 12:30), recording session, VO.
 
-> **Deck stats line (final, live revision `a0363adf…`, read 2026-11-15):** **31 verified runs · 8 NASA campaigns ·
+> **Deck stats line (final, live revision `75f01fc1…`, re-read 13:20 2026-11-15 after the restore):** **31 verified runs · 8 NASA campaigns ·
 > 16.4–31 % O₂ · 54–101 kPa · outcomes 15 sustained / 7 extinguished / 9 did not ignite · source reports 1994–2024.**
 > Do not state flight years (e.g. "1992–2022") unless R1 confirms them from the mission records.
 

@@ -3,8 +3,8 @@
 **Challenge:** Flame in Freefall · **Team:** AstroFlare · **Freeze:** 2026-11-15 18:00
 
 Every number in this file must match the live export at the final edit (`GET /api/export`); the checklist at the
-bottom records that check. Numbers below were read from revision `a0363adf…` on 2026-11-15, **before the data restore**: re-read every one from the
-live export once all 31 cards are republished (the restore changed 21 field values, not the ranges' end points).
+bottom records that check. Numbers below were re-read from revision `75f01fc1…` at 13:20 on 2026-11-15, after all 31 restored cards were
+republished (0 source mismatches; `verify:live` passes). They are unchanged from before the restore.
 
 ## Links
 
@@ -22,7 +22,7 @@ live export once all 31 cards are republished (the restore changed 21 field valu
 > **TODO — the team lead's draft goes here verbatim** (pasted next). Live links and numbers are filled from the
 > tables in this file; nothing else is edited.
 
-## Final numbers (live, revision `a0363adf…`)
+## Final numbers (live, revision `75f01fc1…`)
 
 **31 verified runs · 8 NASA campaigns · 5 source reports · 16.4–31 % O₂ · 54–101 kPa · outcomes 15 sustained /
 7 extinguished / 9 did not ignite · source reports 1994–2024.** Campaigns: BASS, BASS-II, Saffire-I, Saffire-II,
