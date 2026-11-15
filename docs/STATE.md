@@ -7,8 +7,7 @@
 > **2026-11-15 14:30: DEMO SHIPPED — submission cut FROZEN.** Final Demo <https://youtu.be/SA0A5cdz4hE> (29.973 s,
 > 2560×1440, −17.0 LUFS; VO = the team lead's second take, split into `vo-demo-01…08`), linked in the submission form;
 > the 1080p copy is embedded in the local-stage deck. No re-render, caption edit or `cuts.data.ts` change to the Demo
-> without the team lead's explicit say-so. **Queue (in order):** 1) ~~clip 12-share re-capture~~ done 14:15 (all 18 clips at `75f01fc1`); 2) voiced walkthrough
-> render once `vo-walk-01…09` land; 3) Story unlock if R1 signs Apollo 1 / Mir; 4) final QA sweep; 5) freeze report 18:00.
+> without the team lead's explicit say-so. **Queue (in order):** clip 12 done; no further videos (the deck uses `ignis-demo.mp4`; voiced/in-app walkthroughs dropped). 1) Story unlock only if R1 signs Apollo 1 / Mir; 2) final QA sweep; 3) freeze report 18:00.
 
 > **2026-11-15 13:10: DATA RESTORE COMPLETE — catalog final.** All 31 cards republished by the team lead, 0 source
 > mismatches, revision `75f01fc1…`; `verify:live` passes. Deck stats line re-read: unchanged. The post-restore
