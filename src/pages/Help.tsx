@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Page, PageHeader, Panel, textLink } from '../components/ui';
 import { t, type TranslationKey } from '../i18n';
+import { WalkthroughButton, WalkthroughTranscript } from '../features/walkthrough/Walkthrough';
 
 /**
  * /help (Round 9): every former "How to use this" disclosure, as task walkthroughs with stable anchors. In-app
@@ -50,6 +51,11 @@ export function Help() {
           <Panel as="section" key={s.id} aria-labelledby={`help-${s.id}`} id={s.id} className="scroll-mt-[calc(var(--header-h,6.5rem)-6.5rem+1rem)]">
             <h2 id={`help-${s.id}`} className="text-xl font-semibold text-text">{t(s.title)}</h2>
             {s.body.map((key) => <p key={key} className="mt-2 max-w-3xl text-dim">{t(key)}</p>)}
+            {s.id === 'start' && <div className="mt-3 flex flex-wrap items-center gap-3">
+              <a className={textLink} href="/?tour=1#console">{t('tourReplay')}</a>
+              <WalkthroughButton size="sm" />
+            </div>}
+            {s.id === 'start' && <WalkthroughTranscript />}
             {s.id === 'trace-a-source' && <a className={`${textLink} mt-3 inline-block`} href="/case">{t('caseEyebrow')}</a>}
           </Panel>
         ))}

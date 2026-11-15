@@ -55,6 +55,31 @@ describe('evidence rendering regression checks', () => {
     expect(html).toContain('cx="54" cy="18"');
     expect(html).toContain('cx="742" cy="288"');
   });
+  it('answers a tap next to the map: selected-run details sit directly under the plot, before the legend', () => {
+    const html = renderToStaticMarkup(<EvidenceMap experiments={[card({ id: 'picked' })]} scenario={null} matches={[]} status="connected" selectedId="picked" onSelect={onSelect} />);
+    const plot = html.indexOf('id="evidence-plot"');
+    const details = html.indexOf('id="map-selection"');
+    expect(plot).toBeGreaterThan(-1);
+    expect(details).toBeGreaterThan(plot);
+    expect(details).toBeLessThan(html.indexOf(COPY.mapScope));
+    expect(html).toContain('id="map-announce"');
+    expect(html).toContain('aria-live="polite"');
+  });
+  it('highlights a tapped gap region by its own cells (never its bounding box), with its rank and a way to clear it', () => {
+    // An L-shaped region: its box (22–30 % × 10–20 cm/s) also covers a cell the region does not contain.
+    const members = [
+      { o2_min: 22, o2_max: 26, flow_min: 10, flow_max: 15 },
+      { o2_min: 26, o2_max: 30, flow_min: 10, flow_max: 15 },
+      { o2_min: 26, o2_max: 30, flow_min: 15, flow_max: 20 },
+    ];
+    const region = { cells: 3, o2_min: 22, o2_max: 30, flow_min: 10, flow_max: 20, members, index: 1 };
+    const html = renderToStaticMarkup(<EvidenceMap experiments={[card()]} scenario={null} matches={[]} status="connected" selectedId={null} onSelect={onSelect} region={region} onClearRegion={() => {}} />);
+    const highlight = html.slice(html.indexOf('id="map-region-highlight"'), html.indexOf('</g>', html.indexOf('id="map-region-highlight"')));
+    expect(highlight.match(/<rect /g)).toHaveLength(3);
+    expect(html).toContain('Region 2 highlighted on the map: its 3 untested cells');
+    expect(html).toContain('Clear highlight');
+    expect(renderToStaticMarkup(<EvidenceMap experiments={[card()]} scenario={null} matches={[]} status="connected" selectedId={null} onSelect={onSelect} />)).not.toContain('map-region-highlight');
+  });
   it('retains the exact source URL, changing-condition notice and persistent selection on cards', () => {
     const experiment = t4({ source_url: 'https://ntrs.nasa.gov/citations/20210011521', ntrs_id: '20210011521' });
     const matches = matchScenario(scenario(), [experiment]);

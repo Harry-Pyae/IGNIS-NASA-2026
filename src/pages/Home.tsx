@@ -19,7 +19,9 @@ const MissionActions = lazy(() => import('./MissionActions').then(m => ({ defaul
 
 export function Home() {
   return (
-    <main id="top">
+    // No id="top": per the HTML spec a "#top" fragment with no matching id scrolls to the very top of the document,
+    // so the IGNIS logo (/#top) and the footer's back-to-top link land at y = 0, above the sticky header's padding.
+    <main>
       <Hero />
       <HowItWorks />
       <CatalogSection />

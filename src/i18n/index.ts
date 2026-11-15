@@ -387,6 +387,33 @@ const EN = {
   handoffRuns: 'Ranked verified runs',
   handoffRecordId: 'Record ID',
   handoffLocatorUnset: 'Locator not reported',
+  // Tap feedback: every tappable element answers where the visitor is looking
+  mapSelected: 'Selected {run} — details below the map',
+  mapSelectionCleared: 'Selection cleared',
+  mapRegionOutlined: 'Region {n} highlighted on the map: its {cells} untested cells',
+  mapRegionClear: 'Clear highlight',
+  regionShowOnMap: 'Show on the Evidence Map',
+  regionOnMap: 'Highlighted on the Evidence Map',
+  copied: 'Copied',
+  // Guided tour + walkthrough (copy approved in COPY.plain.tour / COPY.plain.walkthrough)
+  tourOffer: COPY.plain.tour.offer,
+  tourStart: COPY.plain.tour.start,
+  tourDescribe: COPY.plain.tour.steps.describe,
+  tourMap: COPY.plain.tour.steps.map,
+  tourMatches: COPY.plain.tour.steps.matches,
+  tourBrief: COPY.plain.tour.steps.brief,
+  tourGaps: COPY.plain.tour.steps.gaps,
+  tourStepOf: 'Step {n} of {total}',
+  tourEndTitle: COPY.plain.tour.endTitle,
+  tourEndBody: COPY.plain.tour.endBody,
+  tourExplore: COPY.plain.tour.explore,
+  tourSkip: COPY.plain.tour.skip,
+  tourReplay: COPY.plain.tour.replay,
+  walkthroughShort: COPY.plain.walkthrough.short,
+  walkthroughTitle: COPY.plain.walkthrough.title,
+  walkthroughCaptioned: COPY.plain.walkthrough.captioned,
+  walkthroughClose: COPY.plain.walkthrough.close,
+  walkthroughTranscript: COPY.plain.walkthrough.transcript,
 } as const;
 
 export type TranslationKey = keyof typeof EN;

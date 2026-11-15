@@ -5,6 +5,8 @@ import { FIELD_UNITS, PARAM_LABELS } from '../lib/types';
 import { evidenceLocator, evidenceSource } from '../lib/evidenceSource';
 import { COPY } from '../lib/copy';
 import { buttonClass, textLink } from './ui';
+import { useScrollArea } from '../lib/scrollArea';
+import { cx } from '../lib/cx';
 
 const label = (c: Experiment) => c.test_id.startsWith(c.campaign) ? c.test_id : c.campaign+' '+c.test_id;
 const parameters: ContinuousParam[] = ['o2_pct','flow_cm_s','thickness_mm','pressure_kpa'];
@@ -21,6 +23,8 @@ const fields = [
 /** Compare only the current matches; a changed selection can never revive an old card. */
 export function CardComparison({cards, standalone = false}: {cards: Experiment[]; standalone?: boolean}) {
   const [pair, setPair] = useState<[string,string]>(['','']);
+  // Phones: the table keeps readable columns and scrolls sideways inside its own box (edge fades show which way).
+  const tableScroll = useScrollArea('x');
   const eligible = cards.filter(c => c.verified_by && c.domain === 'solid_flammability');
   const left = eligible.find(c => c.id === pair[0]) ?? eligible[0];
   const others = eligible.filter(c => c.id !== left?.id);
@@ -37,7 +41,8 @@ export function CardComparison({cards, standalone = false}: {cards: Experiment[]
         </select>
       </label>)}</div>}
     {!standalone && <a className={buttonClass('secondary', 'sm', 'mb-4')} href={`/compare?ids=${two.map((card) => encodeURIComponent(card.id)).join(',')}`}>{t('compareOpen')}</a>}
-    <table className="w-full table-fixed border-collapse text-left text-sm break-words">
+    <div ref={tableScroll} data-axis="x" role="group" aria-label={t(standalone ? 'compareVerifiedCaption' : 'compareMatchedCaption')} className="scroll-area overflow-x-auto">
+    <table className="w-full min-w-[30rem] table-fixed border-collapse text-left text-sm break-words">
       <caption className="sr-only">{t(standalone ? 'compareVerifiedCaption' : 'compareMatchedCaption')}</caption>
       <thead><tr><th scope="col">{t('compareField')}</th>{two.map(c => <th scope="col" className="p-2" key={c.id}>{label(c)}</th>)}</tr></thead>
       <tbody>{fields.map(([name,read]) => {
@@ -46,8 +51,9 @@ export function CardComparison({cards, standalone = false}: {cards: Experiment[]
         return <tr key={name} className={'border-t border-border '+(different ? 'bg-raised/20' : '')}><th scope="row" className="py-2 font-medium">{name}{different && <small className="block text-dim">{t('compareDifference')}</small>}</th>{values.map((v,i) => <td key={i} className="p-2 tabular-nums">{v}</td>)}</tr>;
       })}<tr className="border-t border-border"><th scope="row">{t('source')}</th>{two.map(c => {
         const src = evidenceSource(c);
-        return <td key={c.id} className="p-2">{src ? <a className={textLink} href={src.url} target="_blank" rel="noopener noreferrer">{c.source_title}</a> : c.source_title}<small className="block">{evidenceLocator(c)}</small></td>;
+        return <td key={c.id} className="p-2">{src ? <a className={cx(textLink, 'line-clamp-2')} title={c.source_title} href={src.url} target="_blank" rel="noopener noreferrer">{c.source_title}</a> : c.source_title}<small className="block">{evidenceLocator(c)}</small></td>;
       })}</tr></tbody>
     </table>
+    </div>
   </details>;
 }

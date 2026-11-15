@@ -2,6 +2,45 @@
 @import './tokens.css';
 
 .brief-print-only, .map-radar, .map-pulse { display: none; }
+
+/* Internal scroll boxes (useScrollArea, src/lib/scrollArea.ts): a thin designed bar, never a hidden one, and an edge fade
+   only on the side where content continues. The bar is dim at rest and full while hovered, focused or scrolling; under
+   reduced motion it stays full (dimming and returning is motion). Focus scrolling keeps targets clear of the fades. */
+.scroll-area {
+  --fade: 2.5rem;
+  scrollbar-gutter: stable;
+  scroll-padding-block: calc(var(--fade) + 0.5rem);
+  scroll-padding-inline: calc(var(--fade) + 0.5rem);
+}
+.scroll-area::-webkit-scrollbar { width: 6px; height: 6px; }
+.scroll-area::-webkit-scrollbar-track,
+.scroll-area::-webkit-scrollbar-corner { background: transparent; }
+.scroll-area::-webkit-scrollbar-thumb { border-radius: 999px; background: color-mix(in srgb, var(--color-raised) 35%, transparent); }
+.scroll-area:is(:hover, :focus-within, [data-scrolling])::-webkit-scrollbar-thumb { background: var(--color-raised); }
+.scroll-area::-webkit-scrollbar-thumb:hover,
+.scroll-area::-webkit-scrollbar-thumb:active { background: var(--color-amber); }
+@media (prefers-reduced-motion: reduce) {
+  .scroll-area::-webkit-scrollbar-thumb { background: var(--color-raised); }
+}
+@supports not selector(::-webkit-scrollbar) {
+  .scroll-area { scrollbar-width: thin; scrollbar-color: var(--color-raised) transparent; }
+}
+.scroll-area[data-more] {
+  mask-image: linear-gradient(var(--fade-direction, to bottom), transparent 0, #000 var(--fade-start, 0px), #000 calc(100% - var(--fade-end, 0px)), transparent 100%);
+}
+.scroll-area[data-more~='start'] { --fade-start: var(--fade); }
+.scroll-area[data-more~='end'] { --fade-end: var(--fade); }
+.scroll-area[data-axis='x'] { --fade-direction: to right; --fade: 2rem; scrollbar-gutter: auto; }
+.scroll-area:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+@property --picker-fade-start { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@property --picker-fade-end { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@keyframes picker-edges {
+  0% { --picker-fade-start: 0px; --picker-fade-end: 24px; }
+  4% { --picker-fade-start: 24px; }
+  96% { --picker-fade-end: 24px; }
+  100% { --picker-fade-start: 24px; --picker-fade-end: 0px; }
+}
 /* Focused fields and #anchors land clear of the sticky header. The header's own controls are exempt: they're always on
    screen, and inside the padding band, so focusing one (a theme toggle click, Tab into the nav) used to scroll the page up. */
 html { scroll-padding-top: 6.5rem; }
@@ -47,11 +86,23 @@ select option { background-color: var(--color-panel); color: var(--color-text); 
     line-height: 1.35;
     cursor: pointer;
   }
-  select option:hover,
-  select option:focus-visible { background-color: color-mix(in srgb, var(--color-action) 14%, transparent); outline: none; }
+  select option:not(:disabled):hover,
+  select option:not(:disabled):focus-visible { background-color: color-mix(in srgb, var(--color-action) 14%, transparent); outline: none; }
   select option:checked { color: var(--color-amber); font-weight: 500; }
   select option::checkmark { color: var(--color-amber); }
   select option:disabled { color: var(--color-faint); cursor: default; }
+  /* A placeholder ("Choose…") is a prompt, not a choice: no row hover, set apart from the real options. */
+  select option.select-placeholder { font-style: italic; border-bottom: 1px solid var(--color-border); border-radius: 0; margin-bottom: 4px; }
+  /* Long lists: the shared thin bar, plus edge fades that follow the list's own scroll position (no JS: the picker is a
+     pseudo-element). With nothing to scroll the scroll timeline is inactive and the fades stay at 0. */
+  ::picker(select) { scrollbar-width: thin; scrollbar-color: var(--color-raised) transparent; }
+  @supports (animation-timeline: scroll()) {
+    ::picker(select) {
+      mask-image: linear-gradient(to bottom, transparent 0, #000 var(--picker-fade-start), #000 calc(100% - var(--picker-fade-end)), transparent 100%);
+      animation: picker-edges linear both;
+      animation-timeline: scroll(self);
+    }
+  }
   @media (prefers-reduced-motion: no-preference) {
     select::picker-icon { transition: rotate 150ms var(--ease-out), background-color 150ms ease; }
     /* Fade + slight scale (it may open above or below the field): 150ms in, 100ms out. */
@@ -704,3 +755,43 @@ select option { background-color: var(--color-panel); color: var(--color-text); 
     from { opacity: 0.82; translate: 0 3px; }
   }
 }
+
+/* Guided tour (src/features/tour/Tour.tsx): a full-screen transparent modal dialog. The spotlight's huge box-shadow
+   dims the page around one section; the coach mark is positioned in JS. Glide and fade only under no-preference. */
+.tour-dialog {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+.tour-dialog::backdrop { background: transparent; }
+.tour-spot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  border-radius: 16px;
+  outline: 2px solid var(--color-amber);
+  outline-offset: 0;
+  box-shadow: 0 0 0 200vmax color-mix(in srgb, var(--color-bg) 74%, transparent);
+  pointer-events: none;
+}
+.tour-spot[data-end] { outline: 0; }
+.tour-card {
+  position: fixed;
+  top: 0;
+  left: 0;
+  opacity: 0;
+}
+.tour-card[data-ready] { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .tour-spot { transition: width 250ms var(--ease-in-out), height 250ms var(--ease-in-out); }
+  .tour-card { transition: opacity 150ms var(--ease-out); }
+}
+.walkthrough-dialog::backdrop { background: color-mix(in srgb, var(--color-bg) 80%, transparent); }

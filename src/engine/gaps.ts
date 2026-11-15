@@ -84,12 +84,19 @@ export function gapGrid(catalog: Experiment[], scenario: ResolvedScenario | null
   return { cells, envelope, population: population.length, plotted: points.length };
 }
 
-export interface GapRegion {
-  cells: number;
+interface CellBounds {
   o2_min: number;
   o2_max: number;
   flow_min: number;
   flow_max: number;
+}
+export interface GapRegion extends CellBounds {
+  cells: number;
+  /**
+   * The region's own untested cells. The bounding box above can wrap around tested cells (a 4-connected region is
+   * rarely a rectangle), so anything drawn as "this gap" uses these, never the box.
+   */
+  members: CellBounds[];
 }
 export interface ThinMaterial {
   fuel_material: string;
@@ -121,11 +128,12 @@ export function gapRadar(grid: GapGrid, catalog: Experiment[], limit = 5): GapRa
       if (seen[r0]![c0] || grid.cells[r0]![c0]!.state !== 'untested') continue;
       const stack: [number, number][] = [[r0, c0]];
       seen[r0]![c0] = true;
-      const region: GapRegion = { cells: 0, o2_min: Infinity, o2_max: -Infinity, flow_min: Infinity, flow_max: -Infinity };
+      const region: GapRegion = { cells: 0, o2_min: Infinity, o2_max: -Infinity, flow_min: Infinity, flow_max: -Infinity, members: [] };
       while (stack.length) {
         const [r, c] = stack.pop()!;
         const cell = grid.cells[r]![c]!;
         region.cells++;
+        region.members.push({ o2_min: cell.o2_min, o2_max: cell.o2_max, flow_min: cell.flow_min, flow_max: cell.flow_max });
         region.o2_min = Math.min(region.o2_min, cell.o2_min);
         region.o2_max = Math.max(region.o2_max, cell.o2_max);
         region.flow_min = Math.min(region.flow_min, cell.flow_min);

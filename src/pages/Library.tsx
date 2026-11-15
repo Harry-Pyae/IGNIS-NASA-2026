@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { LIBRARY_QUERY_KEY, readSession, writeSession } from '../lib/consoleDraft';
 import { Button, buttonClass, Icon, Page, PageHeader, Panel, Select, textLink } from '../components/ui';
 import { useVerifiedCatalog } from '../lib/catalog';
+import { useFlash } from '../lib/useFlash';
 import { datasetCitation, evidenceLocator, evidenceSource } from '../lib/evidenceSource';
 import { COPY } from '../lib/copy';
 import { SpecimenExplorer } from '../features/evidence/SpecimenExplorer';
@@ -156,6 +157,7 @@ function LibraryResults({ cards, params, update, endSearch }: {
 
 function ExperimentDetail({ card, specimen }: { card: Experiment; specimen: boolean }) {
   const [copyStatus, setCopyStatus] = useState('');
+  const [copied, flash] = useFlash();
   const source = evidenceSource(card);
   const locator = evidenceLocator(card);
   const dataset = datasetCitation(card);
@@ -199,7 +201,7 @@ function ExperimentDetail({ card, specimen }: { card: Experiment; specimen: bool
         <span className="console-label font-normal text-dim">{COPY.plain.units.asReported}</span>
       </h2>
       <blockquote className="my-3 whitespace-pre-wrap border-l-2 border-border pl-4">{card.key_observation_quote}</blockquote>
-      <p>{source ? <a className={linkClass} href={source.url} {...external}>{card.source_title}</a> : card.source_title}</p>
+      <p>{source ? <a className={linkClass + ' line-clamp-2'} title={card.source_title} href={source.url} {...external}>{card.source_title}</a> : card.source_title}</p>
       <p className="text-sm text-dim">{t('libraryLocator')} · {locator || missing}</p>
       {card.ntrs_id && <p>{/^\d+$/.test(card.ntrs_id)
         ? <a className={linkClass} href={'https://ntrs.nasa.gov/citations/' + card.ntrs_id} {...external}>NTRS {card.ntrs_id}</a>
@@ -213,10 +215,11 @@ function ExperimentDetail({ card, specimen }: { card: Experiment; specimen: bool
         try {
           await navigator.clipboard.writeText(citation);
           setCopyStatus(t('libraryCopied'));
+          flash();
         } catch {
           setCopyStatus(citation);
         }
-      }}>{t('libraryCite')}</Button>
+      }} className="min-w-32">{copied ? `✓ ${t('copied')}` : t('libraryCite')}</Button>
       <a className={buttonClass('secondary', 'md')} href={'/compare?ids=' + encodeURIComponent(card.id)}><Icon name="match" />{t('libraryCompare')}</a>
       </div>
       <p role="status" className="mt-2 break-words text-sm">{copyStatus}</p>

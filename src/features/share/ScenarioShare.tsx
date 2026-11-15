@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Button } from '../../components/ui';
 import type { ResolvedScenario } from '../../lib/types';
+import { useFlash } from '../../lib/useFlash';
+import { t } from '../../i18n';
 import { encodeShare, SHARE_PARAM } from './shareLink';
 import type { useScenarioShare } from './useScenarioShare';
 export function ShareBanner({ share }: { share: ReturnType<typeof useScenarioShare> }) {
@@ -33,6 +35,7 @@ export function CopyShareLink({ scenario, revision, rankedIds, versions }: {
   rankedIds: string[];
 }) {
   const [message, setMessage] = useState('');
+  const [copied, flash] = useFlash();
   async function copy() {
     try {
       const url = new URL('/', window.location.origin);
@@ -40,12 +43,13 @@ export function CopyShareLink({ scenario, revision, rankedIds, versions }: {
       url.hash = 'console';
       await navigator.clipboard.writeText(url.href);
       setMessage('Share link copied.');
+      flash();
     } catch {
       setMessage('Could not copy the share link.');
     }
   }
   return <div className="my-3 flex flex-wrap items-center gap-2">
-    <Button size="sm" onClick={() => void copy()}>Copy share link</Button>
+    <Button size="sm" className="min-w-36" onClick={() => void copy()}>{copied ? `✓ ${t('copied')}` : 'Copy share link'}</Button>
     <span role="status" className="text-sm text-dim">{message}</span>
   </div>;
 }

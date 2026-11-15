@@ -190,6 +190,14 @@ describe('gap grid + radar (§6)', () => {
     const total = grid.cells.flat().filter((c) => c.state === 'untested').length;
     expect(radar.regions.reduce((n, r) => n + r.cells, 0)).toBe(total);
     expect(radar.regions[0]).toMatchObject({ o2_min: 18, o2_max: 22, flow_min: 2, flow_max: 12 });
+    // Its box wraps the tested seed cells; its members (what the map highlights) are untested cells only.
+    const stateOf = (m: { o2_min: number; flow_min: number }) =>
+      grid.cells.flat().find((c) => c.o2_min === m.o2_min && c.flow_min === m.flow_min)!.state;
+    for (const region of radar.regions) {
+      expect(region.members).toHaveLength(region.cells);
+      expect(region.members.every((m) => stateOf(m) === 'untested')).toBe(true);
+    }
+    expect(grid.cells.flat().some((c) => c.state === 'tested' && c.o2_min >= 18 && c.o2_max <= 22 && c.flow_min >= 2 && c.flow_max <= 12)).toBe(true);
     expect(radar.thin_materials).toEqual([]); // 3 cotton_fiberglass cards
     expect(gapRadar(grid, catalog).thin_materials.map((m) => m.fuel_material)).toEqual(['kapton', 'PMMA']);
   });

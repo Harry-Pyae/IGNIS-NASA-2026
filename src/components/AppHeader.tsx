@@ -4,13 +4,19 @@ import { useCatalogSummary } from '../lib/catalog';
 import { ExportButton, ProvenancePill } from './CatalogStatus';
 import { Icon } from './ui/Icon';
 
+/**
+ * One destination per control. The IGNIS lockup is the home page's top (`/#top`: the hash also overrides the
+ * returning-visitor jump to the console); "Console" is the console itself (`/#console`, the scenario builder).
+ * [href, label, icon, phone label, the pathname that makes it aria-current]
+ */
+const HOME_HREF = '/#top';
 const navigation = [
-  // The home page (the mission console) is the IGNIS logo; this tab is the 60-second case.
-  ['/case', '60-second case', 'verify', '60s case'],
-  ['/library', 'Library', 'book', null],
-  ['/methods', 'Methods', 'checklist', null],
-  ['/sources', 'Sources', 'citation', null],
-  ['/help', 'Help', 'info', null],
+  ['/#console', 'Console', 'scenario', null, '/'],
+  ['/case', '60-second case', 'verify', '60s case', '/case'],
+  ['/library', 'Library', 'book', null, '/library'],
+  ['/methods', 'Methods', 'checklist', null, '/methods'],
+  ['/sources', 'Sources', 'citation', null, '/sources'],
+  ['/help', 'Help', 'info', null, '/help'],
 ] as const;
 
 type Theme = 'dark' | 'light';
@@ -100,7 +106,7 @@ export function AppHeader() {
   return (
     <header ref={header} className="app-header sticky top-0 z-40">
       <div className="mx-auto flex min-h-16 max-w-6xl items-center gap-3 px-4 py-2 sm:gap-4 sm:px-6">
-        <a href="/" className="flex shrink-0 items-center gap-2.5" aria-label="IGNIS home">
+        <a href={HOME_HREF} className="flex shrink-0 items-center gap-2.5" aria-label="IGNIS home">
           {/* Interim brand mark: 64px derivative of /art/logo-flame.webp (master untouched). One <img>, never a CSS background. */}
           <img src="/art/logo-flame-64.webp" width={30} height={30} alt="" aria-hidden className="size-[30px] rounded-full" />
           <span className="text-[17px] font-bold tracking-[0.18em]">IGNIS</span>
@@ -125,9 +131,9 @@ export function AppHeader() {
       </div>
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-2 gap-y-1 px-4 pb-2 sm:px-6">
         <nav aria-label="Project navigation" className="flex w-full justify-between gap-1 text-sm sm:w-auto sm:justify-start sm:gap-5">
-          {navigation.map(([url, label, icon, short]) => {
+          {navigation.map(([url, label, icon, short, match]) => {
             const path = window.location.pathname.replace(/\/$/, '') || '/';
-            const current = path === url || path.startsWith(url + '/');
+            const current = path === match || (match !== '/' && path.startsWith(match + '/'));
             return (
               <a key={url} href={url} aria-current={current ? 'page' : undefined}
                 className={`project-tab flex min-h-11 items-center justify-center gap-1.5 rounded-sm ${current ? 'text-amber' : 'text-dim hover:text-text'}`}>

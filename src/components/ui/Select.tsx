@@ -7,11 +7,13 @@ interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'chi
   options: readonly { value: string; label: string }[];
   /** Shown as the first, empty option (e.g. "Select a catalog material"). */
   placeholder?: string;
+  /** The placeholder is a prompt, not a choice: disabled, styled apart (Compare). Leave off where it clears a filter (Library "All"). */
+  placeholderDisabled?: boolean;
   hideLabel?: boolean;
 }
 
 /** Native select (keyboard + mobile pickers for free), token-styled. */
-export function Select({ label, options, placeholder, hideLabel, className, id, ...rest }: SelectProps) {
+export function Select({ label, options, placeholder, placeholderDisabled, hideLabel, className, id, ...rest }: SelectProps) {
   const autoId = useId();
   const selectId = id ?? autoId;
   return (
@@ -25,7 +27,7 @@ export function Select({ label, options, placeholder, hideLabel, className, id, 
           className="h-10 w-full appearance-none rounded-xl border border-border bg-bg/70 pr-9 pl-3 text-[15px] text-text transition-colors duration-150 can-hover:hover:border-raised sm:text-sm"
           {...rest}
         >
-          {placeholder !== undefined && <option value="">{placeholder}</option>}
+          {placeholder !== undefined && <option value="" disabled={placeholderDisabled} className={placeholderDisabled ? 'select-placeholder' : undefined}>{placeholder}</option>}
           {options.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
